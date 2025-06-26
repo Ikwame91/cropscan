@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:sizer/sizer.dart';
 
@@ -30,7 +29,7 @@ class MyApp extends StatelessWidget {
         title: 'cropscan_pro',
         theme: AppTheme.lightTheme,
         darkTheme: AppTheme.darkTheme,
-        themeMode: ThemeMode.light,
+        themeMode: ThemeMode.system,
         builder: (context, child) {
           return MediaQuery(
             data: MediaQuery.of(context).copyWith(

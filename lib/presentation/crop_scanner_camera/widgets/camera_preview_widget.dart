@@ -50,12 +50,9 @@ class CameraPreviewWidget extends StatelessWidget {
                 width: double.infinity,
                 height: double.infinity,
                 color: Colors.black87,
-                child: CustomImageWidget(
-                  imageUrl: isFrontCamera
-                      ? 'https://images.pexels.com/photos/1459505/pexels-photo-1459505.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1'
-                      : 'https://images.pexels.com/photos/1459505/pexels-photo-1459505.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
-                  width: double.infinity,
-                  height: double.infinity,
+                //////////////////////////////////////////phase 1 fix
+                child: Image.asset(
+                  'assets/images/soil.jpg',
                   fit: BoxFit.cover,
                 ),
               ),

@@ -5,7 +5,6 @@ import '../../core/app_export.dart';
 import './widgets/farming_alert_card_widget.dart';
 import './widgets/recent_detection_card_widget.dart';
 import './widgets/scan_crop_card_widget.dart';
-import './widgets/weather_widget.dart';
 
 class DashboardHome extends StatefulWidget {
   const DashboardHome({super.key});
@@ -199,7 +198,7 @@ class _DashboardHomeState extends State<DashboardHome>
                 floating: true,
                 backgroundColor: AppTheme.lightTheme.colorScheme.primary,
                 title: Text(
-                  'CropScan Pro',
+                  'CropScan ',
                   style: AppTheme.lightTheme.textTheme.titleLarge?.copyWith(
                     color: AppTheme.lightTheme.colorScheme.onPrimary,
                     fontWeight: FontWeight.bold,
@@ -221,8 +220,6 @@ class _DashboardHomeState extends State<DashboardHome>
                 padding: EdgeInsets.all(4.w),
                 sliver: SliverList(
                   delegate: SliverChildListDelegate([
-                    // Weather Widget
-
                     SizedBox(height: 3.h),
 
                     // Scan Crop Card
@@ -391,7 +388,7 @@ class _DashboardHomeState extends State<DashboardHome>
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         onTap: _onTabTapped,
-        type: BottomNavigationBarType.fixed,
+        type: BottomNavigationBarType.shifting,
         backgroundColor: AppTheme.lightTheme.colorScheme.surface,
         selectedItemColor: AppTheme.lightTheme.colorScheme.primary,
         unselectedItemColor: AppTheme.lightTheme.colorScheme.onSurfaceVariant,

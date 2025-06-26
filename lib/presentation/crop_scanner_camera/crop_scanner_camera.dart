@@ -59,6 +59,18 @@ class _CropScannerCameraState extends State<CropScannerCamera>
     _checkCameraPermission();
   }
 
+  // bool _hasPrecachedImage = false;
+
+  // @override
+  // void didChangeDependencies() {
+  //   super.didChangeDependencies();
+
+  //   if (!_hasPrecachedImage) {
+  //     precacheImage(const AssetImage('assets/images/soil.jpg'), context);
+  //     _hasPrecachedImage = true; // make sure it only runs once
+  //   }
+  // }
+
   void _initializeAnimations() {
     _focusAnimationController = AnimationController(
       duration: const Duration(milliseconds: 500),
@@ -318,7 +330,7 @@ class _CropScannerCameraState extends State<CropScannerCamera>
           decoration: BoxDecoration(
             border: Border.all(
               color: Colors.white.withValues(alpha: 0.3),
-              width: 1.0,
+              width: 2.0,
             ),
           ),
         ),

@@ -178,13 +178,6 @@ class CameraOverlayWidget extends StatelessWidget {
             color: Colors.white,
             width: 3,
           ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.3),
-              blurRadius: 8,
-              offset: Offset(0, 2),
-            ),
-          ],
         ),
         child: Center(
           child: CustomIconWidget(

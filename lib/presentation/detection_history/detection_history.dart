@@ -2,16 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:sizer/sizer.dart';
 
 import '../../core/app_export.dart';
-import '../../theme/app_theme.dart';
-import '../../widgets/custom_icon_widget.dart';
 import './widgets/calendar_view_widget.dart';
 import './widgets/detection_card_widget.dart';
 import './widgets/filter_options_widget.dart';
 import './widgets/statistics_summary_widget.dart';
-import 'widgets/calendar_view_widget.dart';
-import 'widgets/detection_card_widget.dart';
-import 'widgets/filter_options_widget.dart';
-import 'widgets/statistics_summary_widget.dart';
 
 class DetectionHistory extends StatefulWidget {
   const DetectionHistory({super.key});
@@ -24,7 +18,7 @@ class _DetectionHistoryState extends State<DetectionHistory>
     with TickerProviderStateMixin {
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
-  
+
   bool _isCalendarView = false;
   bool _isSelectionMode = false;
   bool _isLoading = false;
@@ -38,67 +32,77 @@ class _DetectionHistoryState extends State<DetectionHistory>
 
   // Mock data for detection history
   final List<Map<String, dynamic>> _detectionHistory = [
-{ "id": 1,
-"cropName": "Bell Pepper",
-"cropType": "Vegetable",
-"imageUrl": "https://images.pexels.com/photos/594137/pexels-photo-594137.jpeg?auto=compress&cs=tinysrgb&w=800",
-"confidence": 0.92,
-"timestamp": DateTime.now().subtract(Duration(hours: 2)),
-"location": "Field A - North Section",
-"weatherCondition": "Sunny, 28°C",
-"notes": "Healthy growth, ready for harvest in 2 weeks",
-"diseaseDetected": false,
-"pestDetected": false,
-},
-{ "id": 2,
-"cropName": "Tomato",
-"cropType": "Fruit",
-"imageUrl": "https://images.pexels.com/photos/533280/pexels-photo-533280.jpeg?auto=compress&cs=tinysrgb&w=800",
-"confidence": 0.87,
-"timestamp": DateTime.now().subtract(Duration(hours: 5)),
-"location": "Greenhouse B",
-"weatherCondition": "Cloudy, 24°C",
-"notes": "Some yellowing leaves detected, check irrigation",
-"diseaseDetected": true,
-"pestDetected": false,
-},
-{ "id": 3,
-"cropName": "Maize",
-"cropType": "Grain",
-"imageUrl": "https://images.pexels.com/photos/547263/pexels-photo-547263.jpeg?auto=compress&cs=tinysrgb&w=800",
-"confidence": 0.95,
-"timestamp": DateTime.now().subtract(Duration(days: 1)),
-"location": "Field C - East Section",
-"weatherCondition": "Partly Cloudy, 26°C",
-"notes": "Excellent growth, pest control recommended",
-"diseaseDetected": false,
-"pestDetected": true,
-},
-{ "id": 4,
-"cropName": "Bell Pepper",
-"cropType": "Vegetable",
-"imageUrl": "https://images.pexels.com/photos/1327838/pexels-photo-1327838.jpeg?auto=compress&cs=tinysrgb&w=800",
-"confidence": 0.89,
-"timestamp": DateTime.now().subtract(Duration(days: 2)),
-"location": "Field A - South Section",
-"weatherCondition": "Rainy, 22°C",
-"notes": "Good condition, monitor for fungal issues",
-"diseaseDetected": false,
-"pestDetected": false,
-},
-{ "id": 5,
-"cropName": "Tomato",
-"cropType": "Fruit",
-"imageUrl": "https://images.pexels.com/photos/1327838/pexels-photo-1327838.jpeg?auto=compress&cs=tinysrgb&w=800",
-"confidence": 0.91,
-"timestamp": DateTime.now().subtract(Duration(days: 3)),
-"location": "Greenhouse A",
-"weatherCondition": "Sunny, 27°C",
-"notes": "Optimal growth conditions, harvest in 1 week",
-"diseaseDetected": false,
-"pestDetected": false,
-},
-];
+    {
+      "id": 1,
+      "cropName": "Bell Pepper",
+      "cropType": "Vegetable",
+      "imageUrl":
+          "https://images.pexels.com/photos/594137/pexels-photo-594137.jpeg?auto=compress&cs=tinysrgb&w=800",
+      "confidence": 0.92,
+      "timestamp": DateTime.now().subtract(Duration(hours: 2)),
+      "location": "Field A - North Section",
+      "weatherCondition": "Sunny, 28°C",
+      "notes": "Healthy growth, ready for harvest in 2 weeks",
+      "diseaseDetected": false,
+      "pestDetected": false,
+    },
+    {
+      "id": 2,
+      "cropName": "Tomato",
+      "cropType": "Fruit",
+      "imageUrl":
+          "https://images.pexels.com/photos/533280/pexels-photo-533280.jpeg?auto=compress&cs=tinysrgb&w=800",
+      "confidence": 0.87,
+      "timestamp": DateTime.now().subtract(Duration(hours: 5)),
+      "location": "Greenhouse B",
+      "weatherCondition": "Cloudy, 24°C",
+      "notes": "Some yellowing leaves detected, check irrigation",
+      "diseaseDetected": true,
+      "pestDetected": false,
+    },
+    {
+      "id": 3,
+      "cropName": "Maize",
+      "cropType": "Grain",
+      "imageUrl":
+          "https://images.pexels.com/photos/547263/pexels-photo-547263.jpeg?auto=compress&cs=tinysrgb&w=800",
+      "confidence": 0.95,
+      "timestamp": DateTime.now().subtract(Duration(days: 1)),
+      "location": "Field C - East Section",
+      "weatherCondition": "Partly Cloudy, 26°C",
+      "notes": "Excellent growth, pest control recommended",
+      "diseaseDetected": false,
+      "pestDetected": true,
+    },
+    {
+      "id": 4,
+      "cropName": "Bell Pepper",
+      "cropType": "Vegetable",
+      "imageUrl":
+          "https://images.pexels.com/photos/1327838/pexels-photo-1327838.jpeg?auto=compress&cs=tinysrgb&w=800",
+      "confidence": 0.89,
+      "timestamp": DateTime.now().subtract(Duration(days: 2)),
+      "location": "Field A - South Section",
+      "weatherCondition": "Rainy, 22°C",
+      "notes": "Good condition, monitor for fungal issues",
+      "diseaseDetected": false,
+      "pestDetected": false,
+    },
+    {
+      "id": 5,
+      "cropName": "Tomato",
+      "cropType": "Fruit",
+      "imageUrl":
+          "https://images.pexels.com/photos/1327838/pexels-photo-1327838.jpeg?auto=compress&cs=tinysrgb&w=800",
+      "confidence": 0.91,
+      "timestamp": DateTime.now().subtract(Duration(days: 3)),
+      "location": "Greenhouse A",
+      "weatherCondition": "Sunny, 27°C",
+      "notes": "Optimal growth conditions, harvest in 1 week",
+      "diseaseDetected": false,
+      "pestDetected": false,
+    },
+  ];
 
   @override
   void initState() {
@@ -119,7 +123,7 @@ class _DetectionHistoryState extends State<DetectionHistory>
     setState(() {
       _isLoading = true;
     });
-    
+
     // Simulate API call
     Future.delayed(Duration(seconds: 1), () {
       if (mounted) {
@@ -132,7 +136,7 @@ class _DetectionHistoryState extends State<DetectionHistory>
 
   List<Map<String, dynamic>> get _filteredHistory {
     List<Map<String, dynamic>> filtered = List.from(_detectionHistory);
-    
+
     // Apply search filter
     if (_searchQuery.isNotEmpty) {
       filtered = filtered.where((item) {
@@ -142,26 +146,28 @@ class _DetectionHistoryState extends State<DetectionHistory>
         return cropName.contains(query) || location.contains(query);
       }).toList();
     }
-    
+
     // Apply crop type filter
     if (_selectedCropFilter != null && _selectedCropFilter!.isNotEmpty) {
-      filtered = filtered.where((item) => 
-        item['cropType'] == _selectedCropFilter).toList();
+      filtered = filtered
+          .where((item) => item['cropType'] == _selectedCropFilter)
+          .toList();
     }
-    
+
     // Apply confidence threshold filter
-    filtered = filtered.where((item) => 
-      (item['confidence'] as double) >= _confidenceThreshold).toList();
-    
+    filtered = filtered
+        .where((item) => (item['confidence'] as double) >= _confidenceThreshold)
+        .toList();
+
     // Apply date range filter
     if (_selectedDateRange != null) {
       filtered = filtered.where((item) {
         final timestamp = item['timestamp'] as DateTime;
         return timestamp.isAfter(_selectedDateRange!.start) &&
-               timestamp.isBefore(_selectedDateRange!.end.add(Duration(days: 1)));
+            timestamp.isBefore(_selectedDateRange!.end.add(Duration(days: 1)));
       }).toList();
     }
-    
+
     return filtered;
   }
 
@@ -189,7 +195,8 @@ class _DetectionHistoryState extends State<DetectionHistory>
       context: context,
       builder: (context) => AlertDialog(
         title: Text('Delete Selected'),
-        content: Text('Are you sure you want to delete ${_selectedCards.length} detection records?'),
+        content: Text(
+            'Are you sure you want to delete ${_selectedCards.length} detection records?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -198,8 +205,8 @@ class _DetectionHistoryState extends State<DetectionHistory>
           TextButton(
             onPressed: () {
               setState(() {
-                _detectionHistory.removeWhere((item) => 
-                  _selectedCards.contains(item['id']));
+                _detectionHistory
+                    .removeWhere((item) => _selectedCards.contains(item['id']));
                 _selectedCards.clear();
                 _isSelectionMode = false;
               });
@@ -223,14 +230,16 @@ class _DetectionHistoryState extends State<DetectionHistory>
 
   void _shareMultiple() {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Sharing ${_selectedCards.length} detection records...')),
+      SnackBar(
+          content:
+              Text('Sharing ${_selectedCards.length} detection records...')),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     final filteredHistory = _filteredHistory;
-    
+
     return Scaffold(
       backgroundColor: AppTheme.lightTheme.scaffoldBackgroundColor,
       appBar: AppBar(
@@ -246,7 +255,9 @@ class _DetectionHistoryState extends State<DetectionHistory>
           ),
         ),
         title: Text(
-          _isSelectionMode ? '${_selectedCards.length} Selected' : 'Detection History',
+          _isSelectionMode
+              ? '${_selectedCards.length} Selected'
+              : 'Detection History',
           style: AppTheme.lightTheme.textTheme.titleLarge?.copyWith(
             color: AppTheme.lightTheme.colorScheme.onPrimary,
             fontWeight: FontWeight.w600,
@@ -333,7 +344,7 @@ class _DetectionHistoryState extends State<DetectionHistory>
             mostIdentifiedCrop: 'Bell Pepper',
             averageConfidence: 0.91,
           ),
-          
+
           // Search and Filter Section
           Container(
             padding: EdgeInsets.all(4.w),
@@ -368,7 +379,8 @@ class _DetectionHistoryState extends State<DetectionHistory>
                             },
                             icon: CustomIconWidget(
                               iconName: 'clear',
-                              color: AppTheme.lightTheme.colorScheme.onSurfaceVariant,
+                              color: AppTheme
+                                  .lightTheme.colorScheme.onSurfaceVariant,
                               size: 20,
                             ),
                           )
@@ -385,9 +397,9 @@ class _DetectionHistoryState extends State<DetectionHistory>
                     ),
                   ),
                 ),
-                
+
                 SizedBox(height: 2.h),
-                
+
                 // Filter Options
                 FilterOptionsWidget(
                   selectedDateRange: _selectedDateRange,
@@ -412,7 +424,7 @@ class _DetectionHistoryState extends State<DetectionHistory>
               ],
             ),
           ),
-          
+
           // Main Content
           Expanded(
             child: _isCalendarView
@@ -423,7 +435,7 @@ class _DetectionHistoryState extends State<DetectionHistory>
           ),
         ],
       ),
-      
+
       // Floating Action Menu for Selection Mode
       floatingActionButton: _isSelectionMode && _selectedCards.isNotEmpty
           ? Column(
@@ -552,7 +564,7 @@ class _DetectionHistoryState extends State<DetectionHistory>
         itemBuilder: (context, index) {
           final detection = filteredHistory[index];
           final isSelected = _selectedCards.contains(detection['id']);
-          
+
           return DetectionCardWidget(
             detection: detection,
             isSelectionMode: _isSelectionMode,
@@ -584,7 +596,8 @@ class _DetectionHistoryState extends State<DetectionHistory>
             onShare: () {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text('Sharing ${detection['cropName']} detection...'),
+                  content:
+                      Text('Sharing ${detection['cropName']} detection...'),
                 ),
               );
             },
@@ -593,7 +606,8 @@ class _DetectionHistoryState extends State<DetectionHistory>
                 context: context,
                 builder: (context) => AlertDialog(
                   title: Text('Delete Detection'),
-                  content: Text('Are you sure you want to delete this detection record?'),
+                  content: Text(
+                      'Are you sure you want to delete this detection record?'),
                   actions: [
                     TextButton(
                       onPressed: () => Navigator.pop(context),
@@ -602,8 +616,8 @@ class _DetectionHistoryState extends State<DetectionHistory>
                     TextButton(
                       onPressed: () {
                         setState(() {
-                          _detectionHistory.removeWhere((item) => 
-                            item['id'] == detection['id']);
+                          _detectionHistory.removeWhere(
+                              (item) => item['id'] == detection['id']);
                         });
                         Navigator.pop(context);
                         ScaffoldMessenger.of(context).showSnackBar(

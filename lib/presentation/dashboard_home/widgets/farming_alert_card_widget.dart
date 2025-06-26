@@ -40,7 +40,7 @@ class FarmingAlertCardWidget extends StatelessWidget {
               ? null
               : [
                   BoxShadow(
-                    color: _getPriorityColor(priority).withValues(alpha: 0.1),
+                    color: _getPriorityColor(priority).withValues(alpha: 0.6),
                     blurRadius: 4.0,
                     offset: Offset(0, 2),
                   ),
@@ -136,6 +136,7 @@ class FarmingAlertCardWidget extends StatelessWidget {
                               AppTheme.lightTheme.colorScheme.onSurfaceVariant,
                         ),
                       ),
+                      // Read status indicator
                       if (!isRead)
                         Container(
                           width: 8,
