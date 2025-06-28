@@ -16,7 +16,6 @@ class WeatherDashboard extends StatefulWidget {
 
 class _WeatherDashboardState extends State<WeatherDashboard> {
   bool _isRefreshing = false;
-  int _selectedBottomNavIndex = 1; // Weather tab active
 
   // Mock weather data
   final Map<String, dynamic> _currentWeather = {
@@ -407,94 +406,6 @@ class _WeatherDashboardState extends State<WeatherDashboard> {
             ],
           ),
         ),
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedBottomNavIndex,
-        type: BottomNavigationBarType.fixed,
-        backgroundColor: AppTheme.lightTheme.colorScheme.surface,
-        selectedItemColor: AppTheme.lightTheme.colorScheme.primary,
-        unselectedItemColor:
-            AppTheme.lightTheme.colorScheme.onSurface.withValues(alpha: 0.6),
-        onTap: (index) {
-          setState(() {
-            _selectedBottomNavIndex = index;
-          });
-
-          switch (index) {
-            case 0:
-              Navigator.pushNamed(context, '/dashboard-home');
-              break;
-            case 1:
-              // Already on weather dashboard
-              break;
-            case 2:
-              Navigator.pushNamed(context, '/crop-scanner-camera');
-              break;
-            case 3:
-              Navigator.pushNamed(context, '/detection-history');
-              break;
-            case 4:
-              Navigator.pushNamed(context, '/user-profile-settings');
-              break;
-          }
-        },
-        items: [
-          BottomNavigationBarItem(
-            icon: CustomIconWidget(
-              iconName: 'home',
-              color: _selectedBottomNavIndex == 0
-                  ? AppTheme.lightTheme.colorScheme.primary
-                  : AppTheme.lightTheme.colorScheme.onSurface
-                      .withValues(alpha: 0.6),
-              size: 24,
-            ),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: CustomIconWidget(
-              iconName: 'wb_sunny',
-              color: _selectedBottomNavIndex == 1
-                  ? AppTheme.lightTheme.colorScheme.primary
-                  : AppTheme.lightTheme.colorScheme.onSurface
-                      .withValues(alpha: 0.6),
-              size: 24,
-            ),
-            label: 'Weather',
-          ),
-          BottomNavigationBarItem(
-            icon: CustomIconWidget(
-              iconName: 'camera_alt',
-              color: _selectedBottomNavIndex == 2
-                  ? AppTheme.lightTheme.colorScheme.primary
-                  : AppTheme.lightTheme.colorScheme.onSurface
-                      .withValues(alpha: 0.6),
-              size: 24,
-            ),
-            label: 'Scan',
-          ),
-          BottomNavigationBarItem(
-            icon: CustomIconWidget(
-              iconName: 'history',
-              color: _selectedBottomNavIndex == 3
-                  ? AppTheme.lightTheme.colorScheme.primary
-                  : AppTheme.lightTheme.colorScheme.onSurface
-                      .withValues(alpha: 0.6),
-              size: 24,
-            ),
-            label: 'History',
-          ),
-          BottomNavigationBarItem(
-            icon: CustomIconWidget(
-              iconName: 'person',
-              color: _selectedBottomNavIndex == 4
-                  ? AppTheme.lightTheme.colorScheme.primary
-                  : AppTheme.lightTheme.colorScheme.onSurface
-                      .withValues(alpha: 0.6),
-              size: 24,
-            ),
-            label: 'Profile',
-          ),
-        ],
       ),
     );
   }

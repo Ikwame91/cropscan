@@ -82,7 +82,7 @@ class RecentDetectionCardWidget extends StatelessWidget {
                           color: _getConfidenceColor(confidence),
                           size: 16,
                         ),
-                        SizedBox(width: 1.w),
+                        SizedBox(width: 1.3.w),
                         Flexible(
                           child: Text(
                             '${confidence.toStringAsFixed(1)}%',
@@ -95,7 +95,7 @@ class RecentDetectionCardWidget extends StatelessWidget {
                         ),
                       ],
                     ),
-                    SizedBox(height: 1.h),
+                    SizedBox(height: 1.3.h),
 
                     // Status
                     Container(
@@ -114,6 +114,7 @@ class RecentDetectionCardWidget extends StatelessWidget {
                         ),
                       ),
                     ),
+                    SizedBox(height: 1.3.h),
 
                     // Time ago
                     Text(

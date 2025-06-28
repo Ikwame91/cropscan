@@ -1,3 +1,8 @@
+import 'package:cropscan_pro/presentation/alert_screen/alert_screen.dart';
+import 'package:cropscan_pro/presentation/crop_detection_results/crop_detection_results.dart';
+import 'package:cropscan_pro/presentation/crop_scanner_camera/crop_scanner_camera.dart';
+import 'package:cropscan_pro/presentation/user_profile_settings/user_profile_settings.dart';
+import 'package:cropscan_pro/presentation/weather_dashboard/weather_dashboard.dart';
 import 'package:flutter/material.dart';
 import 'package:sizer/sizer.dart';
 
@@ -106,24 +111,6 @@ class _DashboardHomeState extends State<DashboardHome>
     setState(() {
       _currentIndex = index;
     });
-
-    switch (index) {
-      case 0:
-        // Already on home
-        break;
-      case 1:
-        Navigator.pushNamed(context, '/crop-scanner-camera');
-        break;
-      case 2:
-        Navigator.pushNamed(context, '/weather-dashboard');
-        break;
-      case 3:
-        // Show alerts section
-        break;
-      case 4:
-        Navigator.pushNamed(context, '/user-profile-settings');
-        break;
-    }
   }
 
   void _onDetectionCardTap(Map<String, dynamic> detection) {
@@ -250,7 +237,7 @@ class _DashboardHomeState extends State<DashboardHome>
                       ),
                       SizedBox(height: 2.h),
                       SizedBox(
-                        height: 30.h,
+                        height: 31.h,
                         child: ListView.separated(
                           scrollDirection: Axis.horizontal,
                           itemCount: recentDetections.length,
@@ -367,102 +354,6 @@ class _DashboardHomeState extends State<DashboardHome>
             ],
           ),
         ),
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => Navigator.pushNamed(context, '/crop-scanner-camera'),
-        backgroundColor: AppTheme.lightTheme.colorScheme.primary,
-        foregroundColor: AppTheme.lightTheme.colorScheme.onPrimary,
-        icon: CustomIconWidget(
-          iconName: 'camera_alt',
-          color: AppTheme.lightTheme.colorScheme.onPrimary,
-          size: 24,
-        ),
-        label: Text(
-          'Scan Crop',
-          style: AppTheme.lightTheme.textTheme.labelLarge?.copyWith(
-            color: AppTheme.lightTheme.colorScheme.onPrimary,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: _onTabTapped,
-        type: BottomNavigationBarType.shifting,
-        backgroundColor: AppTheme.lightTheme.colorScheme.surface,
-        selectedItemColor: AppTheme.lightTheme.colorScheme.primary,
-        unselectedItemColor: AppTheme.lightTheme.colorScheme.onSurfaceVariant,
-        items: [
-          BottomNavigationBarItem(
-            icon: CustomIconWidget(
-              iconName: 'home',
-              color: _currentIndex == 0
-                  ? AppTheme.lightTheme.colorScheme.primary
-                  : AppTheme.lightTheme.colorScheme.onSurfaceVariant,
-              size: 24,
-            ),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: CustomIconWidget(
-              iconName: 'camera_alt',
-              color: _currentIndex == 1
-                  ? AppTheme.lightTheme.colorScheme.primary
-                  : AppTheme.lightTheme.colorScheme.onSurfaceVariant,
-              size: 24,
-            ),
-            label: 'Scan',
-          ),
-          BottomNavigationBarItem(
-            icon: CustomIconWidget(
-              iconName: 'wb_sunny',
-              color: _currentIndex == 2
-                  ? AppTheme.lightTheme.colorScheme.primary
-                  : AppTheme.lightTheme.colorScheme.onSurfaceVariant,
-              size: 24,
-            ),
-            label: 'Weather',
-          ),
-          BottomNavigationBarItem(
-            icon: Stack(
-              children: [
-                CustomIconWidget(
-                  iconName: 'notifications',
-                  color: _currentIndex == 3
-                      ? AppTheme.lightTheme.colorScheme.primary
-                      : AppTheme.lightTheme.colorScheme.onSurfaceVariant,
-                  size: 24,
-                ),
-                if (farmingAlerts
-                    .where((alert) => !(alert["isRead"] as bool))
-                    .isNotEmpty)
-                  Positioned(
-                    right: 0,
-                    top: 0,
-                    child: Container(
-                      width: 8,
-                      height: 8,
-                      decoration: BoxDecoration(
-                        color: AppTheme.lightTheme.colorScheme.error,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-            label: 'Alerts',
-          ),
-          BottomNavigationBarItem(
-            icon: CustomIconWidget(
-              iconName: 'person',
-              color: _currentIndex == 4
-                  ? AppTheme.lightTheme.colorScheme.primary
-                  : AppTheme.lightTheme.colorScheme.onSurfaceVariant,
-              size: 24,
-            ),
-            label: 'Profile',
-          ),
-        ],
       ),
     );
   }
