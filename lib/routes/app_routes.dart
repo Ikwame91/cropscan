@@ -1,4 +1,4 @@
-import 'package:cropscan_pro/presentation/alert_screen/alert_screen.dart';
+import 'package:cropscan_pro/presentation/alert_screen/cropscreen.dart';
 import 'package:cropscan_pro/presentation/mainscreen.dart';
 import 'package:flutter/material.dart';
 import '../presentation/dashboard_home/dashboard_home.dart';
@@ -17,7 +17,7 @@ class AppRoutes {
   static const String weatherDashboard = '/weather-dashboard';
   static const String detectionHistory = '/detection-history';
   static const String userProfileSettings = '/user-profile-settings';
-  static const String alertScreen = '/alert-screen';
+  static const String cropscreen = '/cropscreen';
 
   static Map<String, WidgetBuilder> routes = {
     initial: (context) => const MainScreen(),
@@ -26,7 +26,7 @@ class AppRoutes {
     cropDetectionResults: (context) => const CropDetectionResults(),
     weatherDashboard: (context) => const WeatherDashboard(),
     detectionHistory: (context) => const DetectionHistory(),
-    alertScreen: (context) => const AlertScreen(),
+    cropscreen: (context) => const CropScreen(),
     userProfileSettings: (context) => const UserProfileSettings(),
   };
 }

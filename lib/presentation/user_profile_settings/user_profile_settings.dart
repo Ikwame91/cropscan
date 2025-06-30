@@ -17,13 +17,12 @@ class UserProfileSettings extends StatefulWidget {
 class _UserProfileSettingsState extends State<UserProfileSettings> {
   // Mock user data
   final Map<String, dynamic> userData = {
-    "name": "John Martinez",
-    "location": "California, USA",
-    "farmSize": "25 acres",
-    "avatar":
-        "https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
-    "email": "john.martinez@farm.com",
-    "phone": "+1 (555) 123-4567",
+    "name": "Bryan Sackey",
+    "location": "Ayedusase Village, Ghana",
+    "farmSize": "aura Farming",
+    "avatar": "assets/images/B_farmer.jpg",
+    "email": "bryansackey@gmail.com",
+    "phone": "+233 556-789-012",
     "experienceLevel": "Intermediate",
     "farmType": "Mixed Crops",
     "cropInterests": ["Tomatoes", "Bell Peppers", "Maize"]
@@ -51,14 +50,6 @@ class _UserProfileSettingsState extends State<UserProfileSettings> {
         ),
         backgroundColor: AppTheme.lightTheme.colorScheme.surface,
         elevation: 0,
-        leading: IconButton(
-          onPressed: () => Navigator.pop(context),
-          icon: CustomIconWidget(
-            iconName: 'arrow_back',
-            color: AppTheme.lightTheme.colorScheme.onSurface,
-            size: 24,
-          ),
-        ),
       ),
       body: SingleChildScrollView(
         padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 2.h),

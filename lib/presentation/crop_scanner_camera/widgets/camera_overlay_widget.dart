@@ -57,10 +57,11 @@ class CameraOverlayWidget extends StatelessWidget {
                 onPressed: onClose,
               ),
               Text(
-                'CropScan Pro',
+                'CropScan',
                 style: AppTheme.lightTheme.textTheme.titleMedium?.copyWith(
                   color: Colors.white,
                   fontWeight: FontWeight.w600,
+                  fontSize: 25.sp,
                 ),
               ),
               _buildTopButton(

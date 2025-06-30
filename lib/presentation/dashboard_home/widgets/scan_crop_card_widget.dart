@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:sizer/sizer.dart';
 
 import '../../../core/app_export.dart';
@@ -58,20 +59,22 @@ class ScanCropCardWidget extends StatelessWidget {
             SizedBox(height: 3.h),
 
             // Title and description
-            Text(
-              'Scan Your Crop',
-              style: AppTheme.lightTheme.textTheme.titleLarge?.copyWith(
-                color: AppTheme.lightTheme.colorScheme.onSecondary,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+            Text('Scan Your Crop',
+                style: GoogleFonts.poppins(
+                  textStyle: AppTheme.lightTheme.textTheme.titleLarge?.copyWith(
+                    color: AppTheme.lightTheme.colorScheme.onSecondary,
+                    fontWeight: FontWeight.bold,
+                  ),
+                )),
             SizedBox(height: 1.h),
             Text(
               'Use AI-powered detection to identify crops, diseases, and get farming insights',
               textAlign: TextAlign.center,
-              style: AppTheme.lightTheme.textTheme.bodyMedium?.copyWith(
+              style: GoogleFonts.poppins(
+                textStyle: AppTheme.lightTheme.textTheme.bodyMedium,
+              ).copyWith(
                 color: AppTheme.lightTheme.colorScheme.onSecondary
-                    .withValues(alpha: 0.9),
+                    .withValues(alpha: 0.8),
               ),
             ),
             SizedBox(height: 3.h),

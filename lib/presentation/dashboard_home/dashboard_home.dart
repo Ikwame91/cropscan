@@ -1,9 +1,10 @@
-import 'package:cropscan_pro/presentation/alert_screen/alert_screen.dart';
+import 'package:cropscan_pro/presentation/alert_screen/cropscreen.dart';
 import 'package:cropscan_pro/presentation/crop_detection_results/crop_detection_results.dart';
 import 'package:cropscan_pro/presentation/crop_scanner_camera/crop_scanner_camera.dart';
 import 'package:cropscan_pro/presentation/user_profile_settings/user_profile_settings.dart';
 import 'package:cropscan_pro/presentation/weather_dashboard/weather_dashboard.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:sizer/sizer.dart';
 
 import '../../core/app_export.dart';
@@ -221,17 +222,27 @@ class _DashboardHomeState extends State<DashboardHome>
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(
-                            'Recent Detections',
-                            style: AppTheme.lightTheme.textTheme.titleLarge
-                                ?.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
+                          Text('Recent Detections',
+                              style: GoogleFonts.poppins(
+                                textStyle: AppTheme
+                                    .lightTheme.textTheme.titleLarge
+                                    ?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              )),
                           TextButton(
                             onPressed: () => Navigator.pushNamed(
                                 context, '/detection-history'),
-                            child: Text('View All'),
+                            child: Text(
+                              'View All',
+                              style: GoogleFonts.poppins(
+                                textStyle: AppTheme
+                                    .lightTheme.textTheme.bodyMedium
+                                    ?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
                           ),
                         ],
                       ),
@@ -284,12 +295,14 @@ class _DashboardHomeState extends State<DashboardHome>
                             Text(
                               'Use AI-powered detection to identify your crops and get farming insights',
                               textAlign: TextAlign.center,
-                              style: AppTheme.lightTheme.textTheme.bodyMedium
-                                  ?.copyWith(
+                              style: GoogleFonts.poppins(
+                                textStyle:
+                                    AppTheme.lightTheme.textTheme.bodyMedium,
+                              ).copyWith(
                                 color: AppTheme
                                     .lightTheme.colorScheme.onSurfaceVariant,
                               ),
-                            ),
+                            )
                           ],
                         ),
                       ),

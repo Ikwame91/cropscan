@@ -8,8 +8,9 @@ import 'package:flutter/material.dart';
 import 'package:cropscan_pro/presentation/dashboard_home/dashboard_home.dart'; // This is your refactored Home screen
 import 'package:cropscan_pro/presentation/crop_scanner_camera/crop_scanner_camera.dart';
 import 'package:cropscan_pro/presentation/weather_dashboard/weather_dashboard.dart';
-import 'package:cropscan_pro/presentation/alert_screen/alert_screen.dart';
+import 'package:cropscan_pro/presentation/alert_screen/cropscreen.dart';
 import 'package:cropscan_pro/presentation/user_profile_settings/user_profile_settings.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 // Import your general app theme and custom icon widget
 
@@ -71,7 +72,7 @@ class _MainScreenState extends State<MainScreen> {
       const DashboardHome(), // This is your refactored Home screen content
       const CropScannerCamera(),
       const WeatherDashboard(),
-      const AlertScreen(),
+      const CropScreen(),
       const UserProfileSettings(),
     ];
   }
@@ -86,7 +87,6 @@ class _MainScreenState extends State<MainScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.lightTheme.scaffoldBackgroundColor,
-      // The body now dynamically changes based on _currentIndex
       body: SafeArea(
         child: IndexedStack(
           index: _currentIndex,
@@ -100,6 +100,16 @@ class _MainScreenState extends State<MainScreen> {
         backgroundColor: AppTheme.lightTheme.colorScheme.surface,
         selectedItemColor: AppTheme.lightTheme.colorScheme.primary,
         unselectedItemColor: AppTheme.lightTheme.colorScheme.onSurfaceVariant,
+        selectedLabelStyle: GoogleFonts.poppins(
+          fontSize: 14,
+          fontWeight: FontWeight.w600,
+          color: AppTheme.lightTheme.colorScheme.primary,
+        ),
+        unselectedLabelStyle: GoogleFonts.poppins(
+          fontSize: 14,
+          fontWeight: FontWeight.w500,
+          color: Colors.black,
+        ),
         items: [
           BottomNavigationBarItem(
             icon: CustomIconWidget(
@@ -132,35 +142,46 @@ class _MainScreenState extends State<MainScreen> {
             label: 'Weather',
           ),
           BottomNavigationBarItem(
-            icon: Stack(
-              children: [
-                CustomIconWidget(
-                  iconName: 'notifications',
-                  color: _currentIndex == 3
-                      ? AppTheme.lightTheme.colorScheme.primary
-                      : AppTheme.lightTheme.colorScheme.onSurfaceVariant,
-                  size: 24,
-                ),
-                // Badge for unread alerts
-                if (farmingAlerts
-                    .where((alert) => !(alert["isRead"] as bool))
-                    .isNotEmpty)
-                  Positioned(
-                    right: 0,
-                    top: 0,
-                    child: Container(
-                      width: 8,
-                      height: 8,
-                      decoration: BoxDecoration(
-                        color: AppTheme.lightTheme.colorScheme.error,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                  ),
-              ],
+            icon: CustomIconWidget(
+              iconName: 'local_florist',
+              color: _currentIndex == 3
+                  ? AppTheme.lightTheme.colorScheme.primary
+                  : AppTheme.lightTheme.colorScheme.onSurfaceVariant,
+              size: 24,
             ),
-            label: 'Alerts',
+            label: 'My Crops',
           ),
+
+          // BottomNavigationBarItem(
+          //   icon: Stack(
+          //     children: [
+          //       CustomIconWidget(
+          //         iconName: 'notifications',
+          //         color: _currentIndex == 3
+          //             ? AppTheme.lightTheme.colorScheme.primary
+          //             : AppTheme.lightTheme.colorScheme.onSurfaceVariant,
+          //         size: 24,
+          //       ),
+          //       // Badge for unread alerts
+          //       if (farmingAlerts
+          //           .where((alert) => !(alert["isRead"] as bool))
+          //           .isNotEmpty)
+          //         Positioned(
+          //           right: 0,
+          //           top: 0,
+          //           child: Container(
+          //             width: 8,
+          //             height: 8,
+          //             decoration: BoxDecoration(
+          //               color: AppTheme.lightTheme.colorScheme.error,
+          //               shape: BoxShape.circle,
+          //             ),
+          //           ),
+          //         ),
+          //     ],
+          //   ),
+          //   label: 'Alerts',
+          // ),
           BottomNavigationBarItem(
             icon: CustomIconWidget(
               iconName: 'person',
