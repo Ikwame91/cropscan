@@ -231,8 +231,8 @@ class _DashboardHomeState extends State<DashboardHome>
                                 ),
                               )),
                           TextButton(
-                            onPressed: () => Navigator.pushNamed(
-                                context, '/detection-history'),
+                            onPressed: () =>
+                                Navigator.pushNamed(context, '/cropscreen'),
                             child: Text(
                               'View All',
                               style: GoogleFonts.poppins(

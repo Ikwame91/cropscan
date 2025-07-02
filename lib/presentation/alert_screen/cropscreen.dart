@@ -102,154 +102,158 @@ class _CropScreenState extends State<CropScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Padding(
-          padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 2.h),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text('My Crops',
-                      style: GoogleFonts.poppins(
-                        textStyle: AppTheme.lightTheme.textTheme.headlineMedium
-                            ?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: AppTheme.lightTheme.colorScheme.onSurface,
+    return Scaffold(
+      body: Column(
+        children: [
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 2.h),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('My Crops',
+                        style: GoogleFonts.poppins(
+                          textStyle: AppTheme
+                              .lightTheme.textTheme.headlineMedium
+                              ?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: AppTheme.lightTheme.colorScheme.onSurface,
+                          ),
+                        )),
+                    GestureDetector(
+                      onTap: () {
+                        // Handle add new crop action
+                        print('Add new crop field');
+                      },
+                      child: Container(
+                        padding: EdgeInsets.all(1.w),
+                        decoration: BoxDecoration(
+                          color: AppTheme.lightTheme.colorScheme.primary,
+                          shape: BoxShape.circle,
                         ),
-                      )),
-                  GestureDetector(
-                    onTap: () {
-                      // Handle add new crop action
-                      print('Add new crop field');
-                    },
-                    child: Container(
-                      padding: EdgeInsets.all(1.w),
-                      decoration: BoxDecoration(
-                        color: AppTheme.lightTheme.colorScheme.primary,
-                        shape: BoxShape.circle,
-                      ),
-                      child: CustomIconWidget(
-                        iconName: 'add',
-                        color: AppTheme.lightTheme.colorScheme.onPrimary,
-                        size: 20,
+                        child: CustomIconWidget(
+                          iconName: 'add',
+                          color: AppTheme.lightTheme.colorScheme.onPrimary,
+                          size: 20,
+                        ),
                       ),
                     ),
-                  ),
-                ],
-              ),
-              SizedBox(height: 2.h),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  _buildStatItem('$_healthyCropsCount', 'Healthy Crops'),
-                  _buildStatItem(
-                      '$_attentionNeededCropsCount', 'Need Attention',
-                      color: AppTheme.lightTheme.colorScheme.error),
-                ],
-              ),
-            ],
-          ),
-        ),
-
-        // Horizontal filter tabs
-        Container(
-          height: 6.h,
-          padding: EdgeInsets.symmetric(horizontal: 3.5.w),
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            itemCount: _cropTypes.length,
-            separatorBuilder: (context, index) => SizedBox(width: 2.w),
-            itemBuilder: (context, index) {
-              final cropType = _cropTypes[index];
-              final isSelected = _selectedCropType == cropType;
-              return ChoiceChip(
-                label: Text(
-                  cropType,
-                  style: AppTheme.lightTheme.textTheme.labelLarge?.copyWith(
-                    color: isSelected
-                        ? AppTheme.lightTheme.colorScheme.onPrimary
-                        : AppTheme.lightTheme.colorScheme.onSurfaceVariant,
-                    fontWeight:
-                        isSelected ? FontWeight.bold : FontWeight.normal,
-                  ),
+                  ],
                 ),
-                selected: isSelected,
-                selectedColor: AppTheme.lightTheme.colorScheme.primary,
-                backgroundColor: AppTheme.lightTheme.colorScheme.surface,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                  side: BorderSide(
-                    color: isSelected
-                        ? AppTheme.lightTheme.colorScheme.primary
-                        : AppTheme.lightTheme.dividerColor,
-                  ),
+                SizedBox(height: 2.h),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    _buildStatItem('$_healthyCropsCount', 'Healthy Crops'),
+                    _buildStatItem(
+                        '$_attentionNeededCropsCount', 'Need Attention',
+                        color: AppTheme.lightTheme.colorScheme.error),
+                  ],
                 ),
-                onSelected: (selected) {
-                  if (selected) {
-                    setState(() {
-                      _selectedCropType = cropType;
-                    });
-                  }
-                },
-                padding: EdgeInsets.symmetric(horizontal: 4.w),
-              );
-            },
+              ],
+            ),
           ),
-        ),
 
-        SizedBox(height: 2.h),
-
-        // List of Crop Cards (Filtered)
-        Expanded(
-          child: _filteredCrops.isEmpty
-              ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      CustomIconWidget(
-                        iconName: 'eco', // Or a more relevant icon
-                        color: AppTheme.lightTheme.colorScheme.onSurfaceVariant,
-                        size: 60,
-                      ),
-                      SizedBox(height: 2.h),
-                      Text(
-                        'No crops of this type found.',
-                        style:
-                            AppTheme.lightTheme.textTheme.titleMedium?.copyWith(
-                          color:
-                              AppTheme.lightTheme.colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                      Text(
-                        'Try selecting "All Crops" or add a new crop field.',
-                        textAlign: TextAlign.center,
-                        style:
-                            AppTheme.lightTheme.textTheme.bodyMedium?.copyWith(
-                          color:
-                              AppTheme.lightTheme.colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                    ],
+          // Horizontal filter tabs
+          Container(
+            height: 6.h,
+            padding: EdgeInsets.symmetric(horizontal: 3.5.w),
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              itemCount: _cropTypes.length,
+              separatorBuilder: (context, index) => SizedBox(width: 2.w),
+              itemBuilder: (context, index) {
+                final cropType = _cropTypes[index];
+                final isSelected = _selectedCropType == cropType;
+                return ChoiceChip(
+                  label: Text(
+                    cropType,
+                    style: AppTheme.lightTheme.textTheme.labelLarge?.copyWith(
+                      color: isSelected
+                          ? AppTheme.lightTheme.colorScheme.onPrimary
+                          : AppTheme.lightTheme.colorScheme.onSurfaceVariant,
+                      fontWeight:
+                          isSelected ? FontWeight.bold : FontWeight.normal,
+                    ),
                   ),
-                )
-              : ListView.builder(
-                  padding: EdgeInsets.symmetric(horizontal: 4.w),
-                  itemCount: _filteredCrops.length,
-                  itemBuilder: (context, index) {
-                    final crop = _filteredCrops[index];
-                    return Padding(
-                      padding:
-                          EdgeInsets.only(bottom: 2.h), // Spacing between cards
-                      child: CropCard(
-                          crop: crop), // Use a separate CropCard widget
-                    );
+                  selected: isSelected,
+                  selectedColor: AppTheme.lightTheme.colorScheme.primary,
+                  backgroundColor: AppTheme.lightTheme.colorScheme.surface,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                    side: BorderSide(
+                      color: isSelected
+                          ? AppTheme.lightTheme.colorScheme.primary
+                          : AppTheme.lightTheme.dividerColor,
+                    ),
+                  ),
+                  onSelected: (selected) {
+                    if (selected) {
+                      setState(() {
+                        _selectedCropType = cropType;
+                      });
+                    }
                   },
-                ),
-        ),
-      ],
+                  padding: EdgeInsets.symmetric(horizontal: 4.w),
+                );
+              },
+            ),
+          ),
+
+          SizedBox(height: 2.h),
+
+          // List of Crop Cards (Filtered)
+          Expanded(
+            child: _filteredCrops.isEmpty
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        CustomIconWidget(
+                          iconName: 'eco', // Or a more relevant icon
+                          color:
+                              AppTheme.lightTheme.colorScheme.onSurfaceVariant,
+                          size: 60,
+                        ),
+                        SizedBox(height: 2.h),
+                        Text(
+                          'No crops of this type found.',
+                          style: AppTheme.lightTheme.textTheme.titleMedium
+                              ?.copyWith(
+                            color: AppTheme
+                                .lightTheme.colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                        Text(
+                          'Try selecting "All Crops" or add a new crop field.',
+                          textAlign: TextAlign.center,
+                          style: AppTheme.lightTheme.textTheme.bodyMedium
+                              ?.copyWith(
+                            color: AppTheme
+                                .lightTheme.colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                : ListView.builder(
+                    padding: EdgeInsets.symmetric(horizontal: 4.w),
+                    itemCount: _filteredCrops.length,
+                    itemBuilder: (context, index) {
+                      final crop = _filteredCrops[index];
+                      return Padding(
+                        padding: EdgeInsets.only(
+                            bottom: 2.h), // Spacing between cards
+                        child: CropCard(
+                            crop: crop), // Use a separate CropCard widget
+                      );
+                    },
+                  ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -274,38 +278,3 @@ class _CropScreenState extends State<CropScreen> {
     );
   }
 }
-
-
-// --- Separate Widget: CropCard ---
-// It's highly recommended to extract the repeating card UI into its own widget
-// for better readability, reusability, and maintainability.
-// File: lib/presentation/my_crops_screen/widgets/crop_card.dart (create this file)
-
-
-
-// --- REMINDER: Update your main_screen.dart to include this new tab ---
-/*
-// In lib/screens/main_screen.dart
-import 'package:cropscan_pro/presentation/my_crops_screen/my_crops_screen.dart'; // Import it
-
-// In _MainScreenState's initState:
-_screens = [
-  const DashboardHome(),
-  const CropScannerCamera(),
-  const WeatherDashboard(),
-  const AlertScreen(),
-  const MyCropsScreen(), // Add this here, assuming it's the 4th tab (index 4)
-];
-
-// And update your BottomNavigationBarItem for 'My Crops' accordingly
-BottomNavigationBarItem(
-  icon: CustomIconWidget(
-    iconName: 'spa', // Or 'my_crops' if you have a custom icon
-    color: _currentIndex == 4
-        ? AppTheme.lightTheme.colorScheme.primary
-        : AppTheme.lightTheme.colorScheme.onSurfaceVariant,
-    size: 24,
-  ),
-  label: 'My Crops',
-),
-*/

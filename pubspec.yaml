@@ -1,29 +1,34 @@
 name: cropscan_pro
 description: A new Flutter project.
 version: 1.0.0+1
-environment: 
+environment:
   sdk: ^3.6.0
-dependencies: 
-  flutter: 
-    sdk: flutter
+dependencies:
   cached_network_image: ^3.3.1
-  flutter_svg: ^2.0.9
-  shared_preferences: ^2.2.2
+  camera: ^0.11.1
   connectivity_plus: ^5.0.2
+  cupertino_icons: ^1.0.8
   dio: ^5.4.0
-  fluttertoast: ^8.2.4
-  sizer: ^2.0.15
   fl_chart: ^0.65.0
-  google_fonts: ^6.1.0
-  camera: ^0.10.5+5
-  permission_handler: ^11.0.1
-  web: any
-dev_dependencies: 
-  flutter_test: 
+  flutter:
     sdk: flutter
+  flutter_svg: ^2.0.9
+  fluttertoast: ^8.2.4
+  google_fonts: ^6.1.0
+  image_picker: ^1.1.2
+  path: ^1.9.1
+  path_provider: ^2.1.5
+  permission_handler: ^11.0.1
+  provider: ^6.1.5
+  shared_preferences: ^2.2.2
+  sizer: ^2.0.15
+  web: any
+dev_dependencies:
   flutter_lints: ^5.0.0
-flutter: 
+  flutter_test:
+    sdk: flutter
+flutter:
   uses-material-design: true
-  assets: 
+  assets:
     - assets/
     - assets/images/

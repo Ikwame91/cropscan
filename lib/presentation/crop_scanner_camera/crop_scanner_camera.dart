@@ -1,7 +1,9 @@
+import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:sizer/sizer.dart';
-
 import '../../core/app_export.dart';
 import './widgets/camera_overlay_widget.dart';
 import './widgets/camera_preview_widget.dart';
@@ -17,11 +19,16 @@ class CropScannerCamera extends StatefulWidget {
 
 class _CropScannerCameraState extends State<CropScannerCamera>
     with TickerProviderStateMixin {
+  CameraController? _cameraController;
+  List<CameraDescription>? _cameras;
+  int _selectedCameraIndex = 0;
   bool _isFlashOn = false;
   bool _isProcessing = false;
   bool _isFrontCamera = false;
-  double _zoomLevel = 1.0;
-  bool _hasPermission = true;
+  double _currentzoomLevel = 1.0;
+  double _minZoomLevel = 1.0;
+  double _maxZoomLevel = 1.0;
+  bool _hasPermission = false;
   bool _showDetectionFeedback = false;
   String _detectedCrop = '';
   double _confidence = 0.0;
@@ -54,22 +61,11 @@ class _CropScannerCameraState extends State<CropScannerCamera>
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this as WidgetsBindingObserver);
     _initializeAnimations();
     _lockOrientation();
-    _checkCameraPermission();
+    _initilizeCamera();
   }
-
-  // bool _hasPrecachedImage = false;
-
-  // @override
-  // void didChangeDependencies() {
-  //   super.didChangeDependencies();
-
-  //   if (!_hasPrecachedImage) {
-  //     precacheImage(const AssetImage('assets/images/soil.jpg'), context);
-  //     _hasPrecachedImage = true; // make sure it only runs once
-  //   }
-  // }
 
   void _initializeAnimations() {
     _focusAnimationController = AnimationController(
@@ -105,88 +101,232 @@ class _CropScannerCameraState extends State<CropScannerCamera>
     ]);
   }
 
-  void _checkCameraPermission() {
-    // Mock permission check - in real app, use permission_handler package
-    setState(() {
-      _hasPermission = true;
-    });
+  Future<void> _initilizeCamera() async {
+    //requesting camera and gallery permissions
+    final cameraStatus = await Permission.camera.request();
+    final galleryStatus = await Permission.photos.request();
+
+    if (cameraStatus.isGranted && galleryStatus.isGranted) {
+      setState(() {
+        _hasPermission = true;
+      });
+      _cameras = await availableCameras();
+      if (_cameras != null && _cameras!.isNotEmpty) {
+        _selectedCameraIndex = _cameras!.indexWhere(
+            (camera) => camera.lensDirection == CameraLensDirection.back);
+        if (_selectedCameraIndex == -1) {
+          _selectedCameraIndex = 0;
+        }
+        await _setupCameraController(_selectedCameraIndex);
+      } else {
+        setState(() {
+          _hasPermission = false;
+        });
+      }
+    } else {
+      setState(() {
+        _hasPermission = false;
+      });
+      _showPermissionDeniedDialog();
+    }
   }
 
-  void _toggleFlash() {
+  Future _setupCameraController(int cameraIndex) async {
+    if (_cameraController != null) {
+      await _cameraController!.dispose();
+    }
+    _cameraController = CameraController(
+      _cameras![cameraIndex],
+      ResolutionPreset.high,
+      enableAudio: false,
+    );
+
+    try {
+      await _cameraController!.initialize();
+      _minZoomLevel = await _cameraController!.getMaxZoomLevel();
+      _maxZoomLevel = await _cameraController!.getMinZoomLevel();
+
+      setState(() {
+        _currentzoomLevel = 1.0;
+        _isFlashOn = false;
+        _isProcessing = false;
+      });
+      _cameraController!.setFlashMode(FlashMode.off);
+    } on CameraException catch (e) {
+      debugPrint("Error initializing camera:  $e ");
+      setState(() {
+        _hasPermission = false;
+      });
+      _showErrorDialog("Failed to initialize camera. Please try again.");
+    }
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  void _toggleFlash() async {
+    if (_cameraController == null || !_cameraController!.value.isInitialized) {
+      return;
+    }
+    try {
+      final newFlashMode = _isFlashOn ? FlashMode.off : FlashMode.torch;
+      await _cameraController!.setFlashMode(newFlashMode);
+      setState(() {
+        _isFlashOn = !_isFlashOn;
+      });
+      HapticFeedback.lightImpact();
+    } on CameraException catch (e) {
+      debugPrint("error toggling flash: $e");
+      _showErrorDialog("Failed to toggle flash.");
+    }
+  }
+
+  void _flipCamera() async {
+    if (_cameras == null || _cameras!.length < 2) {
+      return;
+    }
+    _selectedCameraIndex = _selectedCameraIndex == 0 ? 1 : 0;
+    await _setupCameraController(_selectedCameraIndex);
     setState(() {
-      _isFlashOn = !_isFlashOn;
+      // _isFrontCamera = !_isFrontCamera;
+      // _currentzoomLevel = 1.0;
+      // _minZoomLevel = 1.0;
+      // _maxZoomLevel = 1.0;
     });
     HapticFeedback.lightImpact();
   }
 
-  void _flipCamera() {
-    setState(() {
-      _isFrontCamera = !_isFrontCamera;
-    });
+  void _showPermissionDeniedDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("Permission Denied"),
+          content: const Text(
+              "Camera and Photo Library permissions are required to use this feature. Please enable them in your app settings."),
+          actions: <Widget>[
+            TextButton(
+              child: const Text("Cancel"),
+              onPressed: () {
+                Navigator.of(context).pop();
+                _closeCamera();
+              },
+            ),
+            TextButton(
+              child: const Text("Open Settings"),
+              onPressed: () {
+                openAppSettings();
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("Error"),
+          content: Text(message),
+          actions: <Widget>[
+            TextButton(
+              child: const Text("OK"),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _onTapToFocus(Offset position) async {
+    if (_cameraController == null || !_cameraController!.value.isInitialized) {
+      return;
+    }
+
+    try {
+      final double normalizedX =
+          position.dx / MediaQuery.of(context).size.width;
+      final double normalizedY =
+          position.dy / MediaQuery.of(context).size.height;
+
+      final Offset adjustedPoint = Offset(normalizedX, normalizedY);
+
+      //set focus and exposure points
+      await _cameraController!.setFocusPoint(adjustedPoint);
+      await _cameraController!.setExposurePoint(adjustedPoint);
+
+      setState(() {
+        _focusPoint = position;
+      });
+
+      _focusAnimationController.forward(from: 0.0).then((_) {
+        _focusAnimationController.reverse();
+        _focusPoint = null;
+      });
+      HapticFeedback.selectionClick();
+    } on CameraException catch (e) {
+      debugPrint("Error setting focus/exposure point: $e");
+    }
+  }
+
+  void _onPinchToZoom(double scale) async {
+    if (_cameraController == null || !_cameraController!.value.isInitialized) {
+      return;
+    }
+
+    try {
+      double newZoomLevel = _currentzoomLevel * scale;
+      newZoomLevel = newZoomLevel.clamp(_minZoomLevel, _maxZoomLevel);
+      await _cameraController!.setZoomLevel(newZoomLevel);
+      setState(() {
+        _currentzoomLevel = newZoomLevel;
+      });
+    } on CameraException catch (e) {
+      debugPrint("Error setting zoom level: $e");
+    }
+  }
+
+  void _captureImage() async {}
+
+  void _openGallery() async {
     HapticFeedback.lightImpact();
-  }
-
-  void _onTapToFocus(Offset position) {
-    setState(() {
-      _focusPoint = position;
-    });
-
-    _focusAnimationController.forward().then((_) {
-      _focusAnimationController.reverse();
-    });
-
-    HapticFeedback.selectionClick();
-  }
-
-  void _onPinchToZoom(double scale) {
-    setState(() {
-      _zoomLevel = (scale * 1.0).clamp(1.0, 3.0);
-    });
-  }
-
-  void _captureImage() async {
     if (_isProcessing) return;
 
     setState(() {
       _isProcessing = true;
-    });
-
-    _captureAnimationController.forward().then((_) {
-      _captureAnimationController.reverse();
-    });
-
-    HapticFeedback.heavyImpact();
-
-    // Simulate ML processing delay
-    await Future.delayed(const Duration(seconds: 2));
-
-    // Mock detection result
-    final detection = _mockDetections[
-        DateTime.now().millisecondsSinceEpoch % _mockDetections.length];
-
-    setState(() {
-      _detectedCrop = detection['crop'];
-      _confidence = detection['confidence'];
-      _showDetectionFeedback = true;
-    });
-
-    // Auto-navigate after confirmation delay
-    await Future.delayed(const Duration(seconds: 2));
-
-    setState(() {
-      _isProcessing = false;
       _showDetectionFeedback = false;
     });
+    final ImagePicker imagePicker = ImagePicker();
+    XFile? image;
+    try {
+      image = await imagePicker.pickImage(source: ImageSource.gallery);
+      if (image != null) {
+        debugPrint("Image selected: ${image.path}");
+        await Future.delayed(const Duration(seconds: 2));
 
-    if (mounted) {
-      Navigator.pushNamed(context, '/crop-detection-results');
-    }
-  }
+        //random detection result
+        final detection = _mockDetections[
+            DateTime.now().millisecondsSinceEpoch % _mockDetections.length];
+        setState(() {
+          _detectedCrop = detection['crop'];
+          _confidence = detection['confidence'];
 
-  void _openGallery() {
-    HapticFeedback.lightImpact();
-    // In real app, implement image picker from gallery
-    Navigator.pushNamed(context, '/crop-detection-results');
+          _showDetectionFeedback = true;
+        });
+        await Future.delayed(const Duration(seconds: 2));
+        setState(() {
+          _isProcessing = false;
+          _showDetectionFeedback = false;
+        });
+      }
+    } catch (e) {}
   }
 
   void _closeCamera() {

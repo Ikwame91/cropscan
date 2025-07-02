@@ -1,6 +1,9 @@
+import 'package:camera/camera.dart';
+import 'package:cropscan_pro/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 
 class CameraPreviewWidget extends StatelessWidget {
+  final CameraController controller;
   final bool isFrontCamera;
   final double zoomLevel;
   final Function(Offset) onTapToFocus;
@@ -8,6 +11,7 @@ class CameraPreviewWidget extends StatelessWidget {
 
   const CameraPreviewWidget({
     super.key,
+    required this.controller,
     required this.isFrontCamera,
     required this.zoomLevel,
     required this.onTapToFocus,
@@ -16,53 +20,90 @@ class CameraPreviewWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Positioned.fill(
-      child: GestureDetector(
-        onTapDown: (details) {
-          final RenderBox renderBox = context.findRenderObject() as RenderBox;
-          final localPosition = renderBox.globalToLocal(details.globalPosition);
-          onTapToFocus(localPosition);
-        },
-        onScaleUpdate: (details) {
-          onPinchToZoom(details.scale);
-        },
-        child: Container(
-          width: double.infinity,
-          height: double.infinity,
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                Colors.green.withValues(alpha: 0.1),
-                Colors.black.withValues(alpha: 0.3),
-                Colors.green.withValues(alpha: 0.1),
-              ],
-            ),
+    if (!controller.value.isInitialized) {
+      return Container(
+        color: Colors.black,
+        child: const Center(
+          child: CircularProgressIndicator(
+            color: AppTheme.accentDark,
           ),
-          child: Stack(
-            children: [
-              // Mock camera preview background
-              Container(
-                width: double.infinity,
-                height: double.infinity,
-                color: Colors.black87,
-                //////////////////////////////////////////phase 1 fix
-                child: Image.asset(
-                  'assets/images/soil.jpg',
-                  fit: BoxFit.cover,
-                ),
-              ),
+        ),
+      );
+    }
+    final size = MediaQuery.of(context).size;
+    final aspectRatio = controller.value.aspectRatio;
 
-              // Crop detection indicators
-              // _buildDetectionIndicators(),
+    Widget cameraChild = CameraPreview(controller);
 
-              // Grid lines for composition
-              // _buildGridLines(),
-            ],
+    //handling zoom transformation
+    cameraChild = Transform.scale(
+      scale: zoomLevel,
+      alignment: Alignment.center,
+      child: Center(
+        child: AspectRatio(
+          aspectRatio: controller.value.aspectRatio,
+          child: cameraChild,
+        ),
+      ),
+    );
+    return GestureDetector(
+      onTapDown: (details) {
+        onTapToFocus.call(details.localPosition);
+      },
+      onScaleUpdate: (details) {
+        onPinchToZoom.call(details.scale);
+      },
+
+      child: ClipRRect(
+        child: SizedBox(
+          width: size.width,
+          height: size.height,
+          child: FittedBox(
+            fit: BoxFit.cover,
+            child: SizedBox(
+              width: size.width,
+              height: size.width / aspectRatio,
+              child: cameraChild,
+            ),
           ),
         ),
       ),
+      // child: Container(
+      //   width: double.infinity,
+      //   height: double.infinity,
+      //   decoration: BoxDecoration(
+      //     gradient: LinearGradient(
+      //       begin: Alignment.topCenter,
+      //       end: Alignment.bottomCenter,
+      //       colors: [
+      //         Colors.green.withValues(alpha: 0.1),
+      //         Colors.black.withValues(alpha: 0.3),
+      //         Colors.green.withValues(alpha: 0.1),
+      //       ],
+      //     ),
+      //   ),
+      //   child: Stack(
+      //     children: [
+      //       // Mock camera preview background
+      //       Container(
+      //         width: double.infinity,
+      //         height: double.infinity,
+      //         color: Colors.black87,
+      //         //////////////////////////////////////////phase 1 fix
+      //         child: Image.asset(
+      //           'assets/images/soil.jpg',
+      //           fit: BoxFit.cover,
+      //         ),
+      //       ),
+
+      //       // Crop detection indicators
+      //       // _buildDetectionIndicators(),
+
+      //       // Grid lines for composition
+      //       // _buildGridLines(),
+      //     ],
+      //   ),
+      // ),
     );
   }
 

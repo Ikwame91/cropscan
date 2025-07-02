@@ -4,15 +4,12 @@ import 'package:cropscan_pro/core/app_export.dart'
     show AppTheme, CustomIconWidget;
 import 'package:flutter/material.dart';
 
-// Import all your main tab screens
 import 'package:cropscan_pro/presentation/dashboard_home/dashboard_home.dart'; // This is your refactored Home screen
 import 'package:cropscan_pro/presentation/crop_scanner_camera/crop_scanner_camera.dart';
 import 'package:cropscan_pro/presentation/weather_dashboard/weather_dashboard.dart';
 import 'package:cropscan_pro/presentation/alert_screen/cropscreen.dart';
 import 'package:cropscan_pro/presentation/user_profile_settings/user_profile_settings.dart';
 import 'package:google_fonts/google_fonts.dart';
-
-// Import your general app theme and custom icon widget
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -151,37 +148,6 @@ class _MainScreenState extends State<MainScreen> {
             ),
             label: 'My Crops',
           ),
-
-          // BottomNavigationBarItem(
-          //   icon: Stack(
-          //     children: [
-          //       CustomIconWidget(
-          //         iconName: 'notifications',
-          //         color: _currentIndex == 3
-          //             ? AppTheme.lightTheme.colorScheme.primary
-          //             : AppTheme.lightTheme.colorScheme.onSurfaceVariant,
-          //         size: 24,
-          //       ),
-          //       // Badge for unread alerts
-          //       if (farmingAlerts
-          //           .where((alert) => !(alert["isRead"] as bool))
-          //           .isNotEmpty)
-          //         Positioned(
-          //           right: 0,
-          //           top: 0,
-          //           child: Container(
-          //             width: 8,
-          //             height: 8,
-          //             decoration: BoxDecoration(
-          //               color: AppTheme.lightTheme.colorScheme.error,
-          //               shape: BoxShape.circle,
-          //             ),
-          //           ),
-          //         ),
-          //     ],
-          //   ),
-          //   label: 'Alerts',
-          // ),
           BottomNavigationBarItem(
             icon: CustomIconWidget(
               iconName: 'person',
