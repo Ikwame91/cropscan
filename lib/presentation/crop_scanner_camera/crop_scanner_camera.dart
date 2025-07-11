@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -18,7 +20,7 @@ class CropScannerCamera extends StatefulWidget {
 }
 
 class _CropScannerCameraState extends State<CropScannerCamera>
-    with TickerProviderStateMixin {
+    with TickerProviderStateMixin, WidgetsBindingObserver {
   CameraController? _cameraController;
   List<CameraDescription>? _cameras;
   int _selectedCameraIndex = 0;
@@ -44,24 +46,21 @@ class _CropScannerCameraState extends State<CropScannerCamera>
     {
       'crop': 'Bell Pepper',
       'confidence': 0.92,
-      'position': Offset(0.4, 0.3),
     },
     {
       'crop': 'Tomato',
       'confidence': 0.87,
-      'position': Offset(0.6, 0.5),
     },
     {
       'crop': 'Maize',
       'confidence': 0.94,
-      'position': Offset(0.3, 0.7),
     },
   ];
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addObserver(this as WidgetsBindingObserver);
+    WidgetsBinding.instance.addObserver(this);
     _initializeAnimations();
     _lockOrientation();
     _initilizeCamera();
@@ -143,8 +142,8 @@ class _CropScannerCameraState extends State<CropScannerCamera>
 
     try {
       await _cameraController!.initialize();
-      _minZoomLevel = await _cameraController!.getMaxZoomLevel();
-      _maxZoomLevel = await _cameraController!.getMinZoomLevel();
+      _minZoomLevel = await _cameraController!.getMinZoomLevel();
+      _maxZoomLevel = await _cameraController!.getMaxZoomLevel();
 
       setState(() {
         _currentzoomLevel = 1.0;
@@ -188,10 +187,8 @@ class _CropScannerCameraState extends State<CropScannerCamera>
     _selectedCameraIndex = _selectedCameraIndex == 0 ? 1 : 0;
     await _setupCameraController(_selectedCameraIndex);
     setState(() {
-      // _isFrontCamera = !_isFrontCamera;
-      // _currentzoomLevel = 1.0;
-      // _minZoomLevel = 1.0;
-      // _maxZoomLevel = 1.0;
+      _isFrontCamera = _cameras![_selectedCameraIndex].lensDirection ==
+          CameraLensDirection.front;
     });
     HapticFeedback.lightImpact();
   }
@@ -293,7 +290,59 @@ class _CropScannerCameraState extends State<CropScannerCamera>
     }
   }
 
-  void _captureImage() async {}
+  void _captureImage() async {
+    if (_cameraController == null ||
+        !_cameraController!.value.isInitialized ||
+        _isProcessing) {
+      return;
+    }
+    setState(() {
+      _isProcessing = true;
+      _showDetectionFeedback = false;
+    });
+    _captureAnimationController.forward().then((_) {
+      _captureAnimationController.reverse();
+    });
+
+    HapticFeedback.heavyImpact();
+
+    XFile? imageFile;
+    try {
+      imageFile = await _cameraController!.takePicture();
+      debugPrint("Image captured: ${imageFile.path}");
+
+      //--Mock ML Processing will be replaced with actual backend call
+      await Future.delayed(const Duration(seconds: 2));
+
+      //random mock detection result
+      final detection = _mockDetections[
+          DateTime.now().millisecondsSinceEpoch % _mockDetections.length];
+
+      setState(() {
+        _detectedCrop = detection["crop"];
+        _confidence = detection["confidence"];
+        _showDetectionFeedback = true;
+      });
+      await Future.delayed(const Duration(seconds: 2));
+      setState(() {
+        _isProcessing = false;
+        _showDetectionFeedback = false;
+      });
+      if (mounted) {
+        Navigator.pushNamed(
+          context,
+          "crop-detection-results",
+          arguments: imageFile.path,
+        );
+      }
+    } on CameraException catch (e) {
+      debugPrint("Error taking picture: $e");
+      _showErrorDialog("failed to capture image: ${e.description}");
+      setState(() {
+        _isProcessing = false;
+      });
+    }
+  }
 
   void _openGallery() async {
     HapticFeedback.lightImpact();
@@ -309,6 +358,8 @@ class _CropScannerCameraState extends State<CropScannerCamera>
       image = await imagePicker.pickImage(source: ImageSource.gallery);
       if (image != null) {
         debugPrint("Image selected: ${image.path}");
+
+        //mock ml processing
         await Future.delayed(const Duration(seconds: 2));
 
         //random detection result
@@ -325,8 +376,30 @@ class _CropScannerCameraState extends State<CropScannerCamera>
           _isProcessing = false;
           _showDetectionFeedback = false;
         });
+        if (mounted) {
+          // Navigate to results screen, passing the picked image path
+          Navigator.pushNamed(
+            context,
+            '/crop-detection-results',
+            arguments: image.path,
+          );
+        }
+      } else {
+        setState(() {
+          _isProcessing = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+            content: Text(
+          "Image selection cancelled",
+        )));
       }
-    } catch (e) {}
+    } catch (e) {
+      debugPrint("Error picking image from gallery: $e");
+      _showErrorDialog("Failed to pick image from gallery.");
+      setState(() {
+        _isProcessing = false; // Reset processing state on error
+      });
+    }
   }
 
   void _closeCamera() {
@@ -335,8 +408,10 @@ class _CropScannerCameraState extends State<CropScannerCamera>
 
   @override
   void dispose() {
+    _cameraController?.dispose();
     _focusAnimationController.dispose();
     _captureAnimationController.dispose();
+    WidgetsBinding.instance.removeObserver(this);
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
       DeviceOrientation.landscapeLeft,
@@ -352,6 +427,15 @@ class _CropScannerCameraState extends State<CropScannerCamera>
       return _buildPermissionScreen();
     }
 
+    if (_cameraController == null || !_cameraController!.value.isInitialized) {
+      return Container(
+        color: Colors.black,
+        child: const Center(
+          child: CircularProgressIndicator(color: Colors.white),
+        ),
+      );
+    }
+
     return Scaffold(
       backgroundColor: Colors.black,
       body: SafeArea(
@@ -360,9 +444,10 @@ class _CropScannerCameraState extends State<CropScannerCamera>
             // Camera Preview
             CameraPreviewWidget(
               isFrontCamera: _isFrontCamera,
-              zoomLevel: _zoomLevel,
+              zoomLevel: _currentzoomLevel,
               onTapToFocus: _onTapToFocus,
               onPinchToZoom: _onPinchToZoom,
+              controller: _cameraController,
             ),
 
             // Detection Frame Overlay
@@ -399,7 +484,7 @@ class _CropScannerCameraState extends State<CropScannerCamera>
             if (_isProcessing) LoadingOverlayWidget(),
 
             // Zoom Indicator
-            if (_zoomLevel > 1.0) _buildZoomIndicator(),
+            if (_currentzoomLevel > 1.0) _buildZoomIndicator(),
           ],
         ),
       ),
@@ -436,7 +521,7 @@ class _CropScannerCameraState extends State<CropScannerCamera>
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: _checkCameraPermission,
+                  onPressed: _initilizeCamera,
                   child: Text('Grant Permission'),
                 ),
               ),
@@ -515,7 +600,7 @@ class _CropScannerCameraState extends State<CropScannerCamera>
           borderRadius: BorderRadius.circular(20),
         ),
         child: Text(
-          '${_zoomLevel.toStringAsFixed(1)}x',
+          '${_currentzoomLevel.toStringAsFixed(1)}x',
           style: AppTheme.lightTheme.textTheme.labelMedium?.copyWith(
             color: Colors.white,
             fontWeight: FontWeight.w500,

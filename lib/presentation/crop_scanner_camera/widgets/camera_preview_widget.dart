@@ -3,7 +3,7 @@ import 'package:cropscan_pro/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 
 class CameraPreviewWidget extends StatelessWidget {
-  final CameraController controller;
+  final CameraController? controller;
   final bool isFrontCamera;
   final double zoomLevel;
   final Function(Offset) onTapToFocus;
@@ -20,7 +20,7 @@ class CameraPreviewWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (!controller.value.isInitialized) {
+    if (controller == null || !controller!.value.isInitialized) {
       return Container(
         color: Colors.black,
         child: const Center(
@@ -31,9 +31,9 @@ class CameraPreviewWidget extends StatelessWidget {
       );
     }
     final size = MediaQuery.of(context).size;
-    final aspectRatio = controller.value.aspectRatio;
+    final aspectRatio = controller?.value.aspectRatio;
 
-    Widget cameraChild = CameraPreview(controller);
+    Widget cameraChild = CameraPreview(controller!);
 
     //handling zoom transformation
     cameraChild = Transform.scale(
@@ -41,7 +41,7 @@ class CameraPreviewWidget extends StatelessWidget {
       alignment: Alignment.center,
       child: Center(
         child: AspectRatio(
-          aspectRatio: controller.value.aspectRatio,
+          aspectRatio: controller!.value.aspectRatio,
           child: cameraChild,
         ),
       ),
@@ -62,7 +62,7 @@ class CameraPreviewWidget extends StatelessWidget {
             fit: BoxFit.cover,
             child: SizedBox(
               width: size.width,
-              height: size.width / aspectRatio,
+              height: size.width / aspectRatio!,
               child: cameraChild,
             ),
           ),
