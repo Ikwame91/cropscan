@@ -1,8 +1,3 @@
-import 'package:cropscan_pro/presentation/alert_screen/cropscreen.dart';
-import 'package:cropscan_pro/presentation/crop_detection_results/crop_detection_results.dart';
-import 'package:cropscan_pro/presentation/crop_scanner_camera/crop_scanner_camera.dart';
-import 'package:cropscan_pro/presentation/user_profile_settings/user_profile_settings.dart';
-import 'package:cropscan_pro/presentation/weather_dashboard/weather_dashboard.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:sizer/sizer.dart';
@@ -108,11 +103,11 @@ class _DashboardHomeState extends State<DashboardHome>
     });
   }
 
-  void _onTabTapped(int index) {
-    setState(() {
-      _currentIndex = index;
-    });
-  }
+  // void _onTabTapped(int index) {
+  //   setState(() {
+  //     _currentIndex = index;
+  //   });
+  // }
 
   void _onDetectionCardTap(Map<String, dynamic> detection) {
     Navigator.pushNamed(context, '/crop-detection-results',
