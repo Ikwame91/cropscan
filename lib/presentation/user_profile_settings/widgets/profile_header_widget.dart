@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:sizer/sizer.dart';
 
 import '../../../core/app_export.dart';
@@ -93,9 +94,14 @@ class ProfileHeaderWidget extends StatelessWidget {
                           Expanded(
                             child: Text(
                               userData["name"] as String,
-                              style: AppTheme.lightTheme.textTheme.titleLarge
-                                  ?.copyWith(
-                                fontWeight: FontWeight.w600,
+                              style: GoogleFonts.poppins(
+                                textStyle: AppTheme
+                                    .lightTheme.textTheme.titleLarge
+                                    ?.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                  color:
+                                      AppTheme.lightTheme.colorScheme.onSurface,
+                                ),
                               ),
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -126,10 +132,14 @@ class ProfileHeaderWidget extends StatelessWidget {
                           Expanded(
                             child: Text(
                               userData["location"] as String,
-                              style: AppTheme.lightTheme.textTheme.bodyMedium
-                                  ?.copyWith(
-                                color: AppTheme.lightTheme.colorScheme.onSurface
-                                    .withValues(alpha: 0.7),
+                              style: GoogleFonts.poppins(
+                                textStyle: AppTheme
+                                    .lightTheme.textTheme.bodyMedium
+                                    ?.copyWith(
+                                  color: AppTheme
+                                      .lightTheme.colorScheme.onSurface
+                                      .withValues(alpha: 0.7),
+                                ),
                               ),
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -147,10 +157,13 @@ class ProfileHeaderWidget extends StatelessWidget {
                           SizedBox(width: 1.w),
                           Text(
                             'Farm Size: ${userData["farmSize"]}',
-                            style: AppTheme.lightTheme.textTheme.bodyMedium
-                                ?.copyWith(
-                              color: AppTheme.lightTheme.colorScheme.onSurface
-                                  .withValues(alpha: 0.7),
+                            style: GoogleFonts.poppins(
+                              textStyle: AppTheme
+                                  .lightTheme.textTheme.bodyMedium
+                                  ?.copyWith(
+                                color: AppTheme.lightTheme.colorScheme.onSurface
+                                    .withValues(alpha: 0.7),
+                              ),
                             ),
                           ),
                         ],
@@ -225,16 +238,19 @@ class ProfileHeaderWidget extends StatelessWidget {
         SizedBox(height: 0.5.h),
         Text(
           label,
-          style: AppTheme.lightTheme.textTheme.labelSmall?.copyWith(
-            color: AppTheme.lightTheme.colorScheme.onSurface
-                .withValues(alpha: 0.6),
+          style: GoogleFonts.poppins(
+            textStyle: AppTheme.lightTheme.textTheme.labelSmall?.copyWith(
+              color: AppTheme.lightTheme.colorScheme.onSurfaceVariant,
+            ),
           ),
         ),
         Text(
           value,
-          style: AppTheme.lightTheme.textTheme.labelMedium?.copyWith(
-            fontWeight: FontWeight.w600,
-            color: AppTheme.lightTheme.colorScheme.primary,
+          style: GoogleFonts.poppins(
+            textStyle: AppTheme.lightTheme.textTheme.labelMedium?.copyWith(
+              fontWeight: FontWeight.w600,
+              color: AppTheme.lightTheme.colorScheme.primary,
+            ),
           ),
           overflow: TextOverflow.ellipsis,
         ),

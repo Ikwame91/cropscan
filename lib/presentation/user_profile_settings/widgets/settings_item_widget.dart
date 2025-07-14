@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:sizer/sizer.dart';
 
 import '../../../core/app_export.dart';
@@ -59,8 +60,15 @@ class SettingsItemWidget extends StatelessWidget {
                 children: [
                   Text(
                     title,
-                    style: AppTheme.lightTheme.textTheme.bodyLarge?.copyWith(
-                      fontWeight: FontWeight.w500,
+                    style: GoogleFonts.poppins(
+                      textStyle:
+                          AppTheme.lightTheme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: AppTheme.lightTheme.colorScheme.onSurface
+                            .withValues(
+                          alpha: 0.8,
+                        ),
+                      ),
                     ),
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -68,9 +76,12 @@ class SettingsItemWidget extends StatelessWidget {
                     SizedBox(height: 0.5.h),
                     Text(
                       subtitle!,
-                      style: AppTheme.lightTheme.textTheme.bodyMedium?.copyWith(
-                        color: AppTheme.lightTheme.colorScheme.onSurface
-                            .withValues(alpha: 0.6),
+                      style: GoogleFonts.poppins(
+                        textStyle:
+                            AppTheme.lightTheme.textTheme.bodyMedium?.copyWith(
+                          color: AppTheme.lightTheme.colorScheme.onSurface
+                              .withValues(alpha: 0.6),
+                        ),
                       ),
                       overflow: TextOverflow.ellipsis,
                       maxLines: 2,

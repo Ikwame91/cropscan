@@ -3,7 +3,7 @@
 import 'package:cropscan_pro/core/app_export.dart'
     show AppTheme, CustomIconWidget;
 import 'package:flutter/material.dart';
-
+import '../../core/app_export.dart';
 import 'package:cropscan_pro/presentation/dashboard_home/dashboard_home.dart'; // This is your refactored Home screen
 import 'package:cropscan_pro/presentation/crop_scanner_camera/crop_scanner_camera.dart';
 import 'package:cropscan_pro/presentation/weather_dashboard/weather_dashboard.dart';
@@ -21,45 +21,6 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
   late final List<Widget> _screens;
-
-  final List<Map<String, dynamic>> farmingAlerts = [
-    {
-      "id": 1,
-      "title": "Irrigation Reminder",
-      "message": "Time to water your tomato plants in Field A",
-      "priority": "high",
-      "type": "irrigation",
-      "timestamp": DateTime.now().subtract(Duration(minutes: 30)),
-      "isRead": false
-    },
-    {
-      "id": 2,
-      "title": "Weather Alert",
-      "message": "Heavy rain expected tomorrow. Protect your crops",
-      "priority": "critical",
-      "type": "weather",
-      "timestamp": DateTime.now().subtract(Duration(hours: 1)),
-      "isRead": false
-    },
-    {
-      "id": 3,
-      "title": "Fertilizer Application",
-      "message": "Apply nitrogen fertilizer to maize field this week",
-      "priority": "medium",
-      "type": "fertilizer",
-      "timestamp": DateTime.now().subtract(Duration(hours: 3)),
-      "isRead": true
-    },
-    {
-      "id": 4,
-      "title": "Pest Detection",
-      "message": "Aphids detected in bell pepper section. Take action",
-      "priority": "critical",
-      "type": "pest",
-      "timestamp": DateTime.now().subtract(Duration(hours: 6)),
-      "isRead": false
-    }
-  ];
 
   @override
   void initState() {

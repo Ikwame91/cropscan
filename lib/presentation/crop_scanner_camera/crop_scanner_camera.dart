@@ -63,7 +63,7 @@ class _CropScannerCameraState extends State<CropScannerCamera>
     WidgetsBinding.instance.addObserver(this);
     _initializeAnimations();
     _lockOrientation();
-    _initilizeCamera();
+    _checkAndInitializeCamera();
   }
 
   void _initializeAnimations() {
@@ -100,33 +100,67 @@ class _CropScannerCameraState extends State<CropScannerCamera>
     ]);
   }
 
-  Future<void> _initilizeCamera() async {
-    //requesting camera and gallery permissions
-    final cameraStatus = await Permission.camera.request();
-    final galleryStatus = await Permission.photos.request();
+  Future<void> _checkAndInitializeCamera() async {
+    // Check initial status
+    var cameraStatus = await Permission.camera.status;
+    var photosStatus = await Permission.photos.status;
 
-    if (cameraStatus.isGranted && galleryStatus.isGranted) {
+    bool granted = cameraStatus.isGranted && photosStatus.isGranted;
+
+    if (granted) {
+      // Permissions already granted, proceed
       setState(() {
         _hasPermission = true;
       });
-      _cameras = await availableCameras();
-      if (_cameras != null && _cameras!.isNotEmpty) {
-        _selectedCameraIndex = _cameras!.indexWhere(
-            (camera) => camera.lensDirection == CameraLensDirection.back);
-        if (_selectedCameraIndex == -1) {
-          _selectedCameraIndex = 0;
-        }
-        await _setupCameraController(_selectedCameraIndex);
-      } else {
-        setState(() {
-          _hasPermission = false;
-        });
-      }
-    } else {
+      await _initilizeCameraComponents();
+    } else if (cameraStatus.isPermanentlyDenied ||
+        photosStatus.isPermanentlyDenied) {
+      // Permissions permanently denied, show dialog to open settings
       setState(() {
         _hasPermission = false;
       });
       _showPermissionDeniedDialog();
+    } else {
+      // Permissions not granted yet or denied once, request them
+      final Map<Permission, PermissionStatus> statuses = await [
+        Permission.camera,
+        Permission.photos,
+      ].request();
+
+      cameraStatus = statuses[Permission.camera] ?? PermissionStatus.denied;
+      photosStatus = statuses[Permission.photos] ?? PermissionStatus.denied;
+
+      if (cameraStatus.isGranted && photosStatus.isGranted) {
+        setState(() {
+          _hasPermission = true;
+        });
+        await _initilizeCameraComponents();
+      } else {
+        // Still not granted after requesting
+        setState(() {
+          _hasPermission = false;
+        });
+        _showPermissionDeniedDialog();
+      }
+    }
+  }
+
+  Future<void> _initilizeCameraComponents() async {
+    //requesting camera and gallery permissions
+    _cameras = await availableCameras();
+    if (_cameras != null && _cameras!.isNotEmpty) {
+      _selectedCameraIndex = _cameras!.indexWhere(
+          (camera) => camera.lensDirection == CameraLensDirection.back);
+      if (_selectedCameraIndex == -1) {
+        _selectedCameraIndex = 0;
+      }
+      await _setupCameraController(_selectedCameraIndex);
+    } else {
+      //no cameras found so permission is effectively useless here.
+      setState(() {
+        _hasPermission = false;
+      });
+      _showErrorDialog("No cameraas found on this device");
     }
   }
 
@@ -196,6 +230,7 @@ class _CropScannerCameraState extends State<CropScannerCamera>
   void _showPermissionDeniedDialog() {
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text("Permission Denied"),
@@ -407,6 +442,21 @@ class _CropScannerCameraState extends State<CropScannerCamera>
   }
 
   @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // App state changed (e.g., app in background, foreground)
+    if (_cameraController == null || !_cameraController!.value.isInitialized) {
+      return;
+    }
+    if (state == AppLifecycleState.inactive) {
+      _cameraController!.dispose();
+    } else if (state == AppLifecycleState.resumed) {
+      // When the app comes back to the foreground, re-initialize camera
+      // and re-check permissions.
+      _checkAndInitializeCamera();
+    }
+  }
+
+  @override
   void dispose() {
     _cameraController?.dispose();
     _focusAnimationController.dispose();
@@ -521,7 +571,9 @@ class _CropScannerCameraState extends State<CropScannerCamera>
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: _initilizeCamera,
+                  onPressed: () {
+                    _checkAndInitializeCamera();
+                  },
                   child: Text('Grant Permission'),
                 ),
               ),
