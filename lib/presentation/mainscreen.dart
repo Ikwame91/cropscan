@@ -3,17 +3,15 @@
 import 'package:cropscan_pro/core/app_export.dart'
     show AppTheme, CustomIconWidget;
 import 'package:flutter/material.dart';
-import '../../core/app_export.dart';
-import 'package:cropscan_pro/presentation/dashboard_home/dashboard_home.dart'; // This is your refactored Home screen
+import 'package:cropscan_pro/presentation/dashboard_home/dashboard_home.dart';
 import 'package:cropscan_pro/presentation/crop_scanner_camera/crop_scanner_camera.dart';
 import 'package:cropscan_pro/presentation/weather_dashboard/weather_dashboard.dart';
 import 'package:cropscan_pro/presentation/alert_screen/cropscreen.dart';
 import 'package:cropscan_pro/presentation/user_profile_settings/user_profile_settings.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../utils/global_keys.dart';
 
 class MainScreen extends StatefulWidget {
-  MainScreen({Key? key}) : super(key: mainScreenNavigatorKey);
+  const MainScreen({Key? key}) : super(key: key);
 
   @override
   State<MainScreen> createState() => _MainScreenState();
@@ -21,15 +19,17 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
+  // Use a GlobalKey to access the state of CropScannerCamera
+  final GlobalKey<CropScannerCameraState> _cameraScreenKey = GlobalKey();
   late final List<Widget> _screens;
 
   @override
   void initState() {
     super.initState();
-    // Initialize the list of screens
     _screens = [
-      const DashboardHome(), // This is your refactored Home screen content
-      const CropScannerCamera(),
+      const DashboardHome(),
+      // Pass the key to the CropScannerCamera
+      CropScannerCamera(key: _cameraScreenKey),
       const WeatherDashboard(),
       const CropScreen(),
       const UserProfileSettings(),
@@ -43,7 +43,20 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   void _onTabTapped(int index) {
-    goToTab(index);
+    setState(() {
+      _currentIndex = index;
+    });
+
+    // If the 'Scan' tab (index 1) is selected, initialize the camera
+    if (index == 1) {
+      // Using the GlobalKey to call a method on the state of CropScannerCamera
+      _cameraScreenKey.currentState?.initializeCameraOnDemand();
+    } else {
+      // Optionally, if you want to stop/dispose camera when leaving the tab,
+      // you could add a method like `_cameraScreenKey.currentState?.disposeCamera()`
+      // to `_CropScannerCameraState` and call it here.
+      // For now, `didChangeAppLifecycleState` in CameraScreen handles backgrounding.
+    }
   }
 
   @override
@@ -59,7 +72,7 @@ class _MainScreenState extends State<MainScreen> {
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         onTap: _onTabTapped,
-        type: BottomNavigationBarType.fixed, // Use fixed for consistent styling
+        type: BottomNavigationBarType.fixed,
         backgroundColor: AppTheme.lightTheme.colorScheme.surface,
         selectedItemColor: AppTheme.lightTheme.colorScheme.primary,
         unselectedItemColor: AppTheme.lightTheme.colorScheme.onSurfaceVariant,

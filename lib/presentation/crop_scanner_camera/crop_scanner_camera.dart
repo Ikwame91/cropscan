@@ -16,10 +16,10 @@ class CropScannerCamera extends StatefulWidget {
   const CropScannerCamera({super.key});
 
   @override
-  State<CropScannerCamera> createState() => _CropScannerCameraState();
+  State<CropScannerCamera> createState() => CropScannerCameraState();
 }
 
-class _CropScannerCameraState extends State<CropScannerCamera>
+class CropScannerCameraState extends State<CropScannerCamera>
     with TickerProviderStateMixin, WidgetsBindingObserver {
   CameraController? _cameraController;
   List<CameraDescription>? _cameras;
@@ -27,7 +27,7 @@ class _CropScannerCameraState extends State<CropScannerCamera>
   bool _isFlashOn = false;
   bool _isProcessing = false;
   bool _isFrontCamera = false;
-  double _currentzoomLevel = 1.0;
+  double _currentZoomLevel = 1.0;
   double _minZoomLevel = 1.0;
   double _maxZoomLevel = 1.0;
   bool _hasPermission = false;
@@ -43,18 +43,9 @@ class _CropScannerCameraState extends State<CropScannerCamera>
 
   // Mock detection data
   final List<Map<String, dynamic>> _mockDetections = [
-    {
-      'crop': 'Bell Pepper',
-      'confidence': 0.92,
-    },
-    {
-      'crop': 'Tomato',
-      'confidence': 0.87,
-    },
-    {
-      'crop': 'Maize',
-      'confidence': 0.94,
-    },
+    {'crop': 'Bell Pepper', 'confidence': 0.92},
+    {'crop': 'Tomato', 'confidence': 0.87},
+    {'crop': 'Maize', 'confidence': 0.94},
   ];
 
   @override
@@ -63,7 +54,7 @@ class _CropScannerCameraState extends State<CropScannerCamera>
     WidgetsBinding.instance.addObserver(this);
     _initializeAnimations();
     _lockOrientation();
-    _checkAndInitializeCamera();
+    // Removed _checkAndInitializeCamera() from here!
   }
 
   void _initializeAnimations() {
@@ -100,28 +91,35 @@ class _CropScannerCameraState extends State<CropScannerCamera>
     ]);
   }
 
+// This method will now be called externally when the tab is selected
+  Future<void> initializeCameraOnDemand() async {
+    if (_hasPermission &&
+        _cameraController != null &&
+        _cameraController!.value.isInitialized) {
+      // Camera is already initialized and permissions are granted, no need to re-initialize
+      return;
+    }
+    await _checkAndInitializeCamera();
+  }
+
   Future<void> _checkAndInitializeCamera() async {
-    // Check initial status
     var cameraStatus = await Permission.camera.status;
     var photosStatus = await Permission.photos.status;
 
     bool granted = cameraStatus.isGranted && photosStatus.isGranted;
 
     if (granted) {
-      // Permissions already granted, proceed
       setState(() {
         _hasPermission = true;
       });
       await _initilizeCameraComponents();
     } else if (cameraStatus.isPermanentlyDenied ||
         photosStatus.isPermanentlyDenied) {
-      // Permissions permanently denied, show dialog to open settings
       setState(() {
         _hasPermission = false;
       });
       _showPermissionDeniedDialog();
     } else {
-      // Permissions not granted yet or denied once, request them
       final Map<Permission, PermissionStatus> statuses = await [
         Permission.camera,
         Permission.photos,
@@ -136,7 +134,6 @@ class _CropScannerCameraState extends State<CropScannerCamera>
         });
         await _initilizeCameraComponents();
       } else {
-        // Still not granted after requesting
         setState(() {
           _hasPermission = false;
         });
@@ -146,7 +143,6 @@ class _CropScannerCameraState extends State<CropScannerCamera>
   }
 
   Future<void> _initilizeCameraComponents() async {
-    //requesting camera and gallery permissions
     _cameras = await availableCameras();
     if (_cameras != null && _cameras!.isNotEmpty) {
       _selectedCameraIndex = _cameras!.indexWhere(
@@ -156,11 +152,10 @@ class _CropScannerCameraState extends State<CropScannerCamera>
       }
       await _setupCameraController(_selectedCameraIndex);
     } else {
-      //no cameras found so permission is effectively useless here.
       setState(() {
         _hasPermission = false;
       });
-      _showErrorDialog("No cameraas found on this device");
+      _showErrorDialog("No cameras found on this device");
     }
   }
 
@@ -180,13 +175,13 @@ class _CropScannerCameraState extends State<CropScannerCamera>
       _maxZoomLevel = await _cameraController!.getMaxZoomLevel();
 
       setState(() {
-        _currentzoomLevel = 1.0;
+        _currentZoomLevel = 1.0;
         _isFlashOn = false;
         _isProcessing = false;
       });
       _cameraController!.setFlashMode(FlashMode.off);
     } on CameraException catch (e) {
-      debugPrint("Error initializing camera:  $e ");
+      debugPrint("Error initializing camera: $e ");
       setState(() {
         _hasPermission = false;
       });
@@ -241,7 +236,8 @@ class _CropScannerCameraState extends State<CropScannerCamera>
               child: const Text("Cancel"),
               onPressed: () {
                 Navigator.of(context).pop();
-                _closeCamera();
+                // Instead of _closeCamera(), we simply pop the dialog.
+                // The MainScreen will handle navigation, possibly to the Dashboard tab.
               },
             ),
             TextButton(
@@ -290,7 +286,6 @@ class _CropScannerCameraState extends State<CropScannerCamera>
 
       final Offset adjustedPoint = Offset(normalizedX, normalizedY);
 
-      //set focus and exposure points
       await _cameraController!.setFocusPoint(adjustedPoint);
       await _cameraController!.setExposurePoint(adjustedPoint);
 
@@ -314,11 +309,11 @@ class _CropScannerCameraState extends State<CropScannerCamera>
     }
 
     try {
-      double newZoomLevel = _currentzoomLevel * scale;
+      double newZoomLevel = _currentZoomLevel * scale;
       newZoomLevel = newZoomLevel.clamp(_minZoomLevel, _maxZoomLevel);
       await _cameraController!.setZoomLevel(newZoomLevel);
       setState(() {
-        _currentzoomLevel = newZoomLevel;
+        _currentZoomLevel = newZoomLevel;
       });
     } on CameraException catch (e) {
       debugPrint("Error setting zoom level: $e");
@@ -346,10 +341,8 @@ class _CropScannerCameraState extends State<CropScannerCamera>
       imageFile = await _cameraController!.takePicture();
       debugPrint("Image captured: ${imageFile.path}");
 
-      //--Mock ML Processing will be replaced with actual backend call
       await Future.delayed(const Duration(seconds: 2));
 
-      //random mock detection result
       final detection = _mockDetections[
           DateTime.now().millisecondsSinceEpoch % _mockDetections.length];
 
@@ -394,10 +387,8 @@ class _CropScannerCameraState extends State<CropScannerCamera>
       if (image != null) {
         debugPrint("Image selected: ${image.path}");
 
-        //mock ml processing
         await Future.delayed(const Duration(seconds: 2));
 
-        //random detection result
         final detection = _mockDetections[
             DateTime.now().millisecondsSinceEpoch % _mockDetections.length];
         setState(() {
@@ -412,7 +403,6 @@ class _CropScannerCameraState extends State<CropScannerCamera>
           _showDetectionFeedback = false;
         });
         if (mounted) {
-          // Navigate to results screen, passing the picked image path
           Navigator.pushNamed(
             context,
             '/crop-detection-results',
@@ -432,27 +422,25 @@ class _CropScannerCameraState extends State<CropScannerCamera>
       debugPrint("Error picking image from gallery: $e");
       _showErrorDialog("Failed to pick image from gallery.");
       setState(() {
-        _isProcessing = false; // Reset processing state on error
+        _isProcessing = false;
       });
     }
   }
 
-  void _closeCamera() {
-    Navigator.pop(context);
-  }
+  // _closeCamera() is removed as it's not needed here; Navigator.pop is contextual.
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    // App state changed (e.g., app in background, foreground)
     if (_cameraController == null || !_cameraController!.value.isInitialized) {
       return;
     }
     if (state == AppLifecycleState.inactive) {
       _cameraController!.dispose();
     } else if (state == AppLifecycleState.resumed) {
-      // When the app comes back to the foreground, re-initialize camera
-      // and re-check permissions.
-      _checkAndInitializeCamera();
+      // Re-initialize camera only if it was disposed and we have permission
+      if (_hasPermission) {
+        _initilizeCameraComponents();
+      }
     }
   }
 
@@ -473,15 +461,45 @@ class _CropScannerCameraState extends State<CropScannerCamera>
 
   @override
   Widget build(BuildContext context) {
-    if (!_hasPermission) {
-      return _buildPermissionScreen();
-    }
-
-    if (_cameraController == null || !_cameraController!.value.isInitialized) {
-      return Container(
-        color: Colors.black,
-        child: const Center(
-          child: CircularProgressIndicator(color: Colors.white),
+    if (!_hasPermission ||
+        _cameraController == null ||
+        !_cameraController!.value.isInitialized) {
+      // Display a placeholder or loading indicator if permissions aren't granted
+      // or camera isn't initialized yet.
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            if (!_hasPermission) ...[
+              CustomIconWidget(
+                iconName: 'no_photography',
+                color: AppTheme.lightTheme.colorScheme.onSurfaceVariant,
+                size: 64,
+              ),
+              SizedBox(height: 2.h),
+              Text(
+                'Camera access required',
+                style: AppTheme.lightTheme.textTheme.titleMedium,
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: 1.h),
+              Text(
+                'Please grant camera and photo library permissions to use this feature.',
+                style: AppTheme.lightTheme.textTheme.bodyMedium,
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: 2.h),
+              ElevatedButton(
+                onPressed: () => _checkAndInitializeCamera(), // Allow retry
+                child: const Text('Grant Permissions'),
+              ),
+            ] else ...[
+              CircularProgressIndicator(),
+              SizedBox(height: 2.h),
+              Text('Initializing camera...',
+                  style: AppTheme.lightTheme.textTheme.titleMedium),
+            ],
+          ],
         ),
       );
     }
@@ -494,7 +512,7 @@ class _CropScannerCameraState extends State<CropScannerCamera>
             // Camera Preview
             CameraPreviewWidget(
               isFrontCamera: _isFrontCamera,
-              zoomLevel: _currentzoomLevel,
+              zoomLevel: _currentZoomLevel,
               onTapToFocus: _onTapToFocus,
               onPinchToZoom: _onPinchToZoom,
               controller: _cameraController,
@@ -509,7 +527,6 @@ class _CropScannerCameraState extends State<CropScannerCamera>
             // Top Overlay
             CameraOverlayWidget(
               isTop: true,
-              onClose: _closeCamera,
               onFlashToggle: _toggleFlash,
               isFlashOn: _isFlashOn,
             ),
@@ -534,7 +551,7 @@ class _CropScannerCameraState extends State<CropScannerCamera>
             if (_isProcessing) LoadingOverlayWidget(),
 
             // Zoom Indicator
-            if (_currentzoomLevel > 1.0) _buildZoomIndicator(),
+            if (_currentZoomLevel > 1.0) _buildZoomIndicator(),
           ],
         ),
       ),
@@ -578,10 +595,6 @@ class _CropScannerCameraState extends State<CropScannerCamera>
                 ),
               ),
               SizedBox(height: 2.h),
-              TextButton(
-                onPressed: _closeCamera,
-                child: Text('Cancel'),
-              ),
             ],
           ),
         ),
@@ -652,7 +665,7 @@ class _CropScannerCameraState extends State<CropScannerCamera>
           borderRadius: BorderRadius.circular(20),
         ),
         child: Text(
-          '${_currentzoomLevel.toStringAsFixed(1)}x',
+          '${_currentZoomLevel.toStringAsFixed(1)}x',
           style: AppTheme.lightTheme.textTheme.labelMedium?.copyWith(
             color: Colors.white,
             fontWeight: FontWeight.w500,
