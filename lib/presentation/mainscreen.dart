@@ -10,9 +10,10 @@ import 'package:cropscan_pro/presentation/weather_dashboard/weather_dashboard.da
 import 'package:cropscan_pro/presentation/alert_screen/cropscreen.dart';
 import 'package:cropscan_pro/presentation/user_profile_settings/user_profile_settings.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../utils/global_keys.dart';
 
 class MainScreen extends StatefulWidget {
-  const MainScreen({super.key});
+  MainScreen({Key? key}) : super(key: mainScreenNavigatorKey);
 
   @override
   State<MainScreen> createState() => _MainScreenState();
@@ -35,10 +36,14 @@ class _MainScreenState extends State<MainScreen> {
     ];
   }
 
-  void _onTabTapped(int index) {
+  void goToTab(int index) {
     setState(() {
       _currentIndex = index;
     });
+  }
+
+  void _onTabTapped(int index) {
+    goToTab(index);
   }
 
   @override

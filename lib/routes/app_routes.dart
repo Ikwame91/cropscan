@@ -20,7 +20,7 @@ class AppRoutes {
   static const String cropscreen = '/cropscreen';
 
   static Map<String, WidgetBuilder> routes = {
-    initial: (context) => const MainScreen(),
+    initial: (context) => MainScreen(),
     dashboardHome: (context) => const DashboardHome(),
     cropScannerCamera: (context) => const CropScannerCamera(),
     cropDetectionResults: (context) => const CropDetectionResults(),
