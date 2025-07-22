@@ -1,5 +1,6 @@
 import 'dart:developer';
 import 'dart:io';
+import 'package:flutter/widgets.dart';
 import 'package:image/image.dart' as img;
 import 'package:flutter/services.dart';
 import 'package:tflite_flutter/tflite_flutter.dart';
@@ -12,19 +13,29 @@ enum ModelPredictionStatus {
   initial,
 }
 
-class TfLiteModelServices {
+class TfLiteModelServices extends ChangeNotifier {
   Interpreter? _interpreter;
   List<String>? _labels;
   ModelPredictionStatus _status = ModelPredictionStatus.initial;
 
   static const String _modelPath = "assets/ml_models/converted_model.tflite";
   static const String _labelPath = "assets/ml_models/labels.txt";
-  static const int _inputSize = 224;
+  static const int _inputSize = 256;
   static const int _channels = 3;
   static const int _outputLength = 16;
 
   Interpreter? get interpreter => _interpreter;
   List<String>? get labels => _labels;
+
+//private setter for status with notification
+  void _setStatus(ModelPredictionStatus newStatus) {
+    if (_status != newStatus) {
+      _status = newStatus;
+      notifyListeners();
+      log("TFLiteModelServices: Status changed to $_status");
+    }
+  }
+
 //called once typically at startup or when the model is needed
   Future<void> loadModelAndLabels() async {
     if (_status == ModelPredictionStatus.loading ||
@@ -105,9 +116,10 @@ class TfLiteModelServices {
       }
       img.Image resizedImage =
           img.copyResize(originalImage, width: _inputSize, height: _inputSize);
-      //convert image to a list of doubles(normalized pixel valeue 0-1)
-      //if model expects float32input with values between 0.0 and 1.0
-      //if model expects uint8 input (0-255) , adjust normalization
+
+      // Convert image to a 4D list of doubles (normalized pixel values 0-1)
+      // Expected input format for TFLite is typically [1, height, width, channels] for images.
+
       var imageInput = List.generate(_inputSize, (y) {
         return List.generate(_inputSize, (x) {
           final pixel = resizedImage.getPixel(x, y);
@@ -118,6 +130,61 @@ class TfLiteModelServices {
           ];
         });
       });
-    } catch (e) {}
+
+      //tensorflow lite mdoels expect a batch dimension [1, height, width, channels]
+      var inputTensor = [imageInput];
+
+      //output buffer which will be a list of probabilities for each class
+      var outputBuffer =
+          List.filled(_outputLength, 0.0).reshape([1, _outputLength]);
+
+      //I run inference on a seperate isolate to create a new IsolateInterpretor for each predicton if needed,
+      //I create it for each run here. For high freequency, consider sung a single IsolateInterpreter from laodModelAndLabels.
+      // Let's adjust to create IsolateInterpreter once with the interpreter.
+      final isolateInterpreter =
+          await IsolateInterpreter.create(address: _interpreter!.address);
+      await isolateInterpreter.run(inputTensor, outputBuffer);
+      isolateInterpreter.close();
+
+      //post-proces output
+      //index with highest probability
+      List<double> probabilities = List<double>.from(outputBuffer[0]);
+      double maxConfidence = 0.0;
+      int predictedIndex = -1;
+
+      for (int i = 0; i < probabilities.length; i++) {
+        if (probabilities[i] > maxConfidence) {
+          maxConfidence = probabilities[i];
+          predictedIndex = i;
+        }
+      }
+      String predictedLabel = (predictedIndex != -1 &&
+              _labels != null &&
+              predictedIndex < _labels!.length)
+          ? _labels![predictedIndex]
+          : "Uknown";
+
+      log("TFLiteModelService: Prediction complete. Label : $predictedLabel, confidence: ${maxConfidence.toStringAsFixed(2)}");
+      return {
+        'label': predictedLabel,
+        'confidence': maxConfidence,
+      };
+    } catch (e) {
+      log('TFLiteModelServie: Error during prediction: $e', error: e);
+      return null;
+    } finally {
+      //resetting status after prediction or keep predicting if continuous
+      _status = ModelPredictionStatus.ready;
+    }
+  }
+
+  @override
+  void dispose() {
+    _interpreter?.close(); // Close the interpreter to free resources
+    _interpreter = null;
+    _labels = null;
+    _setStatus(ModelPredictionStatus.initial); // Reset status to initial
+    log("TFLiteModelService: Interpreter and resources disposed.");
+    super.dispose(); // Call super.dispose()
   }
 }
