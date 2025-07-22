@@ -53,7 +53,6 @@ class CameraPreviewWidget extends StatelessWidget {
       onScaleUpdate: (details) {
         onPinchToZoom.call(details.scale);
       },
-
       child: ClipRRect(
         child: SizedBox(
           width: size.width,
@@ -68,42 +67,6 @@ class CameraPreviewWidget extends StatelessWidget {
           ),
         ),
       ),
-      // child: Container(
-      //   width: double.infinity,
-      //   height: double.infinity,
-      //   decoration: BoxDecoration(
-      //     gradient: LinearGradient(
-      //       begin: Alignment.topCenter,
-      //       end: Alignment.bottomCenter,
-      //       colors: [
-      //         Colors.green.withValues(alpha: 0.1),
-      //         Colors.black.withValues(alpha: 0.3),
-      //         Colors.green.withValues(alpha: 0.1),
-      //       ],
-      //     ),
-      //   ),
-      //   child: Stack(
-      //     children: [
-      //       // Mock camera preview background
-      //       Container(
-      //         width: double.infinity,
-      //         height: double.infinity,
-      //         color: Colors.black87,
-      //         //////////////////////////////////////////phase 1 fix
-      //         child: Image.asset(
-      //           'assets/images/soil.jpg',
-      //           fit: BoxFit.cover,
-      //         ),
-      //       ),
-
-      //       // Crop detection indicators
-      //       // _buildDetectionIndicators(),
-
-      //       // Grid lines for composition
-      //       // _buildGridLines(),
-      //     ],
-      //   ),
-      // ),
     );
   }
 
