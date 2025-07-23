@@ -105,8 +105,11 @@ class TfLiteModelServices extends ChangeNotifier {
         _interpreter == null ||
         _labels == null) {
       log("TFLiteModelServices: Model is not ready or labels are not loaded.");
-      return null;
+      throw Exception(
+          "Model not ready for prediction. Call loadModelAndLabels first.");
     }
+
+    _setStatus(ModelPredictionStatus.predicting);
     try {
       //read image bytes
       final imageBytes = await imageFile.readAsBytes();
@@ -163,7 +166,7 @@ class TfLiteModelServices extends ChangeNotifier {
               _labels != null &&
               predictedIndex < _labels!.length)
           ? _labels![predictedIndex]
-          : "Uknown";
+          : "Unknown";
 
       log("TFLiteModelService: Prediction complete. Label : $predictedLabel, confidence: ${maxConfidence.toStringAsFixed(2)}");
       return {
@@ -172,8 +175,8 @@ class TfLiteModelServices extends ChangeNotifier {
       };
     } catch (e) {
       _setStatus(ModelPredictionStatus.error);
-      log('TFLiteModelServie: Error during prediction: $e', error: e);
-      return null;
+      log('TFLiteModelServiCe: Error during prediction: $e', error: e);
+      throw Exception("Prediction failed: ${e.toString()}");
     } finally {
       //resetting status after prediction or keep predicting if continuous
       if (_status != ModelPredictionStatus.error) {
@@ -192,3 +195,15 @@ class TfLiteModelServices extends ChangeNotifier {
     super.dispose(); // Call super.dispose()
   }
 }
+    // Intellectual Opponent: Your current strategy for IsolateInterpreter.create
+      // inside `predictedImage` means a new isolate is created and torn down for *each* prediction.
+      // While it guarantees isolation, for high frequency predictions, the overhead
+      // of creating and tearing down isolates can impact performance.
+      // A common optimization for continuous or frequent prediction is to
+      // create and maintain a single `IsolateInterpreter` for the lifecycle of your
+      // `TfLiteModelServices` class, possibly within `loadModelAndLabels`,
+      // and then just use `isolateInterpreter.run` for subsequent predictions.
+      //
+      // For a final year project with occasional predictions, your current approach is fine
+      // and safer against resource leaks if not disposed properly.
+      // For production-grade high-throughput, reconsider this.

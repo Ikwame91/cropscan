@@ -68,8 +68,8 @@ class _MainScreenState extends State<MainScreen> {
               _cameraScreenKey.currentState?.initializeCameraOnDemand();
             }
           } catch (e) {
-            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-              content: Text("AI model still loading, please wait......"),
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              content: Text("Failed to load AI model: ${e.toString()}"),
               duration: Duration(seconds: 2),
             ));
           }
@@ -130,38 +130,36 @@ class _MainScreenState extends State<MainScreen> {
   Widget build(BuildContext context) {
     return Consumer<TfLiteModelServices>(
       builder: (context, tfliteService, child) {
-        IconData scanIcon = Icons.camera_alt;
+        String scanIconName = 'camera_alt';
         String scanLabel = 'Scan';
         Color scanItemColor = _currentIndex == 1
             ? AppTheme.lightTheme.colorScheme.primary
-            : AppTheme.lightTheme.colorScheme.onSurface;
+            : AppTheme.lightTheme.colorScheme.onSurfaceVariant;
+
         switch (tfliteService.status) {
           case ModelPredictionStatus.loading:
-            scanIcon = Icons.downloading; // Or any loading icon
+            scanIconName = 'downloading';
             scanLabel = 'Loading...';
-            scanItemColor = Colors.orange; // Indicate loading
+            scanItemColor = Colors.orange;
             break;
           case ModelPredictionStatus.error:
-            scanIcon = Icons.error_outline; // Error icon
+            scanIconName = 'error_outline';
             scanLabel = 'Error';
-            scanItemColor = Colors.red; // Indicate error
+            scanItemColor = Colors.red;
             break;
           case ModelPredictionStatus.initial:
-            // This is the state before loading starts.
-            // You might want a slightly different visual than 'ready'
-            scanIcon = Icons.camera_alt;
-            scanLabel = 'Scan';
-            scanItemColor = AppTheme.lightTheme.colorScheme.onSurfaceVariant;
+            // Default 'camera_alt' and 'Scan' will apply
             break;
           case ModelPredictionStatus.predicting:
-            scanIcon = Icons.autorenew; // Spin icon for predicting
+            scanIconName = 'autorenew'; // Icon name for predicting
             scanLabel = 'Predicting...';
             scanItemColor = Colors.blue;
             break;
           case ModelPredictionStatus.ready:
-            // All good
+            // All good, default 'camera_alt' and 'Scan' will apply
             break;
         }
+
         return Scaffold(
           backgroundColor: AppTheme.lightTheme.scaffoldBackgroundColor,
           body: SafeArea(
@@ -201,13 +199,11 @@ class _MainScreenState extends State<MainScreen> {
               ),
               BottomNavigationBarItem(
                 icon: CustomIconWidget(
-                  iconName: 'camera_alt',
-                  color: _currentIndex == 1
-                      ? AppTheme.lightTheme.colorScheme.primary
-                      : AppTheme.lightTheme.colorScheme.onSurfaceVariant,
+                  iconName: scanIconName,
+                  color: scanItemColor,
                   size: 24,
                 ),
-                label: 'Scan',
+                label: scanLabel,
               ),
               BottomNavigationBarItem(
                 icon: CustomIconWidget(
