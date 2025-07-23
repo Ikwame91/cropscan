@@ -26,6 +26,7 @@ class TfLiteModelServices extends ChangeNotifier {
 
   Interpreter? get interpreter => _interpreter;
   List<String>? get labels => _labels;
+  ModelPredictionStatus get status => _status;
 
 //private setter for status with notification
   void _setStatus(ModelPredictionStatus newStatus) {
@@ -170,11 +171,14 @@ class TfLiteModelServices extends ChangeNotifier {
         'confidence': maxConfidence,
       };
     } catch (e) {
+      _setStatus(ModelPredictionStatus.error);
       log('TFLiteModelServie: Error during prediction: $e', error: e);
       return null;
     } finally {
       //resetting status after prediction or keep predicting if continuous
-      _status = ModelPredictionStatus.ready;
+      if (_status != ModelPredictionStatus.error) {
+        _status = ModelPredictionStatus.ready;
+      }
     }
   }
 

@@ -1,5 +1,7 @@
+import 'package:cropscan_pro/core/services/tf_lite_model_services.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 import 'package:sizer/sizer.dart';
 
 import '../widgets/custom_error_widget.dart';
@@ -12,11 +14,19 @@ void main() async {
       errorDetails: details,
     );
   };
-  Future.wait([
+  await Future.wait([
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp])
-  ]).then((value) {
-    runApp(MyApp());
-  });
+  ]);
+
+  runApp(MultiProvider(
+    providers: [
+      ChangeNotifierProvider(
+        create: (_) => TfLiteModelServices(),
+        lazy: true,
+      ),
+    ],
+    child: const MyApp(),
+  ));
 }
 
 class MyApp extends StatelessWidget {
