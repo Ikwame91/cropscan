@@ -246,11 +246,7 @@ class CropScannerCameraState extends State<CropScannerCamera>
           actions: <Widget>[
             TextButton(
               child: const Text("Cancel"),
-              onPressed: () {
-                Navigator.of(context).pop();
-                // Instead of _closeCamera(), we simply pop the dialog.
-                // The MainScreen will handle navigation, possibly to the Dashboard tab.
-              },
+              onPressed: () {},
             ),
             TextButton(
               child: const Text("Open Settings"),
@@ -348,7 +344,7 @@ class CropScannerCameraState extends State<CropScannerCamera>
     try {
       final File image = File(imageFile.path);
       final Map<String, dynamic>? result =
-          await tfliteModelServices.predictedImage(image);
+          await tfliteModelServices.predictImage(image);
       if (result != null) {
         setState(() {
           _detectedCrop = result['label'];
@@ -441,8 +437,6 @@ class CropScannerCameraState extends State<CropScannerCamera>
     }
   }
 
-  // _closeCamera() is removed as it's not needed here; Navigator.pop is contextual.
-
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (_cameraController == null || !_cameraController!.value.isInitialized) {
@@ -475,45 +469,94 @@ class CropScannerCameraState extends State<CropScannerCamera>
 
   @override
   Widget build(BuildContext context) {
-    if (!_hasPermission ||
-        _cameraController == null ||
-        !_cameraController!.value.isInitialized) {
-      // Display a placeholder or loading indicator if permissions aren't granted
-      // or camera isn't initialized yet.
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            if (!_hasPermission) ...[
-              CustomIconWidget(
-                iconName: 'no_photography',
-                color: AppTheme.lightTheme.colorScheme.onSurfaceVariant,
-                size: 64,
-              ),
-              SizedBox(height: 2.h),
-              Text(
-                'Camera access required',
-                style: AppTheme.lightTheme.textTheme.titleMedium,
-                textAlign: TextAlign.center,
-              ),
-              SizedBox(height: 1.h),
-              Text(
-                'Please grant camera and photo library permissions to use this feature.',
-                style: AppTheme.lightTheme.textTheme.bodyMedium,
-                textAlign: TextAlign.center,
-              ),
-              SizedBox(height: 2.h),
-              ElevatedButton(
-                onPressed: () => _checkAndInitializeCamera(), // Allow retry
-                child: const Text('Grant Permissions'),
-              ),
-            ] else ...[
-              CircularProgressIndicator(),
-              SizedBox(height: 2.h),
-              Text('Initializing camera...',
-                  style: AppTheme.lightTheme.textTheme.titleMedium),
-            ],
-          ],
+    final tfliteModelServices = context.watch<TfLiteModelServices>();
+    final mlStatus = tfliteModelServices.status;
+
+    final bool isCameraAndModelReady = _hasPermission &&
+        _cameraController != null &&
+        _cameraController!.value.isInitialized &&
+        (mlStatus == ModelPredictionStatus.ready ||
+            mlStatus == ModelPredictionStatus.predicting);
+    if (!isCameraAndModelReady) {
+      return Scaffold(
+        // Ensure a Scaffold is returned here
+        backgroundColor:
+            Theme.of(context).scaffoldBackgroundColor, // Use theme colors
+        body: SafeArea(
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (!_hasPermission) ...[
+                  CustomIconWidget(
+                    iconName: 'no_photography',
+                    color: AppTheme.lightTheme.colorScheme.onSurfaceVariant,
+                    size: 64,
+                  ),
+                  SizedBox(height: 2.h),
+                  Text(
+                    'Camera access required',
+                    style: AppTheme.lightTheme.textTheme.titleMedium,
+                    textAlign: TextAlign.center,
+                  ),
+                  SizedBox(height: 1.h),
+                  Text(
+                    'Please grant camera and photo library permissions to use this feature.',
+                    style: AppTheme.lightTheme.textTheme.bodyMedium,
+                    textAlign: TextAlign.center,
+                  ),
+                  SizedBox(height: 2.h),
+                  ElevatedButton(
+                    onPressed: () => _checkAndInitializeCamera(), // Allow retry
+                    child: const Text('Grant Permissions'),
+                  ),
+                ] else if (mlStatus == ModelPredictionStatus.loading) ...[
+                  CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                        Theme.of(context).colorScheme.primary),
+                  ),
+                  SizedBox(height: 2.h),
+                  Text(
+                    'Loading crop detection model...',
+                    style: Theme.of(context).textTheme.titleMedium,
+                    textAlign: TextAlign.center,
+                  ),
+                ] else if (mlStatus == ModelPredictionStatus.error) ...[
+                  Icon(Icons.error_outline, color: Colors.red, size: 64),
+                  SizedBox(height: 2.h),
+                  Text(
+                    'Model loading error',
+                    style: Theme.of(context).textTheme.titleMedium,
+                    textAlign: TextAlign.center,
+                  ),
+                  SizedBox(height: 1.h),
+                  Text(
+                    tfliteModelServices.errorMessage ??
+                        'An unknown error occurred while loading the model.',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                    textAlign: TextAlign.center,
+                  ),
+                  SizedBox(height: 2.h),
+                  ElevatedButton(
+                    onPressed: () {
+                      // Attempt to reload model and camera again
+                      initializeCameraOnDemand();
+                    },
+                    child: const Text('Retry'),
+                  ),
+                ] else ...[
+                  // Camera not initialized but permission might be granted
+                  CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                        Theme.of(context).colorScheme.primary),
+                  ),
+                  SizedBox(height: 2.h),
+                  Text('Initializing camera...',
+                      style: Theme.of(context).textTheme.titleMedium),
+                ],
+              ],
+            ),
+          ),
         ),
       );
     }
@@ -555,62 +598,24 @@ class CropScannerCameraState extends State<CropScannerCamera>
             ),
 
             // Detection Feedback
-            if (_showDetectionFeedback)
+            if (_showDetectionFeedback &&
+                mlStatus ==
+                    ModelPredictionStatus
+                        .ready) // Only show if prediction is done
               DetectionFeedbackWidget(
                 cropName: _detectedCrop,
                 confidence: _confidence,
               ),
 
-            // Loading Overlay
-            if (_isProcessing) LoadingOverlayWidget(),
+            // Loading Overlay - show if _isDetecting (ML prediction in progress)
+            // or if the ML model is currently loading/predicting via its status
+            if (mlStatus == ModelPredictionStatus.predicting ||
+                mlStatus == ModelPredictionStatus.loading)
+              LoadingOverlayWidget(),
 
             // Zoom Indicator
             if (_currentZoomLevel > 1.0) _buildZoomIndicator(),
           ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPermissionScreen() {
-    return Scaffold(
-      backgroundColor: AppTheme.lightTheme.scaffoldBackgroundColor,
-      body: SafeArea(
-        child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 4.h),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              CustomIconWidget(
-                iconName: 'camera_alt',
-                size: 20.w,
-                color: AppTheme.lightTheme.colorScheme.primary,
-              ),
-              SizedBox(height: 4.h),
-              Text(
-                'Camera Permission Required',
-                style: AppTheme.lightTheme.textTheme.headlineSmall,
-                textAlign: TextAlign.center,
-              ),
-              SizedBox(height: 2.h),
-              Text(
-                'CropScan Pro needs camera access to identify crops. Please grant camera permission to continue.',
-                style: AppTheme.lightTheme.textTheme.bodyMedium,
-                textAlign: TextAlign.center,
-              ),
-              SizedBox(height: 4.h),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {
-                    _checkAndInitializeCamera();
-                  },
-                  child: Text('Grant Permission'),
-                ),
-              ),
-              SizedBox(height: 2.h),
-            ],
-          ),
         ),
       ),
     );

@@ -49,7 +49,7 @@ class TfLiteModelServices extends ChangeNotifier {
     if (_status == ModelPredictionStatus.loading ||
         _status == ModelPredictionStatus.ready) {
       log("TFLiteModelServices: Model already loaded or loading");
-      return; // FIX: Added missing return
+      return;
     }
 
     _setStatus(ModelPredictionStatus.loading);
