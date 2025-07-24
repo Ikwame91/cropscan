@@ -1,209 +1,237 @@
 import 'dart:developer';
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/widgets.dart';
 import 'package:image/image.dart' as img;
 import 'package:flutter/services.dart';
 import 'package:tflite_flutter/tflite_flutter.dart';
 
 enum ModelPredictionStatus {
+  initial,
   loading,
   ready,
   predicting,
   error,
-  initial,
 }
 
 class TfLiteModelServices extends ChangeNotifier {
   Interpreter? _interpreter;
+  IsolateInterpreter? _isolateInterpreter;
   List<String>? _labels;
+  String? _errorMessage;
   ModelPredictionStatus _status = ModelPredictionStatus.initial;
 
+  // Configuration constants
   static const String _modelPath = "assets/ml_models/converted_model.tflite";
   static const String _labelPath = "assets/ml_models/labels.txt";
   static const int _inputSize = 256;
   static const int _channels = 3;
   static const int _outputLength = 16;
+  static const double _confidenceThreshold = 0.5;
 
+  // Getters
   Interpreter? get interpreter => _interpreter;
   List<String>? get labels => _labels;
+  String? get errorMessage => _errorMessage;
   ModelPredictionStatus get status => _status;
+  bool get isReady => _status == ModelPredictionStatus.ready;
 
-//private setter for status with notification
-  void _setStatus(ModelPredictionStatus newStatus) {
+  void _setStatus(ModelPredictionStatus newStatus, {String? message}) {
     if (_status != newStatus) {
       _status = newStatus;
+      _errorMessage = message;
       notifyListeners();
-      log("TFLiteModelServices: Status changed to $_status");
+      log("TFLiteModelServices: Status changed to $_status${message != null ? " - $message" : ""}");
     }
   }
 
-//called once typically at startup or when the model is needed
   Future<void> loadModelAndLabels() async {
     if (_status == ModelPredictionStatus.loading ||
         _status == ModelPredictionStatus.ready) {
-      log("Model and labels already loaded or loading .");
+      log("TFLiteModelServices: Model already loaded or loading");
+      return; // FIX: Added missing return
     }
 
-    _status = ModelPredictionStatus.loading;
-    log("TfliteModelServices: Loading model and labels...");
+    _setStatus(ModelPredictionStatus.loading);
+
     try {
-      //load the model
-      //we use the IsolateInterpreter directly for asynchronous inference
+      // Load interpreter
       _interpreter = await Interpreter.fromAsset(_modelPath);
-      log("TfliteModelServices: Model loaded successfully.");
 
-      //load the labels
-      final labelsData = await rootBundle.loadString(_labelPath);
-      _labels = labelsData
-          .split('\n')
-          .map((label) => label.trim())
-          .where((label) => label.isNotEmpty)
-          .toList();
-      log('TFliteModelServices: Labels loaded successfully. Count: ${_labels?.length}');
+      // Create isolate interpreter for async inference
+      _isolateInterpreter =
+          await IsolateInterpreter.create(address: _interpreter!.address);
 
-      //basic validation
-      if (_interpreter!.getInputTensors().isEmpty ||
-          _interpreter!.getOutputTensors().isEmpty) {
-        throw Exception("Model has no input or output tensors. Check validity");
-      }
-      final inputShape = _interpreter!.getInputTensors()[0].shape;
-      final outputShape = _interpreter!.getOutputTensors()[0].shape;
+      // Load and validate labels
+      await _loadLabels();
 
-      log("TFliteModelServices: Input shape: $inputShape, Output shape: $outputShape");
+      // Validate model dimensions
+      await _validateModelDimensions();
 
-      //validate input shape matches expected dimensions
-      if (inputShape.length != 4 ||
-          inputShape[1] != _inputSize ||
-          inputShape[2] != _inputSize ||
-          inputShape[3] != _channels) {
-        throw Exception(
-            "WARNING: model input shape {$inputShape} does not match expected dimensions [ $_inputSize, $_inputSize, $_channels]");
-      }
-
-      if (outputShape.length != 2 || outputShape[1] != _outputLength) {
-        throw Exception(
-            "WARNING: model output shape {$outputShape} does not match expected dimensions [ $_outputLength]");
-      }
-      if (_labels?.length != _outputLength) {
-        log("WARNING: Number of labels ${_labels?.length} does not match model output length $_outputLength");
-      }
-      _status = ModelPredictionStatus.ready;
-      log("TFLiteModelServices: Model service is ready");
+      _setStatus(ModelPredictionStatus.ready);
+      log("TFLiteModelServices: Model service initialized successfully");
     } catch (e) {
-      _status = ModelPredictionStatus.error;
-      _interpreter?.close();
-      _interpreter = null;
-      log("TFLiteModelServices: Error loading model or labels: $e", error: e);
+      await _cleanup();
+      _setStatus(ModelPredictionStatus.error,
+          message: "Initialization failed: ${_sanitizeError(e)}");
       rethrow;
     }
   }
 
-  //runs inference on the provided image file
-  //returns a map containg the predicted label and confidence
-  Future<Map<String, dynamic>?> predictedImage(File imageFile) async {
-    if (_status != ModelPredictionStatus.ready ||
-        _interpreter == null ||
-        _labels == null) {
-      log("TFLiteModelServices: Model is not ready or labels are not loaded.");
+  Future<void> _loadLabels() async {
+    final labelsData = await rootBundle.loadString(_labelPath);
+    _labels = labelsData
+        .split('\n')
+        .map((label) => label.trim())
+        .where((label) => label.isNotEmpty)
+        .toList();
+
+    if (_labels!.isEmpty) {
+      throw Exception("No valid labels found in $_labelPath");
+    }
+
+    log('TFLiteModelServices: Loaded ${_labels!.length} labels');
+  }
+
+  Future<void> _validateModelDimensions() async {
+    final inputTensors = _interpreter!.getInputTensors();
+    final outputTensors = _interpreter!.getOutputTensors();
+
+    if (inputTensors.isEmpty || outputTensors.isEmpty) {
+      throw Exception("Model has invalid tensor configuration");
+    }
+
+    final inputShape = inputTensors[0].shape;
+    final outputShape = outputTensors[0].shape;
+
+    // Validate input shape [batch, height, width, channels]
+    if (inputShape.length != 4 ||
+        inputShape[1] != _inputSize ||
+        inputShape[2] != _inputSize ||
+        inputShape[3] != _channels) {
       throw Exception(
-          "Model not ready for prediction. Call loadModelAndLabels first.");
+          "Model input shape $inputShape doesn't match expected [1, $_inputSize, $_inputSize, $_channels]");
+    }
+
+    // Validate output shape [batch, classes]
+    if (outputShape.length != 2 || outputShape[1] != _outputLength) {
+      throw Exception(
+          "Model output shape $outputShape doesn't match expected [1, $_outputLength]");
+    }
+
+    if (_labels!.length != _outputLength) {
+      log("WARNING: Label count (${_labels!.length}) doesn't match output length ($_outputLength)");
+    }
+  }
+
+  Future<Map<String, dynamic>?> predictImage(File imageFile) async {
+    if (!isReady || _isolateInterpreter == null) {
+      throw Exception("Model not ready. Call loadModelAndLabels() first");
     }
 
     _setStatus(ModelPredictionStatus.predicting);
+
     try {
-      //read image bytes
-      final imageBytes = await imageFile.readAsBytes();
-      img.Image? originalImage = img.decodeImage(imageBytes);
+      // Preprocess image efficiently
+      final inputTensor = await _preprocessImage(imageFile);
 
-      if (originalImage == null) {
-        throw Exception("Failed to decode image ");
-      }
-      img.Image resizedImage =
-          img.copyResize(originalImage, width: _inputSize, height: _inputSize);
-
-      // Convert image to a 4D list of doubles (normalized pixel values 0-1)
-      // Expected input format for TFLite is typically [1, height, width, channels] for images.
-
-      var imageInput = List.generate(_inputSize, (y) {
-        return List.generate(_inputSize, (x) {
-          final pixel = resizedImage.getPixel(x, y);
-          return [
-            (pixel.r / 255.0),
-            (pixel.g / 255.0),
-            (pixel.b / 255.0),
-          ];
-        });
-      });
-
-      //tensorflow lite mdoels expect a batch dimension [1, height, width, channels]
-      var inputTensor = [imageInput];
-
-      //output buffer which will be a list of probabilities for each class
-      var outputBuffer =
+      // Run inference
+      final outputBuffer =
           List.filled(_outputLength, 0.0).reshape([1, _outputLength]);
+      await _isolateInterpreter!.run([inputTensor], outputBuffer);
 
-      //I run inference on a seperate isolate to create a new IsolateInterpretor for each predicton if needed,
-      //I create it for each run here. For high freequency, consider sung a single IsolateInterpreter from laodModelAndLabels.
-      // Let's adjust to create IsolateInterpreter once with the interpreter.
-      final isolateInterpreter =
-          await IsolateInterpreter.create(address: _interpreter!.address);
-      await isolateInterpreter.run(inputTensor, outputBuffer);
-      isolateInterpreter.close();
+      // Process results
+      final result = _processInferenceResults(outputBuffer[0]);
 
-      //post-proces output
-      //index with highest probability
-      List<double> probabilities = List<double>.from(outputBuffer[0]);
-      double maxConfidence = 0.0;
-      int predictedIndex = -1;
+      _setStatus(ModelPredictionStatus.ready);
 
-      for (int i = 0; i < probabilities.length; i++) {
-        if (probabilities[i] > maxConfidence) {
-          maxConfidence = probabilities[i];
-          predictedIndex = i;
-        }
-      }
-      String predictedLabel = (predictedIndex != -1 &&
-              _labels != null &&
-              predictedIndex < _labels!.length)
-          ? _labels![predictedIndex]
-          : "Unknown";
+      log("TFLiteModelServices: Prediction complete - ${result['label']}: ${(result['confidence'] * 100).toStringAsFixed(1)}%");
 
-      log("TFLiteModelService: Prediction complete. Label : $predictedLabel, confidence: ${maxConfidence.toStringAsFixed(2)}");
-      return {
-        'label': predictedLabel,
-        'confidence': maxConfidence,
-      };
+      return result;
     } catch (e) {
-      _setStatus(ModelPredictionStatus.error);
-      log('TFLiteModelServiCe: Error during prediction: $e', error: e);
-      throw Exception("Prediction failed: ${e.toString()}");
-    } finally {
-      //resetting status after prediction or keep predicting if continuous
-      if (_status != ModelPredictionStatus.error) {
-        _status = ModelPredictionStatus.ready;
+      _setStatus(ModelPredictionStatus.error,
+          message: "Prediction failed: ${_sanitizeError(e)}");
+      rethrow;
+    }
+  }
+
+  Future<List> _preprocessImage(File imageFile) async {
+    final imageBytes = await imageFile.readAsBytes();
+    final originalImage = img.decodeImage(imageBytes);
+
+    if (originalImage == null) {
+      throw Exception("Failed to decode image");
+    }
+
+    final resizedImage = img.copyResize(originalImage,
+        width: _inputSize,
+        height: _inputSize,
+        interpolation: img.Interpolation.linear);
+
+    // Efficient tensor creation using Float32List
+    final inputData = Float32List(_inputSize * _inputSize * _channels);
+    int index = 0;
+
+    for (int y = 0; y < _inputSize; y++) {
+      for (int x = 0; x < _inputSize; x++) {
+        final pixel = resizedImage.getPixel(x, y);
+        inputData[index++] = pixel.r / 255.0;
+        inputData[index++] = pixel.g / 255.0;
+        inputData[index++] = pixel.b / 255.0;
       }
     }
+
+    return inputData.reshape([1, _inputSize, _inputSize, _channels]);
+  }
+
+  Map<String, dynamic> _processInferenceResults(List<double> probabilities) {
+    double maxConfidence = 0.0;
+    int predictedIndex = -1;
+
+    for (int i = 0; i < probabilities.length; i++) {
+      if (probabilities[i] > maxConfidence) {
+        maxConfidence = probabilities[i];
+        predictedIndex = i;
+      }
+    }
+
+    final isConfident = maxConfidence >= _confidenceThreshold;
+    final predictedLabel = (predictedIndex >= 0 &&
+            _labels != null &&
+            predictedIndex < _labels!.length)
+        ? _labels![predictedIndex]
+        : "Unknown";
+
+    return {
+      'label': predictedLabel,
+      'confidence': maxConfidence,
+      'isConfident': isConfident,
+      'allProbabilities': Map.fromIterables(
+          _labels ?? List.generate(_outputLength, (i) => 'Class_$i'),
+          probabilities),
+    };
+  }
+
+  String _sanitizeError(dynamic error) {
+    // Sanitize error messages to prevent information disclosure
+    final errorStr = error.toString();
+    final parts = errorStr.split(':');
+    return parts.length > 1 ? parts.last.trim() : errorStr;
+  }
+
+  Future<void> _cleanup() async {
+    _isolateInterpreter?.close();
+    _isolateInterpreter = null;
+    _interpreter?.close();
+    _interpreter = null;
+    _labels = null;
   }
 
   @override
   void dispose() {
-    _interpreter?.close(); // Close the interpreter to free resources
-    _interpreter = null;
-    _labels = null;
-    _setStatus(ModelPredictionStatus.initial); // Reset status to initial
-    log("TFLiteModelService: Interpreter and resources disposed.");
-    super.dispose(); // Call super.dispose()
+    _cleanup();
+    _setStatus(ModelPredictionStatus.initial);
+    log("TFLiteModelServices: Resources disposed");
+    super.dispose();
   }
 }
-    // Intellectual Opponent: Your current strategy for IsolateInterpreter.create
-      // inside `predictedImage` means a new isolate is created and torn down for *each* prediction.
-      // While it guarantees isolation, for high frequency predictions, the overhead
-      // of creating and tearing down isolates can impact performance.
-      // A common optimization for continuous or frequent prediction is to
-      // create and maintain a single `IsolateInterpreter` for the lifecycle of your
-      // `TfLiteModelServices` class, possibly within `loadModelAndLabels`,
-      // and then just use `isolateInterpreter.run` for subsequent predictions.
-      //
-      // For a final year project with occasional predictions, your current approach is fine
-      // and safer against resource leaks if not disposed properly.
-      // For production-grade high-throughput, reconsider this.
