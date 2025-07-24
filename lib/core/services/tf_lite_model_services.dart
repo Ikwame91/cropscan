@@ -155,7 +155,7 @@ class TfLiteModelServices extends ChangeNotifier {
     }
   }
 
-  Future<List> _preprocessImage(File imageFile) async {
+  Future<List<dynamic>> _preprocessImage(File imageFile) async {
     final imageBytes = await imageFile.readAsBytes();
     final originalImage = img.decodeImage(imageBytes);
 

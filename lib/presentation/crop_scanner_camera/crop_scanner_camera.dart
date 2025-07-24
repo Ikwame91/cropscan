@@ -1,10 +1,14 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'dart:io';
+
 import 'package:camera/camera.dart';
+import 'package:cropscan_pro/core/services/tf_lite_model_services.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:provider/provider.dart';
 import 'package:sizer/sizer.dart';
 import '../../core/app_export.dart';
 import './widgets/camera_overlay_widget.dart';
@@ -31,22 +35,18 @@ class CropScannerCameraState extends State<CropScannerCamera>
   double _minZoomLevel = 1.0;
   double _maxZoomLevel = 1.0;
   bool _hasPermission = false;
-  bool _showDetectionFeedback = false;
+  Offset? _focusPoint;
+
+  // state value variables for Ml prediction results and status
   String _detectedCrop = '';
   double _confidence = 0.0;
-  Offset? _focusPoint;
+  bool _isDetecting = false;
+  bool _showDetectionFeedback = false;
 
   late AnimationController _focusAnimationController;
   late AnimationController _captureAnimationController;
   late Animation<double> _focusAnimation;
   late Animation<double> _captureAnimation;
-
-  // Mock detection data
-  final List<Map<String, dynamic>> _mockDetections = [
-    {'crop': 'Bell Pepper', 'confidence': 0.92},
-    {'crop': 'Tomato', 'confidence': 0.87},
-    {'crop': 'Maize', 'confidence': 0.94},
-  ];
 
   @override
   void initState() {
@@ -100,6 +100,18 @@ class CropScannerCameraState extends State<CropScannerCamera>
       return;
     }
     await _checkAndInitializeCamera();
+
+    final tfliteModelServices = context.read<TfLiteModelServices>();
+    if (tfliteModelServices.status == ModelPredictionStatus.initial ||
+        tfliteModelServices.status == ModelPredictionStatus.error) {
+      try {
+        await tfliteModelServices.loadModelAndLabels();
+      } catch (e) {
+        debugPrint("Error loading ML model: $e");
+        _showErrorDialog(
+            "Failed to load crop detection model. Please restart the app.");
+      }
+    }
   }
 
   Future<void> _checkAndInitializeCamera() async {
@@ -320,16 +332,64 @@ class CropScannerCameraState extends State<CropScannerCamera>
     }
   }
 
-  void _captureImage() async {
-    if (_cameraController == null ||
-        !_cameraController!.value.isInitialized ||
-        _isProcessing) {
+  Future<void> _performDetection(XFile imageFile) async {
+    final tfliteModelServices = context.read<TfLiteModelServices>();
+    if (tfliteModelServices.status != ModelPredictionStatus.ready) {
+      _showErrorDialog("Model is not ready. Please wait or restart the app");
+      setState(() {
+        _isDetecting = false;
+      });
       return;
     }
     setState(() {
-      _isProcessing = true;
+      _isDetecting = true;
       _showDetectionFeedback = false;
     });
+    try {
+      final File image = File(imageFile.path);
+      final Map<String, dynamic>? result =
+          await tfliteModelServices.predictedImage(image);
+      if (result != null) {
+        setState(() {
+          _detectedCrop = result['label'];
+          _confidence = result['confidence'];
+          _showDetectionFeedback = true;
+        });
+        await Future.delayed(const Duration(seconds: 2));
+        if (mounted) {
+          Navigator.pushNamed(
+            context,
+            "crop-detection-results",
+            arguments: {
+              'imagePath': imageFile.path,
+              'detectedCrop': _detectedCrop,
+              'confidence': _confidence,
+            },
+          );
+        }
+      } else {
+        _showErrorDialog("Detection failed. Please try again.");
+      }
+    } catch (e) {
+      debugPrint("Error during detection: $e");
+      _showErrorDialog(
+          "Failed to process image: ${e.toString().split(':').last.trim()}");
+    } finally {
+      setState(() {
+        _isDetecting = false;
+        _showDetectionFeedback = false;
+      });
+    }
+  }
+
+  void _captureImage() async {
+    if (_cameraController == null ||
+        !_cameraController!.value.isInitialized ||
+        _isDetecting) {
+      // Use _isDetecting to prevent multiple captures
+      return;
+    }
+
     _captureAnimationController.forward().then((_) {
       _captureAnimationController.reverse();
     });
@@ -341,45 +401,22 @@ class CropScannerCameraState extends State<CropScannerCamera>
       imageFile = await _cameraController!.takePicture();
       debugPrint("Image captured: ${imageFile.path}");
 
-      await Future.delayed(const Duration(seconds: 2));
-
-      final detection = _mockDetections[
-          DateTime.now().millisecondsSinceEpoch % _mockDetections.length];
-
-      setState(() {
-        _detectedCrop = detection["crop"];
-        _confidence = detection["confidence"];
-        _showDetectionFeedback = true;
-      });
-      await Future.delayed(const Duration(seconds: 2));
-      setState(() {
-        _isProcessing = false;
-        _showDetectionFeedback = false;
-      });
-      if (mounted) {
-        Navigator.pushNamed(
-          context,
-          "crop-detection-results",
-          arguments: imageFile.path,
-        );
-      }
+      // Trigger the ML prediction
+      await _performDetection(imageFile);
     } on CameraException catch (e) {
       debugPrint("Error taking picture: $e");
-      _showErrorDialog("failed to capture image: ${e.description}");
+      _showErrorDialog("Failed to capture image: ${e.description}");
       setState(() {
-        _isProcessing = false;
+        _isDetecting = false; // Ensure reset if camera capture fails
       });
     }
   }
 
   void _openGallery() async {
     HapticFeedback.lightImpact();
-    if (_isProcessing) return;
+    // Prevent opening gallery if detection is active
+    if (_isDetecting) return;
 
-    setState(() {
-      _isProcessing = true;
-      _showDetectionFeedback = false;
-    });
     final ImagePicker imagePicker = ImagePicker();
     XFile? image;
     try {
@@ -387,32 +424,9 @@ class CropScannerCameraState extends State<CropScannerCamera>
       if (image != null) {
         debugPrint("Image selected: ${image.path}");
 
-        await Future.delayed(const Duration(seconds: 2));
-
-        final detection = _mockDetections[
-            DateTime.now().millisecondsSinceEpoch % _mockDetections.length];
-        setState(() {
-          _detectedCrop = detection['crop'];
-          _confidence = detection['confidence'];
-
-          _showDetectionFeedback = true;
-        });
-        await Future.delayed(const Duration(seconds: 2));
-        setState(() {
-          _isProcessing = false;
-          _showDetectionFeedback = false;
-        });
-        if (mounted) {
-          Navigator.pushNamed(
-            context,
-            '/crop-detection-results',
-            arguments: image.path,
-          );
-        }
+        // Trigger the ML prediction
+        await _performDetection(image);
       } else {
-        setState(() {
-          _isProcessing = false;
-        });
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
             content: Text(
           "Image selection cancelled",
@@ -422,7 +436,7 @@ class CropScannerCameraState extends State<CropScannerCamera>
       debugPrint("Error picking image from gallery: $e");
       _showErrorDialog("Failed to pick image from gallery.");
       setState(() {
-        _isProcessing = false;
+        _isDetecting = false; // Ensure reset if gallery pick fails
       });
     }
   }
