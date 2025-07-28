@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:path/path.dart';
 import 'package:sizer/sizer.dart';
 
 import '../../../core/app_export.dart';
@@ -68,7 +67,7 @@ class CameraOverlayWidget extends StatelessWidget {
               ),
               _buildTopButton(
                 icon: isFlashOn == true ? 'flash_on' : 'flash_off',
-                onPressed: onFlashToggle,
+                onPressed: isControlsDisabled ? null : onFlashToggle,
               ),
             ],
           ),

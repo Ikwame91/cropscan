@@ -29,7 +29,6 @@ class CropScannerCameraState extends State<CropScannerCamera>
   List<CameraDescription>? _cameras;
   int _selectedCameraIndex = 0;
   bool _isFlashOn = false;
-  bool _isProcessing = false;
   bool _isFrontCamera = false;
   double _currentZoomLevel = 1.0;
   double _minZoomLevel = 1.0;
@@ -40,7 +39,6 @@ class CropScannerCameraState extends State<CropScannerCamera>
   // state value variables for Ml prediction results and status
   String _detectedCrop = '';
   double _confidence = 0.0;
-  bool _isDetecting = false;
   bool _showDetectionFeedback = false;
 
   static const Duration _detectionFeedbackDuration = Duration(seconds: 2);
@@ -62,7 +60,7 @@ class CropScannerCameraState extends State<CropScannerCamera>
     WidgetsBinding.instance.addObserver(this);
     _initializeAnimations();
     _lockOrientation();
-    // Removed _checkAndInitializeCamera() from here!
+    _checkAndInitializeCamera();
   }
 
   void _initializeAnimations() {
@@ -100,14 +98,12 @@ class CropScannerCameraState extends State<CropScannerCamera>
   }
 
   void _setDetectionState({
-    required bool isDetecting,
     required bool showFeedback,
     String? detectedCrop,
     double? confidence,
   }) {
     if (mounted) {
       setState(() {
-        _isDetecting = isDetecting;
         _showDetectionFeedback = showFeedback;
         if (detectedCrop != null) _detectedCrop = detectedCrop;
         if (confidence != null) _confidence = confidence;
@@ -118,7 +114,6 @@ class CropScannerCameraState extends State<CropScannerCamera>
   void _resetDetectionState() {
     if (mounted) {
       setState(() {
-        _isDetecting = false;
         _showDetectionFeedback = false;
         // Optionally reset detected crop/confidence here if you want to clear previous results
         // _detectedCrop = '';
@@ -155,20 +150,16 @@ class CropScannerCameraState extends State<CropScannerCamera>
       SnackBar(
         content: Text(message),
         backgroundColor: backgroundColor,
-        duration: const Duration(seconds: 3), // Consistent duration
+        duration: const Duration(seconds: 3),
       ),
     );
   }
 
 // This method will now be called externally when the tab is selected
   Future<void> initializeCameraOnDemand() async {
-    if (_hasPermission &&
-        _cameraController != null &&
-        _cameraController!.value.isInitialized) {
-      // Camera is already initialized and permissions are granted, no need to re-initialize
-      return;
+    if (_cameraController == null || !_cameraController!.value.isInitialized) {
+      await _checkAndInitializeCamera();
     }
-    await _checkAndInitializeCamera();
 
     final tfliteModelServices = context.read<TfLiteModelServices>();
     if (tfliteModelServices.status == ModelPredictionStatus.initial ||
@@ -258,7 +249,6 @@ class CropScannerCameraState extends State<CropScannerCamera>
       setState(() {
         _currentZoomLevel = 1.0;
         _isFlashOn = false;
-        _isProcessing = false;
       });
       _cameraController!.setFlashMode(FlashMode.off);
     } on CameraException catch (e) {
@@ -294,6 +284,12 @@ class CropScannerCameraState extends State<CropScannerCamera>
     if (_cameras == null || _cameras!.length < 2) {
       return;
     }
+    if (_isFlashOn) {
+      await _cameraController!.setFlashMode(FlashMode.off);
+      setState(() {
+        _isFlashOn = false;
+      });
+    }
     _selectedCameraIndex = _selectedCameraIndex == 0 ? 1 : 0;
     await _setupCameraController(_selectedCameraIndex);
     setState(() {
@@ -315,7 +311,9 @@ class CropScannerCameraState extends State<CropScannerCamera>
           actions: <Widget>[
             TextButton(
               child: const Text("Cancel"),
-              onPressed: () {},
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
             ),
             TextButton(
               child: const Text("Open Settings"),
@@ -351,7 +349,11 @@ class CropScannerCameraState extends State<CropScannerCamera>
   }
 
   void _onTapToFocus(Offset position) async {
-    if (_cameraController == null || !_cameraController!.value.isInitialized) {
+    if (_cameraController == null ||
+        !_cameraController!.value.isInitialized ||
+        context.read<TfLiteModelServices>().status ==
+            ModelPredictionStatus.predicting) {
+      // Disable focus during prediction
       return;
     }
 
@@ -377,6 +379,7 @@ class CropScannerCameraState extends State<CropScannerCamera>
       HapticFeedback.selectionClick();
     } on CameraException catch (e) {
       debugPrint("Error setting focus/exposure point: $e");
+      _showSnackBar("Failed to set focus.", backgroundColor: Colors.red);
     }
   }
 
@@ -402,11 +405,9 @@ class CropScannerCameraState extends State<CropScannerCamera>
 
     if (tfliteModelServices.status != ModelPredictionStatus.ready) {
       _showErrorDialog("Model is not ready. Please wait or restart the app");
-      _resetDetectionState(); // Ensure state is reset if model isn't ready
+      _resetDetectionState();
       return;
     }
-
-    _setDetectionState(isDetecting: true, showFeedback: false); // Use helper
 
     try {
       final File image = File(imageFile.path); // Keep this
@@ -416,7 +417,6 @@ class CropScannerCameraState extends State<CropScannerCamera>
       if (result != null) {
         // Use helper for state updates
         _setDetectionState(
-          isDetecting: true,
           showFeedback: true,
           detectedCrop: result['label'],
           confidence: result['confidence'],
@@ -432,7 +432,6 @@ class CropScannerCameraState extends State<CropScannerCamera>
       }
     } catch (e) {
       debugPrint("Error during detection: $e");
-      // Use _sanitizeError for cleaner messages
       _showErrorDialog("Failed to process image: ${_sanitizeError(e)}");
     } finally {
       _resetDetectionState();
@@ -442,8 +441,8 @@ class CropScannerCameraState extends State<CropScannerCamera>
   void _captureImage() async {
     if (_cameraController == null ||
         !_cameraController!.value.isInitialized ||
-        _isDetecting) {
-      // Use _isDetecting to prevent multiple captures
+        context.read<TfLiteModelServices>().status ==
+            ModelPredictionStatus.predicting) {
       return;
     }
 
@@ -470,9 +469,12 @@ class CropScannerCameraState extends State<CropScannerCamera>
 
   void _openGallery() async {
     HapticFeedback.lightImpact();
-    // Prevent opening gallery if detection is active
-    if (_isDetecting) return; // Prevent if already detecting
+    final tfliteService = context.read<TfLiteModelServices>();
 
+    if (tfliteService.status == ModelPredictionStatus.predicting) {
+      _showSnackBar("Please wait, detection is in progress.");
+      return;
+    }
     final ImagePicker imagePicker = ImagePicker();
     XFile? image;
     try {
@@ -500,8 +502,10 @@ class CropScannerCameraState extends State<CropScannerCamera>
     if (state == AppLifecycleState.inactive) {
       _cameraController!.dispose();
     } else if (state == AppLifecycleState.resumed) {
-      // Re-initialize camera only if it was disposed and we have permission
-      if (_hasPermission) {
+      // Re-initialize camera only if it was disposed AND we have permission
+      if (_hasPermission &&
+          (_cameraController == null ||
+              !_cameraController!.value.isInitialized)) {
         _initilizeCameraComponents();
       }
     }
@@ -521,7 +525,7 @@ class CropScannerCameraState extends State<CropScannerCamera>
   Widget build(BuildContext context) {
     return Consumer<TfLiteModelServices>(
       builder: (context, tfliteService, child) {
-        return _buildCameraInterface(tfliteService); // Call a new helper method
+        return _buildCameraInterface(tfliteService);
       },
     );
   }
@@ -531,7 +535,7 @@ class CropScannerCameraState extends State<CropScannerCamera>
   Widget _buildCameraInterface(TfLiteModelServices tfliteService) {
     final mlStatus = tfliteService.status;
     final isCameraAndModelReady = _hasPermission &&
-        _cameraController?.value.isInitialized == true && // Safer null check
+        _cameraController?.value.isInitialized == true &&
         (mlStatus == ModelPredictionStatus.ready ||
             mlStatus == ModelPredictionStatus.predicting);
 
@@ -562,6 +566,7 @@ class CropScannerCameraState extends State<CropScannerCamera>
               isTop: true,
               onFlashToggle: _toggleFlash,
               isFlashOn: _isFlashOn,
+              isControlsDisabled: mlStatus == ModelPredictionStatus.predicting,
             ),
             CameraOverlayWidget(
               isTop: false,
@@ -569,7 +574,7 @@ class CropScannerCameraState extends State<CropScannerCamera>
               onGallery: _openGallery,
               onFlipCamera: _flipCamera,
               captureAnimation: _captureAnimation,
-              isControlsDisabled: _isDetecting, // Pass this new parameter
+              isControlsDisabled: mlStatus == ModelPredictionStatus.predicting,
             ),
 
             // Detection Feedback
@@ -616,10 +621,14 @@ class CropScannerCameraState extends State<CropScannerCamera>
       return _buildModelLoadingContent();
     } else if (mlStatus == ModelPredictionStatus.error) {
       return _buildErrorContent(tfliteService);
-    } else {
-      // This state implies permission is granted, but camera controller might still be initializing
-      // or mlStatus is ready but camera not yet initialized.
+    } else if (_cameraController == null ||
+        !_cameraController!.value.isInitialized) {
+      //  permissions are granted and model might be ready,
+      // but camera itself is still initializing or failed to initialize.
       return _buildCameraInitializingContent();
+    } else {
+      // should not be reached if all states are covered
+      return const CircularProgressIndicator();
     }
   }
 
@@ -739,7 +748,7 @@ class CropScannerCameraState extends State<CropScannerCamera>
         child: Container(
           decoration: BoxDecoration(
             border: Border.all(
-              color: Colors.white.withOpacity(0.3), // changed from .withValues
+              color: Colors.white.withValues(alpha: 0.3),
               width: 2.0,
             ),
           ),
@@ -781,7 +790,7 @@ class CropScannerCameraState extends State<CropScannerCamera>
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 3.w, vertical: 1.h),
         decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.7), // changed from .withValues
+          color: Colors.black.withValues(alpha: 0.7),
           borderRadius: BorderRadius.circular(20),
         ),
         child: Text(
