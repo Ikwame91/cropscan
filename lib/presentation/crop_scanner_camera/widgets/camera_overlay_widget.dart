@@ -1,36 +1,36 @@
 import 'package:flutter/material.dart';
+import 'package:path/path.dart';
 import 'package:sizer/sizer.dart';
 
 import '../../../core/app_export.dart';
 
 class CameraOverlayWidget extends StatelessWidget {
   final bool isTop;
-  final VoidCallback? onClose;
   final VoidCallback? onFlashToggle;
-  final bool? isFlashOn;
+  final bool isFlashOn;
   final VoidCallback? onCapture;
   final VoidCallback? onGallery;
   final VoidCallback? onFlipCamera;
   final Animation<double>? captureAnimation;
+  final bool isControlsDisabled;
 
   const CameraOverlayWidget({
     super.key,
     required this.isTop,
-    this.onClose,
     this.onFlashToggle,
-    this.isFlashOn,
+    this.isFlashOn = false,
     this.onCapture,
     this.onGallery,
     this.onFlipCamera,
     this.captureAnimation,
+    this.isControlsDisabled = false,
   });
-
   @override
   Widget build(BuildContext context) {
-    return isTop ? _buildTopOverlay() : _buildBottomOverlay();
+    return isTop ? _buildTopOverlay(context) : _buildBottomOverlay(context);
   }
 
-  Widget _buildTopOverlay() {
+  Widget _buildTopOverlay(BuildContext context) {
     return Positioned(
       top: 0,
       left: 0,
@@ -54,7 +54,9 @@ class CameraOverlayWidget extends StatelessWidget {
             children: [
               _buildTopButton(
                 icon: 'close',
-                onPressed: onClose,
+                onPressed: isControlsDisabled
+                    ? null
+                    : () => Navigator.of(context).pop(),
               ),
               Text(
                 'CropScan',
@@ -75,7 +77,7 @@ class CameraOverlayWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildBottomOverlay() {
+  Widget _buildBottomOverlay(BuildContext context) {
     return Positioned(
       bottom: 0,
       left: 0,
@@ -100,12 +102,12 @@ class CameraOverlayWidget extends StatelessWidget {
             children: [
               _buildBottomButton(
                 icon: 'photo_library',
-                onPressed: onGallery,
+                onPressed: isControlsDisabled ? null : onGallery,
               ),
-              _buildCaptureButton(),
+              _buildCaptureButton(context),
               _buildBottomButton(
                 icon: 'flip_camera_ios',
-                onPressed: onFlipCamera,
+                onPressed: isControlsDisabled ? null : onFlipCamera,
               ),
             ],
           ),
@@ -166,7 +168,7 @@ class CameraOverlayWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildCaptureButton() {
+  Widget _buildCaptureButton(BuildContext context) {
     Widget button = GestureDetector(
       onTap: onCapture,
       child: Container(

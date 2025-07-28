@@ -20,17 +20,24 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
+  static const Duration _snackBarDuration = Duration(seconds: 2);
+  static const Duration _errorSnackBarDuration = Duration(seconds: 4);
+  static const int _scanTabIndex = 1;
+
+  // State
   int _currentIndex = 0;
-  // Use a GlobalKey to access the state of CropScannerCamera
   final GlobalKey<CropScannerCameraState> _cameraScreenKey = GlobalKey();
   late final List<Widget> _screens;
 
   @override
   void initState() {
     super.initState();
+    _initializeScreens();
+  }
+
+  void _initializeScreens() {
     _screens = [
       const DashboardHome(),
-      // Pass the key to the CropScannerCamera
       CropScannerCamera(key: _cameraScreenKey),
       const WeatherDashboard(),
       const CropScreen(),
@@ -39,126 +46,109 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   void goToTab(int index) {
-    setState(() {
-      _currentIndex = index;
-    });
+    if (mounted) {
+      setState(() => _currentIndex = index);
+    }
   }
 
   void _onTabTapped(int index) async {
-    // Access the TFLiteModelService
-    final tfliteService =
-        Provider.of<TfLiteModelServices>(context, listen: false);
-
-    if (index == 1) {
-      switch (tfliteService.status) {
-        case ModelPredictionStatus.initial:
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text("Loading AI model for scanning ..."),
-              duration: Duration(seconds: 2),
-            ),
-          );
-          try {
-            await tfliteService.loadModelAndLabels();
-            if (mounted &&
-                tfliteService.status == ModelPredictionStatus.ready) {
-              setState(() {
-                _currentIndex = index;
-              });
-              _cameraScreenKey.currentState?.initializeCameraOnDemand();
-            }
-          } catch (e) {
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-              content: Text("Failed to load AI model: ${e.toString()}"),
-              duration: Duration(seconds: 2),
-            ));
-          }
-          break;
-        case ModelPredictionStatus.loading:
-          // Model is already loading, just inform the user
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('AI model is still loading, please wait...'),
-              duration: Duration(seconds: 2),
-            ),
-          );
-          // Do NOT navigate
-          break;
-        case ModelPredictionStatus.ready:
-          // Model is ready, proceed normally
-          setState(() {
-            _currentIndex = index;
-          });
-          _cameraScreenKey.currentState?.initializeCameraOnDemand();
-          break;
-        case ModelPredictionStatus.error:
-          // Model is in an error state, inform the user
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text(
-                  'AI model failed to load. Please restart the app or try again.'),
-              backgroundColor: Colors.red,
-              duration: Duration(seconds: 4),
-            ),
-          );
-          // Do NOT navigate
-          break;
-        case ModelPredictionStatus.predicting:
-          // Model is busy with a prediction, inform the user
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text(
-                  'Model is currently busy, please wait for current scan to finish.'),
-              duration: Duration(seconds: 2),
-            ),
-          );
-          // Do NOT navigate
-          break;
-      }
+    if (index == _scanTabIndex) {
+      await _handleScanTabTap();
     } else {
-      // For other tabs, simply navigate
-      setState(() {
-        _currentIndex = index;
-      });
-      // Optionally, if you want to stop/dispose camera when leaving the tab,
-      // you could add a method like `_cameraScreenKey.currentState?.disposeCamera()`
-      // to `_CropScannerCameraState` and call it here.
+      _navigateToTab(index);
     }
+  }
+
+  Future<void> _handleScanTabTap() async {
+    final tfliteService = context.read<TfLiteModelServices>();
+
+    switch (tfliteService.status) {
+      case ModelPredictionStatus.initial:
+        await _loadModelAndNavigate(tfliteService);
+        break;
+      case ModelPredictionStatus.loading:
+        _showLoadingMessage();
+        break;
+      case ModelPredictionStatus.ready:
+        _navigateToScanTab();
+        break;
+      case ModelPredictionStatus.error:
+        _showErrorMessage();
+        break;
+      case ModelPredictionStatus.predicting:
+        _showBusyMessage();
+        break;
+    }
+  }
+
+  Future<void> _loadModelAndNavigate(TfLiteModelServices service) async {
+    _showSnackBar("Loading AI model for scanning...", _snackBarDuration);
+
+    try {
+      await service.loadModelAndLabels();
+      if (mounted && service.status == ModelPredictionStatus.ready) {
+        _navigateToScanTab();
+      }
+    } catch (e) {
+      if (mounted) {
+        _showSnackBar(
+          "Failed to load AI model. Please try again.",
+          _errorSnackBarDuration,
+          backgroundColor: Colors.red,
+        );
+      }
+    }
+  }
+
+  void _navigateToScanTab() {
+    _navigateToTab(_scanTabIndex);
+    _cameraScreenKey.currentState?.initializeCameraOnDemand();
+  }
+
+  void _navigateToTab(int index) {
+    if (mounted) {
+      setState(() => _currentIndex = index);
+    }
+  }
+
+  void _showLoadingMessage() {
+    _showSnackBar(
+        "AI model is still loading, please wait...", _snackBarDuration);
+  }
+
+  void _showErrorMessage() {
+    _showSnackBar(
+      "AI model failed to load. Please restart the app or try again.",
+      _errorSnackBarDuration,
+      backgroundColor: Colors.red,
+    );
+  }
+
+  void _showBusyMessage() {
+    _showSnackBar(
+      "Model is currently busy, please wait for current scan to finish.",
+      _snackBarDuration,
+    );
+  }
+
+  void _showSnackBar(String message, Duration duration,
+      {Color? backgroundColor}) {
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        duration: duration,
+        backgroundColor: backgroundColor,
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Consumer<TfLiteModelServices>(
       builder: (context, tfliteService, child) {
-        String scanIconName = 'camera_alt';
-        String scanLabel = 'Scan';
-        Color scanItemColor = _currentIndex == 1
-            ? AppTheme.lightTheme.colorScheme.primary
-            : AppTheme.lightTheme.colorScheme.onSurfaceVariant;
-
-        switch (tfliteService.status) {
-          case ModelPredictionStatus.loading:
-            scanIconName = 'downloading';
-            scanLabel = 'Loading...';
-            scanItemColor = Colors.orange;
-            break;
-          case ModelPredictionStatus.error:
-            scanIconName = 'error_outline';
-            scanLabel = 'Error';
-            scanItemColor = Colors.red;
-            break;
-          case ModelPredictionStatus.initial:
-            // Default 'camera_alt' and 'Scan' will apply
-            break;
-          case ModelPredictionStatus.predicting:
-            scanIconName = 'autorenew'; // Icon name for predicting
-            scanLabel = 'Predicting...';
-            scanItemColor = Colors.blue;
-            break;
-          case ModelPredictionStatus.ready:
-            // All good, default 'camera_alt' and 'Scan' will apply
-            break;
-        }
+        final scanTabConfig = _getScanTabConfig(tfliteService.status);
 
         return Scaffold(
           backgroundColor: AppTheme.lightTheme.scaffoldBackgroundColor,
@@ -168,77 +158,91 @@ class _MainScreenState extends State<MainScreen> {
               children: _screens,
             ),
           ),
-          bottomNavigationBar: BottomNavigationBar(
-            currentIndex: _currentIndex,
-            onTap: _onTabTapped,
-            type: BottomNavigationBarType.fixed,
-            backgroundColor: AppTheme.lightTheme.colorScheme.surface,
-            selectedItemColor: AppTheme.lightTheme.colorScheme.primary,
-            unselectedItemColor:
-                AppTheme.lightTheme.colorScheme.onSurfaceVariant,
-            selectedLabelStyle: GoogleFonts.poppins(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: AppTheme.lightTheme.colorScheme.primary,
-            ),
-            unselectedLabelStyle: GoogleFonts.poppins(
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-              color: Colors.black,
-            ),
-            items: [
-              BottomNavigationBarItem(
-                icon: CustomIconWidget(
-                  iconName: 'home',
-                  color: _currentIndex == 0
-                      ? AppTheme.lightTheme.colorScheme.primary
-                      : AppTheme.lightTheme.colorScheme.onSurfaceVariant,
-                  size: 24,
-                ),
-                label: 'Home',
-              ),
-              BottomNavigationBarItem(
-                icon: CustomIconWidget(
-                  iconName: scanIconName,
-                  color: scanItemColor,
-                  size: 24,
-                ),
-                label: scanLabel,
-              ),
-              BottomNavigationBarItem(
-                icon: CustomIconWidget(
-                  iconName: 'wb_sunny',
-                  color: _currentIndex == 2
-                      ? AppTheme.lightTheme.colorScheme.primary
-                      : AppTheme.lightTheme.colorScheme.onSurfaceVariant,
-                  size: 24,
-                ),
-                label: 'Weather',
-              ),
-              BottomNavigationBarItem(
-                icon: CustomIconWidget(
-                  iconName: 'local_florist',
-                  color: _currentIndex == 3
-                      ? AppTheme.lightTheme.colorScheme.primary
-                      : AppTheme.lightTheme.colorScheme.onSurfaceVariant,
-                  size: 24,
-                ),
-                label: 'My Crops',
-              ),
-              BottomNavigationBarItem(
-                icon: CustomIconWidget(
-                  iconName: 'person',
-                  color: _currentIndex == 4
-                      ? AppTheme.lightTheme.colorScheme.primary
-                      : AppTheme.lightTheme.colorScheme.onSurfaceVariant,
-                  size: 24,
-                ),
-                label: 'Profile',
-              ),
-            ],
-          ),
+          bottomNavigationBar: _buildBottomNavigationBar(scanTabConfig),
         );
       },
     );
   }
+
+  ScanTabConfig _getScanTabConfig(ModelPredictionStatus status) {
+    switch (status) {
+      case ModelPredictionStatus.loading:
+        return ScanTabConfig('downloading', 'Loading...', Colors.orange);
+      case ModelPredictionStatus.error:
+        return ScanTabConfig('error_outline', 'Error', Colors.red);
+      case ModelPredictionStatus.predicting:
+        return ScanTabConfig('autorenew', 'Predicting...', Colors.blue);
+      case ModelPredictionStatus.initial:
+      case ModelPredictionStatus.ready:
+        return ScanTabConfig(
+          'camera_alt',
+          'Scan',
+          _currentIndex == _scanTabIndex
+              ? AppTheme.lightTheme.colorScheme.primary
+              : AppTheme.lightTheme.colorScheme.onSurfaceVariant,
+        );
+    }
+  }
+
+  BottomNavigationBar _buildBottomNavigationBar(ScanTabConfig scanConfig) {
+    return BottomNavigationBar(
+      currentIndex: _currentIndex,
+      onTap: _onTabTapped,
+      type: BottomNavigationBarType.fixed,
+      backgroundColor: AppTheme.lightTheme.colorScheme.surface,
+      selectedItemColor: AppTheme.lightTheme.colorScheme.primary,
+      unselectedItemColor: AppTheme.lightTheme.colorScheme.onSurfaceVariant,
+      selectedLabelStyle: GoogleFonts.poppins(
+        fontSize: 14,
+        fontWeight: FontWeight.w600,
+        color: AppTheme.lightTheme.colorScheme.primary,
+      ),
+      unselectedLabelStyle: GoogleFonts.poppins(
+        fontSize: 14,
+        fontWeight: FontWeight.w500,
+        color: Colors.black,
+      ),
+      items: _buildNavigationItems(scanConfig),
+    );
+  }
+
+  List<BottomNavigationBarItem> _buildNavigationItems(
+      ScanTabConfig scanConfig) {
+    return [
+      _buildNavItem('home', 'Home', 0),
+      BottomNavigationBarItem(
+        icon: CustomIconWidget(
+          iconName: scanConfig.iconName,
+          color: scanConfig.color,
+          size: 24,
+        ),
+        label: scanConfig.label,
+      ),
+      _buildNavItem('wb_sunny', 'Weather', 2),
+      _buildNavItem('local_florist', 'My Crops', 3),
+      _buildNavItem('person', 'Profile', 4),
+    ];
+  }
+
+  BottomNavigationBarItem _buildNavItem(
+      String iconName, String label, int index) {
+    return BottomNavigationBarItem(
+      icon: CustomIconWidget(
+        iconName: iconName,
+        color: _currentIndex == index
+            ? AppTheme.lightTheme.colorScheme.primary
+            : AppTheme.lightTheme.colorScheme.onSurfaceVariant,
+        size: 24,
+      ),
+      label: label,
+    );
+  }
+}
+
+class ScanTabConfig {
+  final String iconName;
+  final String label;
+  final Color color;
+
+  ScanTabConfig(this.iconName, this.label, this.color);
 }

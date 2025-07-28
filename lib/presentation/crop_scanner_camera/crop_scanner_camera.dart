@@ -1,4 +1,4 @@
-// ignore_for_file: use_build_context_synchronously
+// ignore_for_file: use_build_context_synchronously, unused_field
 
 import 'dart:io';
 
@@ -43,6 +43,14 @@ class CropScannerCameraState extends State<CropScannerCamera>
   bool _isDetecting = false;
   bool _showDetectionFeedback = false;
 
+  static const Duration _detectionFeedbackDuration = Duration(seconds: 2);
+  static const Duration _focusAnimationDuration = Duration(milliseconds: 500);
+  static const Duration _captureAnimationDuration = Duration(milliseconds: 300);
+  static const double _detectionFrameHorizontalMargin =
+      15.0; // Corresponds to 15.w
+  static const double _detectionFrameVerticalMargin =
+      25.0; // Corresponds to 25.h
+
   late AnimationController _focusAnimationController;
   late AnimationController _captureAnimationController;
   late Animation<double> _focusAnimation;
@@ -59,12 +67,12 @@ class CropScannerCameraState extends State<CropScannerCamera>
 
   void _initializeAnimations() {
     _focusAnimationController = AnimationController(
-      duration: const Duration(milliseconds: 500),
+      duration: _focusAnimationDuration,
       vsync: this,
     );
 
     _captureAnimationController = AnimationController(
-      duration: const Duration(milliseconds: 300),
+      duration: _captureAnimationDuration,
       vsync: this,
     );
 
@@ -89,6 +97,67 @@ class CropScannerCameraState extends State<CropScannerCamera>
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
     ]);
+  }
+
+  void _setDetectionState({
+    required bool isDetecting,
+    required bool showFeedback,
+    String? detectedCrop,
+    double? confidence,
+  }) {
+    if (mounted) {
+      setState(() {
+        _isDetecting = isDetecting;
+        _showDetectionFeedback = showFeedback;
+        if (detectedCrop != null) _detectedCrop = detectedCrop;
+        if (confidence != null) _confidence = confidence;
+      });
+    }
+  }
+
+  void _resetDetectionState() {
+    if (mounted) {
+      setState(() {
+        _isDetecting = false;
+        _showDetectionFeedback = false;
+        // Optionally reset detected crop/confidence here if you want to clear previous results
+        // _detectedCrop = '';
+        // _confidence = 0.0;
+      });
+    }
+  }
+
+  String _sanitizeError(dynamic error) {
+    final errorStr = error.toString();
+    final parts = errorStr.split(':');
+    return parts.length > 1 ? parts.last.trim() : errorStr;
+  }
+
+  Future<void> _navigateToResults(
+      String imagePath, Map<String, dynamic> result) async {
+    // Type-safe navigation
+    await Navigator.pushNamed(
+      context,
+      AppRoutes
+          .cropDetectionResults, // Assuming you have an AppRoutes class/constant
+      arguments: CropDetectionResultsArgs(
+        imagePath: imagePath,
+        detectedCrop: result['label'],
+        confidence: result['confidence'],
+      ),
+    );
+  }
+
+  void _showSnackBar(String message, {Color? backgroundColor}) {
+    if (!mounted) return; // Important check before showing SnackBar
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: backgroundColor,
+        duration: const Duration(seconds: 3), // Consistent duration
+      ),
+    );
   }
 
 // This method will now be called externally when the tab is selected
@@ -330,51 +399,43 @@ class CropScannerCameraState extends State<CropScannerCamera>
 
   Future<void> _performDetection(XFile imageFile) async {
     final tfliteModelServices = context.read<TfLiteModelServices>();
+
     if (tfliteModelServices.status != ModelPredictionStatus.ready) {
       _showErrorDialog("Model is not ready. Please wait or restart the app");
-      setState(() {
-        _isDetecting = false;
-      });
+      _resetDetectionState(); // Ensure state is reset if model isn't ready
       return;
     }
-    setState(() {
-      _isDetecting = true;
-      _showDetectionFeedback = false;
-    });
+
+    _setDetectionState(isDetecting: true, showFeedback: false); // Use helper
+
     try {
-      final File image = File(imageFile.path);
+      final File image = File(imageFile.path); // Keep this
       final Map<String, dynamic>? result =
           await tfliteModelServices.predictImage(image);
+
       if (result != null) {
-        setState(() {
-          _detectedCrop = result['label'];
-          _confidence = result['confidence'];
-          _showDetectionFeedback = true;
-        });
-        await Future.delayed(const Duration(seconds: 2));
+        // Use helper for state updates
+        _setDetectionState(
+          isDetecting: true,
+          showFeedback: true,
+          detectedCrop: result['label'],
+          confidence: result['confidence'],
+        );
+
+        await Future.delayed(_detectionFeedbackDuration);
         if (mounted) {
-          Navigator.pushNamed(
-            context,
-            "crop-detection-results",
-            arguments: {
-              'imagePath': imageFile.path,
-              'detectedCrop': _detectedCrop,
-              'confidence': _confidence,
-            },
-          );
+          // Changed to use new helper for navigation
+          await _navigateToResults(imageFile.path, result);
         }
       } else {
         _showErrorDialog("Detection failed. Please try again.");
       }
     } catch (e) {
       debugPrint("Error during detection: $e");
-      _showErrorDialog(
-          "Failed to process image: ${e.toString().split(':').last.trim()}");
+      // Use _sanitizeError for cleaner messages
+      _showErrorDialog("Failed to process image: ${_sanitizeError(e)}");
     } finally {
-      setState(() {
-        _isDetecting = false;
-        _showDetectionFeedback = false;
-      });
+      _resetDetectionState();
     }
   }
 
@@ -401,17 +462,16 @@ class CropScannerCameraState extends State<CropScannerCamera>
       await _performDetection(imageFile);
     } on CameraException catch (e) {
       debugPrint("Error taking picture: $e");
-      _showErrorDialog("Failed to capture image: ${e.description}");
-      setState(() {
-        _isDetecting = false; // Ensure reset if camera capture fails
-      });
+      _showErrorDialog(
+          "Failed to capture image: ${e.description}"); // Use _showErrorDialog
+      _resetDetectionState(); // Ensure reset if camera capture fails
     }
   }
 
   void _openGallery() async {
     HapticFeedback.lightImpact();
     // Prevent opening gallery if detection is active
-    if (_isDetecting) return;
+    if (_isDetecting) return; // Prevent if already detecting
 
     final ImagePicker imagePicker = ImagePicker();
     XFile? image;
@@ -423,17 +483,12 @@ class CropScannerCameraState extends State<CropScannerCamera>
         // Trigger the ML prediction
         await _performDetection(image);
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-            content: Text(
-          "Image selection cancelled",
-        )));
+        _showSnackBar("Image selection cancelled");
       }
     } catch (e) {
       debugPrint("Error picking image from gallery: $e");
       _showErrorDialog("Failed to pick image from gallery.");
-      setState(() {
-        _isDetecting = false; // Ensure reset if gallery pick fails
-      });
+      _resetDetectionState();
     }
   }
 
@@ -458,107 +513,30 @@ class CropScannerCameraState extends State<CropScannerCamera>
     _focusAnimationController.dispose();
     _captureAnimationController.dispose();
     WidgetsBinding.instance.removeObserver(this);
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.portraitUp,
-      DeviceOrientation.landscapeLeft,
-      DeviceOrientation.landscapeRight,
-      DeviceOrientation.portraitDown,
-    ]);
+    _restoreOrientation();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final tfliteModelServices = context.watch<TfLiteModelServices>();
-    final mlStatus = tfliteModelServices.status;
+    return Consumer<TfLiteModelServices>(
+      builder: (context, tfliteService, child) {
+        return _buildCameraInterface(tfliteService); // Call a new helper method
+      },
+    );
+  }
 
-    final bool isCameraAndModelReady = _hasPermission &&
-        _cameraController != null &&
-        _cameraController!.value.isInitialized &&
+  // NEW HELPER METHODS ADDED BELOW THIS LINE
+
+  Widget _buildCameraInterface(TfLiteModelServices tfliteService) {
+    final mlStatus = tfliteService.status;
+    final isCameraAndModelReady = _hasPermission &&
+        _cameraController?.value.isInitialized == true && // Safer null check
         (mlStatus == ModelPredictionStatus.ready ||
             mlStatus == ModelPredictionStatus.predicting);
+
     if (!isCameraAndModelReady) {
-      return Scaffold(
-        // Ensure a Scaffold is returned here
-        backgroundColor:
-            Theme.of(context).scaffoldBackgroundColor, // Use theme colors
-        body: SafeArea(
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                if (!_hasPermission) ...[
-                  CustomIconWidget(
-                    iconName: 'no_photography',
-                    color: AppTheme.lightTheme.colorScheme.onSurfaceVariant,
-                    size: 64,
-                  ),
-                  SizedBox(height: 2.h),
-                  Text(
-                    'Camera access required',
-                    style: AppTheme.lightTheme.textTheme.titleMedium,
-                    textAlign: TextAlign.center,
-                  ),
-                  SizedBox(height: 1.h),
-                  Text(
-                    'Please grant camera and photo library permissions to use this feature.',
-                    style: AppTheme.lightTheme.textTheme.bodyMedium,
-                    textAlign: TextAlign.center,
-                  ),
-                  SizedBox(height: 2.h),
-                  ElevatedButton(
-                    onPressed: () => _checkAndInitializeCamera(), // Allow retry
-                    child: const Text('Grant Permissions'),
-                  ),
-                ] else if (mlStatus == ModelPredictionStatus.loading) ...[
-                  CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                        Theme.of(context).colorScheme.primary),
-                  ),
-                  SizedBox(height: 2.h),
-                  Text(
-                    'Loading crop detection model...',
-                    style: Theme.of(context).textTheme.titleMedium,
-                    textAlign: TextAlign.center,
-                  ),
-                ] else if (mlStatus == ModelPredictionStatus.error) ...[
-                  Icon(Icons.error_outline, color: Colors.red, size: 64),
-                  SizedBox(height: 2.h),
-                  Text(
-                    'Model loading error',
-                    style: Theme.of(context).textTheme.titleMedium,
-                    textAlign: TextAlign.center,
-                  ),
-                  SizedBox(height: 1.h),
-                  Text(
-                    tfliteModelServices.errorMessage ??
-                        'An unknown error occurred while loading the model.',
-                    style: Theme.of(context).textTheme.bodyMedium,
-                    textAlign: TextAlign.center,
-                  ),
-                  SizedBox(height: 2.h),
-                  ElevatedButton(
-                    onPressed: () {
-                      // Attempt to reload model and camera again
-                      initializeCameraOnDemand();
-                    },
-                    child: const Text('Retry'),
-                  ),
-                ] else ...[
-                  // Camera not initialized but permission might be granted
-                  CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                        Theme.of(context).colorScheme.primary),
-                  ),
-                  SizedBox(height: 2.h),
-                  Text('Initializing camera...',
-                      style: Theme.of(context).textTheme.titleMedium),
-                ],
-              ],
-            ),
-          ),
-        ),
-      );
+      return _buildLoadingInterface(tfliteService);
     }
 
     return Scaffold(
@@ -575,33 +553,28 @@ class CropScannerCameraState extends State<CropScannerCamera>
               controller: _cameraController,
             ),
 
-            // Detection Frame Overlay
+            // UI Overlays
             _buildDetectionFrame(),
-
-            // Focus Ring
             if (_focusPoint != null) _buildFocusRing(),
 
-            // Top Overlay
+            // Camera Controls
             CameraOverlayWidget(
               isTop: true,
               onFlashToggle: _toggleFlash,
               isFlashOn: _isFlashOn,
             ),
-
-            // Bottom Overlay
             CameraOverlayWidget(
               isTop: false,
               onCapture: _captureImage,
               onGallery: _openGallery,
               onFlipCamera: _flipCamera,
               captureAnimation: _captureAnimation,
+              isControlsDisabled: _isDetecting, // Pass this new parameter
             ),
 
             // Detection Feedback
             if (_showDetectionFeedback &&
-                mlStatus ==
-                    ModelPredictionStatus
-                        .ready) // Only show if prediction is done
+                mlStatus == ModelPredictionStatus.ready)
               DetectionFeedbackWidget(
                 cropName: _detectedCrop,
                 confidence: _confidence,
@@ -611,7 +584,7 @@ class CropScannerCameraState extends State<CropScannerCamera>
             // or if the ML model is currently loading/predicting via its status
             if (mlStatus == ModelPredictionStatus.predicting ||
                 mlStatus == ModelPredictionStatus.loading)
-              LoadingOverlayWidget(),
+              const LoadingOverlayWidget(), // Consider if this should still be shown or if _isDetecting suffices
 
             // Zoom Indicator
             if (_currentZoomLevel > 1.0) _buildZoomIndicator(),
@@ -621,24 +594,152 @@ class CropScannerCameraState extends State<CropScannerCamera>
     );
   }
 
+  Widget _buildLoadingInterface(TfLiteModelServices tfliteService) {
+    return Scaffold(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      body: SafeArea(
+        child: Center(
+          child: _buildLoadingContent(tfliteService),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLoadingContent(TfLiteModelServices tfliteService) {
+    final mlStatus = tfliteService.status;
+
+    if (!_hasPermission) {
+      return _buildPermissionContent();
+    } else if (mlStatus == ModelPredictionStatus.loading ||
+        mlStatus == ModelPredictionStatus.initial) {
+      // Add initial status check here
+      return _buildModelLoadingContent();
+    } else if (mlStatus == ModelPredictionStatus.error) {
+      return _buildErrorContent(tfliteService);
+    } else {
+      // This state implies permission is granted, but camera controller might still be initializing
+      // or mlStatus is ready but camera not yet initialized.
+      return _buildCameraInitializingContent();
+    }
+  }
+
+  Widget _buildPermissionContent() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        CustomIconWidget(
+          iconName: 'no_photography',
+          color: AppTheme.lightTheme.colorScheme.onSurfaceVariant,
+          size: 64,
+        ),
+        SizedBox(height: 2.h),
+        Text(
+          'Camera access required',
+          style: AppTheme.lightTheme.textTheme.titleMedium,
+          textAlign: TextAlign.center,
+        ),
+        SizedBox(height: 1.h),
+        Text(
+          'Please grant camera and photo library permissions to use this feature.',
+          style: AppTheme.lightTheme.textTheme.bodyMedium,
+          textAlign: TextAlign.center,
+        ),
+        SizedBox(height: 2.h),
+        ElevatedButton(
+          onPressed: () => _checkAndInitializeCamera(), // Allow retry
+          child: const Text('Grant Permissions'),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildModelLoadingContent() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        CircularProgressIndicator(
+          valueColor: AlwaysStoppedAnimation<Color>(
+              Theme.of(context).colorScheme.primary),
+        ),
+        SizedBox(height: 2.h),
+        Text(
+          'Loading crop detection model...',
+          style: Theme.of(context).textTheme.titleMedium,
+          textAlign: TextAlign.center,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildErrorContent(TfLiteModelServices tfliteService) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Icon(Icons.error_outline, color: Colors.red, size: 64),
+        SizedBox(height: 2.h),
+        Text(
+          'Model loading error',
+          style: Theme.of(context).textTheme.titleMedium,
+          textAlign: TextAlign.center,
+        ),
+        SizedBox(height: 1.h),
+        Text(
+          tfliteService.errorMessage ??
+              'An unknown error occurred while loading the model.',
+          style: Theme.of(context).textTheme.bodyMedium,
+          textAlign: TextAlign.center,
+        ),
+        SizedBox(height: 2.h),
+        ElevatedButton(
+          onPressed: () {
+            // Attempt to reload model and camera again
+            initializeCameraOnDemand();
+          },
+          child: const Text('Retry'),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCameraInitializingContent() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        CircularProgressIndicator(
+          valueColor: AlwaysStoppedAnimation<Color>(
+              Theme.of(context).colorScheme.primary),
+        ),
+        SizedBox(height: 2.h),
+        Text(
+          'Initializing camera...',
+          style: Theme.of(context).textTheme.titleMedium,
+          textAlign: TextAlign.center,
+        ),
+      ],
+    );
+  }
+
+  // Modified existing helper methods to use new constants
   Widget _buildDetectionFrame() {
     return Positioned.fill(
       child: Container(
         decoration: BoxDecoration(
           border: Border.all(
-            color:
-                AppTheme.lightTheme.colorScheme.primary.withValues(alpha: 0.8),
+            color: AppTheme.lightTheme.colorScheme.primary
+                .withOpacity(0.8), // changed from .withValues
             width: 2.0,
           ),
         ),
         margin: EdgeInsets.symmetric(
-          horizontal: 15.w,
-          vertical: 25.h,
+          horizontal: _detectionFrameHorizontalMargin
+              .w, // Changed to use constant with sizer
+          vertical: _detectionFrameVerticalMargin
+              .h, // Changed to use constant with sizer
         ),
         child: Container(
           decoration: BoxDecoration(
             border: Border.all(
-              color: Colors.white.withValues(alpha: 0.3),
+              color: Colors.white.withOpacity(0.3), // changed from .withValues
               width: 2.0,
             ),
           ),
@@ -680,7 +781,7 @@ class CropScannerCameraState extends State<CropScannerCamera>
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 3.w, vertical: 1.h),
         decoration: BoxDecoration(
-          color: Colors.black.withValues(alpha: 0.7),
+          color: Colors.black.withOpacity(0.7), // changed from .withValues
           borderRadius: BorderRadius.circular(20),
         ),
         child: Text(
@@ -693,4 +794,25 @@ class CropScannerCameraState extends State<CropScannerCamera>
       ),
     );
   }
+
+  void _restoreOrientation() {
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.landscapeRight,
+      DeviceOrientation.portraitDown,
+    ]);
+  }
+}
+
+class CropDetectionResultsArgs {
+  final String imagePath;
+  final String detectedCrop;
+  final double confidence;
+
+  CropDetectionResultsArgs({
+    required this.imagePath,
+    required this.detectedCrop,
+    required this.confidence,
+  });
 }
