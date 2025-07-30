@@ -6,13 +6,7 @@ import 'package:image/image.dart' as img;
 import 'package:flutter/services.dart';
 import 'package:tflite_flutter/tflite_flutter.dart';
 
-enum ModelPredictionStatus {
-  initial,
-  loading,
-  ready,
-  predicting,
-  error,
-}
+enum ModelPredictionStatus { initial, loading, ready, predicting, error }
 
 class TfLiteModelServices extends ChangeNotifier {
   Interpreter? _interpreter;
@@ -41,7 +35,9 @@ class TfLiteModelServices extends ChangeNotifier {
       _status = newStatus;
       _errorMessage = message;
       notifyListeners();
-      log("TFLiteModelServices: Status changed to $_status${message != null ? " - $message" : ""}");
+      log(
+        "TFLiteModelServices: Status changed to $_status${message != null ? " - $message" : ""}",
+      );
     }
   }
 
@@ -59,8 +55,9 @@ class TfLiteModelServices extends ChangeNotifier {
       _interpreter = await Interpreter.fromAsset(_modelPath);
 
       // Create isolate interpreter for async inference
-      _isolateInterpreter =
-          await IsolateInterpreter.create(address: _interpreter!.address);
+      _isolateInterpreter = await IsolateInterpreter.create(
+        address: _interpreter!.address,
+      );
 
       // Load and validate labels
       await _loadLabels();
@@ -72,8 +69,10 @@ class TfLiteModelServices extends ChangeNotifier {
       log("TFLiteModelServices: Model service initialized successfully");
     } catch (e) {
       await _cleanup();
-      _setStatus(ModelPredictionStatus.error,
-          message: "Initialization failed: ${_sanitizeError(e)}");
+      _setStatus(
+        ModelPredictionStatus.error,
+        message: "Initialization failed: ${_sanitizeError(e)}",
+      );
       rethrow;
     }
   }
@@ -110,17 +109,21 @@ class TfLiteModelServices extends ChangeNotifier {
         inputShape[2] != _inputSize ||
         inputShape[3] != _channels) {
       throw Exception(
-          "Model input shape $inputShape doesn't match expected [1, $_inputSize, $_inputSize, $_channels]");
+        "Model input shape $inputShape doesn't match expected [1, $_inputSize, $_inputSize, $_channels]",
+      );
     }
 
     // Validate output shape [batch, classes]
     if (outputShape.length != 2 || outputShape[1] != _outputLength) {
       throw Exception(
-          "Model output shape $outputShape doesn't match expected [1, $_outputLength]");
+        "Model output shape $outputShape doesn't match expected [1, $_outputLength]",
+      );
     }
 
     if (_labels!.length != _outputLength) {
-      log("WARNING: Label count (${_labels!.length}) doesn't match output length ($_outputLength)");
+      log(
+        "WARNING: Label count (${_labels!.length}) doesn't match output length ($_outputLength)",
+      );
     }
   }
 
@@ -136,8 +139,10 @@ class TfLiteModelServices extends ChangeNotifier {
       final inputTensor = await _preprocessImage(imageFile);
 
       // Run inference
-      final outputBuffer =
-          List.filled(_outputLength, 0.0).reshape([1, _outputLength]);
+      final outputBuffer = List.filled(
+        _outputLength,
+        0.0,
+      ).reshape([1, _outputLength]);
       await _isolateInterpreter!.run([inputTensor], outputBuffer);
 
       // Process results
@@ -145,12 +150,16 @@ class TfLiteModelServices extends ChangeNotifier {
 
       _setStatus(ModelPredictionStatus.ready);
 
-      log("TFLiteModelServices: Prediction complete - ${result['label']}: ${(result['confidence'] * 100).toStringAsFixed(1)}%");
+      log(
+        "TFLiteModelServices: Prediction complete - ${result['label']}: ${(result['confidence'] * 100).toStringAsFixed(1)}%",
+      );
 
       return result;
     } catch (e) {
-      _setStatus(ModelPredictionStatus.error,
-          message: "Prediction failed: ${_sanitizeError(e)}");
+      _setStatus(
+        ModelPredictionStatus.error,
+        message: "Prediction failed: ${_sanitizeError(e)}",
+      );
       rethrow;
     }
   }
@@ -163,10 +172,12 @@ class TfLiteModelServices extends ChangeNotifier {
       throw Exception("Failed to decode image");
     }
 
-    final resizedImage = img.copyResize(originalImage,
-        width: _inputSize,
-        height: _inputSize,
-        interpolation: img.Interpolation.linear);
+    final resizedImage = img.copyResize(
+      originalImage,
+      width: _inputSize,
+      height: _inputSize,
+      interpolation: img.Interpolation.linear,
+    );
 
     // Efficient tensor creation using Float32List
     final inputData = Float32List(_inputSize * _inputSize * _channels);
@@ -207,8 +218,9 @@ class TfLiteModelServices extends ChangeNotifier {
       'confidence': maxConfidence,
       'isConfident': isConfident,
       'allProbabilities': Map.fromIterables(
-          _labels ?? List.generate(_outputLength, (i) => 'Class_$i'),
-          probabilities),
+        _labels ?? List.generate(_outputLength, (i) => 'Class_$i'),
+        probabilities,
+      ),
     };
   }
 
