@@ -174,13 +174,23 @@ class CropScannerCameraState extends State<CropScannerCamera>
     }
   }
 
+  Future<bool> _checkPermissions() async {
+    final cameraStatus = await Permission.camera.status;
+    final photosStatus = await Permission.photos.status;
+
+    debugPrint("Camera permission status: $cameraStatus");
+    debugPrint("Photos permission status: $photosStatus");
+
+    return cameraStatus.isGranted && photosStatus.isGranted;
+  }
+
   Future<void> _checkAndInitializeCamera() async {
+    debugPrint("Starting camera initialization...");
     var cameraStatus = await Permission.camera.status;
     var photosStatus = await Permission.photos.status;
 
-    bool granted = cameraStatus.isGranted && photosStatus.isGranted;
-
-    if (granted) {
+    // --- Start of refined logic ---
+    if (cameraStatus.isGranted && photosStatus.isGranted) {
       setState(() {
         _hasPermission = true;
       });
@@ -190,7 +200,7 @@ class CropScannerCameraState extends State<CropScannerCamera>
       setState(() {
         _hasPermission = false;
       });
-      _showPermissionDeniedDialog();
+      // _showPermissionDeniedDialog(); // This dialog explicitly links to settings
     } else {
       final Map<Permission, PermissionStatus> statuses = await [
         Permission.camera,
@@ -209,26 +219,50 @@ class CropScannerCameraState extends State<CropScannerCamera>
         setState(() {
           _hasPermission = false;
         });
-        _showPermissionDeniedDialog();
+
+        // _showSnackBar(
+        //     "Camera and photo permissions were denied. Please grant them to use this feature.",
+        //     backgroundColor: Colors.orange);
       }
     }
   }
 
   Future<void> _initilizeCameraComponents() async {
-    _cameras = await availableCameras();
-    if (_cameras != null && _cameras!.isNotEmpty) {
-      _selectedCameraIndex = _cameras!.indexWhere(
-          (camera) => camera.lensDirection == CameraLensDirection.back);
-      if (_selectedCameraIndex == -1) {
-        _selectedCameraIndex = 0;
+    debugPrint("Initializing camera components...");
+    try {
+      _cameras = await availableCameras();
+      debugPrint("Available cameras: ${_cameras?.length ?? 0}");
+
+      if (_cameras != null && _cameras!.isNotEmpty) {
+        _selectedCameraIndex = _cameras!.indexWhere(
+            (camera) => camera.lensDirection == CameraLensDirection.back);
+        if (_selectedCameraIndex == -1) {
+          _selectedCameraIndex = 0;
+        }
+        debugPrint("Selected camera index: $_selectedCameraIndex");
+        await _setupCameraController(_selectedCameraIndex);
+      } else {
+        debugPrint("No cameras found");
+        setState(() {
+          _hasPermission = false;
+        });
+        _showErrorDialog("No cameras found on this device");
       }
-      await _setupCameraController(_selectedCameraIndex);
-    } else {
+    } catch (e) {
+      debugPrint("Error initializing camera components: $e");
       setState(() {
         _hasPermission = false;
       });
-      _showErrorDialog("No cameras found on this device");
+      _showErrorDialog("Failed to initialize camera: $e");
     }
+  }
+
+  Future<void> _retryPermissions() async {
+    debugPrint("Retrying permissions...");
+    setState(() {
+      _hasPermission = false; // Reset state
+    });
+    await _checkAndInitializeCamera();
   }
 
   Future _setupCameraController(int cameraIndex) async {
@@ -655,8 +689,16 @@ class CropScannerCameraState extends State<CropScannerCamera>
         ),
         SizedBox(height: 2.h),
         ElevatedButton(
-          onPressed: () => _checkAndInitializeCamera(), // Allow retry
+          onPressed: _retryPermissions, // Use the new retry method
           child: const Text('Grant Permissions'),
+        ),
+        SizedBox(height: 1.h), // Add some space
+        TextButton(
+          // Add a button to open settings directly
+          onPressed: () {
+            openAppSettings();
+          },
+          child: const Text('Open App Settings'),
         ),
       ],
     );
