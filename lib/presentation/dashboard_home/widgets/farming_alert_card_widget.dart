@@ -1,10 +1,11 @@
+import 'package:cropscan_pro/models/farming_alert.dart';
 import 'package:flutter/material.dart';
 import 'package:sizer/sizer.dart';
 
 import '../../../core/app_export.dart';
 
 class FarmingAlertCardWidget extends StatelessWidget {
-  final Map<String, dynamic> alert;
+  final FarmingAlert alert;
   final VoidCallback onLongPress;
 
   const FarmingAlertCardWidget({
@@ -15,12 +16,12 @@ class FarmingAlertCardWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final String title = alert["title"] as String;
-    final String message = alert["message"] as String;
-    final String priority = alert["priority"] as String;
-    final String type = alert["type"] as String;
-    final DateTime timestamp = alert["timestamp"] as DateTime;
-    final bool isRead = alert["isRead"] as bool;
+    final String title = alert.title;
+    final String message = alert.message;
+    final String priority = alert.priority;
+    final String type = alert.type;
+    final DateTime timestamp = alert.timestamp;
+    final bool isRead = alert.isRead;
 
     return GestureDetector(
       onLongPress: onLongPress,

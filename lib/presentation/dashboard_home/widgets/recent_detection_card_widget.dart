@@ -1,10 +1,11 @@
+import 'package:cropscan_pro/models/crop_detection.dart';
 import 'package:flutter/material.dart';
 import 'package:sizer/sizer.dart';
 
 import '../../../core/app_export.dart';
 
 class RecentDetectionCardWidget extends StatelessWidget {
-  final Map<String, dynamic> detection;
+  final CropDetection detection;
   final VoidCallback onTap;
 
   const RecentDetectionCardWidget({
@@ -15,12 +16,11 @@ class RecentDetectionCardWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final String cropName = detection["cropName"] as String;
-    final double confidence = detection["confidence"] as double;
-    final String imageUrl = detection["imageUrl"] as String;
-    final DateTime detectedAt = detection["detectedAt"] as DateTime;
-    final String status = detection["status"] as String;
-
+    final String cropName = detection.cropName;
+    final double confidence = detection.confidence;
+    final String imageUrl = detection.imageUrl;
+    final DateTime detectedAt = detection.detectedAt;
+    final String status = detection.status;
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -85,7 +85,7 @@ class RecentDetectionCardWidget extends StatelessWidget {
                         SizedBox(width: 1.3.w),
                         Flexible(
                           child: Text(
-                            '${confidence.toStringAsFixed(1)}%',
+                            '${detection.confidence.toStringAsFixed(1)}%',
                             style: AppTheme.lightTheme.textTheme.bodySmall
                                 ?.copyWith(
                               color: _getConfidenceColor(confidence),
@@ -174,7 +174,3 @@ class RecentDetectionCardWidget extends StatelessWidget {
     }
   }
 }
-
-
-
-///rechecked
