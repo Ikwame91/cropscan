@@ -174,16 +174,6 @@ class CropScannerCameraState extends State<CropScannerCamera>
     }
   }
 
-  Future<bool> _checkPermissions() async {
-    final cameraStatus = await Permission.camera.status;
-    final photosStatus = await Permission.photos.status;
-
-    debugPrint("Camera permission status: $cameraStatus");
-    debugPrint("Photos permission status: $photosStatus");
-
-    return cameraStatus.isGranted && photosStatus.isGranted;
-  }
-
   Future<void> _checkAndInitializeCamera() async {
     debugPrint("Starting camera initialization...");
     var cameraStatus = await Permission.camera.status;
@@ -331,35 +321,6 @@ class CropScannerCameraState extends State<CropScannerCamera>
           CameraLensDirection.front;
     });
     HapticFeedback.lightImpact();
-  }
-
-  void _showPermissionDeniedDialog() {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text("Permission Denied"),
-          content: const Text(
-              "Camera and Photo Library permissions are required to use this feature. Please enable them in your app settings."),
-          actions: <Widget>[
-            TextButton(
-              child: const Text("Cancel"),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-            TextButton(
-              child: const Text("Open Settings"),
-              onPressed: () {
-                openAppSettings();
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      },
-    );
   }
 
   void _showErrorDialog(String message) {
