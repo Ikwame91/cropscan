@@ -1,112 +1,81 @@
+import 'dart:io';
+
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:sizer/sizer.dart';
 
-import '../../../core/app_export.dart';
-
-class CropImageWidget extends StatefulWidget {
-  final String imageUrl;
-  final VoidCallback onImageTap;
-  final VoidCallback onLongPress;
+class CropImageWidget extends StatelessWidget {
+  final String imageUrl; // Can now be a local path or a network URL
+  final bool
+      isFromFile; // New property: true if it's a local file, false if network
+  final VoidCallback? onImageTap;
+  final VoidCallback? onLongPress;
 
   const CropImageWidget({
     super.key,
     required this.imageUrl,
-    required this.onImageTap,
-    required this.onLongPress,
+    this.isFromFile = false, // Default to false for backward compatibility
+    this.onImageTap,
+    this.onLongPress,
   });
 
   @override
-  State<CropImageWidget> createState() => _CropImageWidgetState();
-}
+  Widget build(BuildContext context) {
+    Widget imageWidget;
 
-class _CropImageWidgetState extends State<CropImageWidget>
-    with SingleTickerProviderStateMixin {
-  late TransformationController _transformationController;
-  late AnimationController _animationController;
-  Animation<Matrix4>? _animation;
-
-  @override
-  void initState() {
-    super.initState();
-    _transformationController = TransformationController();
-    _animationController = AnimationController(
-      duration: const Duration(milliseconds: 300),
-      vsync: this,
-    );
-  }
-
-  @override
-  void dispose() {
-    _transformationController.dispose();
-    _animationController.dispose();
-    super.dispose();
-  }
-
-  void _onDoubleTap() {
-    Matrix4 endMatrix;
-    if (_transformationController.value != Matrix4.identity()) {
-      endMatrix = Matrix4.identity();
+    if (isFromFile) {
+      // Load image from local file path
+      imageWidget = Image.file(
+        File(imageUrl),
+        fit: BoxFit.cover,
+        width: double.infinity,
+        height: 30.h, // Or whatever height you prefer
+        errorBuilder: (context, error, stackTrace) {
+          return Container(
+            height: 30.h,
+            color: Colors.grey[300],
+            child: Center(
+              child:
+                  Icon(Icons.broken_image, size: 50, color: Colors.grey[600]),
+            ),
+          );
+        },
+      );
     } else {
-      endMatrix = Matrix4.identity()..scale(2.0);
+      // Load image from network URL (your previous implementation)
+      imageWidget = CachedNetworkImage(
+        // Assuming you use cached_network_image
+        imageUrl: imageUrl,
+        fit: BoxFit.cover,
+        width: double.infinity,
+        height: 30.h,
+        placeholder: (context, url) => Container(
+          height: 30.h,
+          color: Colors.grey[300],
+          child: Center(child: CircularProgressIndicator()),
+        ),
+        errorWidget: (context, url, error) => Container(
+          height: 30.h,
+          color: Colors.grey[300],
+          child: Center(child: Icon(Icons.error, size: 50, color: Colors.red)),
+        ),
+      );
     }
 
-    _animation = Matrix4Tween(
-      begin: _transformationController.value,
-      end: endMatrix,
-    ).animate(
-        CurveTween(curve: Curves.easeInOut).animate(_animationController));
-
-    _animationController.forward(from: 0).then((_) {
-      _transformationController.value = endMatrix;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      height: 35.h,
-      margin: EdgeInsets.symmetric(horizontal: 4.w),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color:
-                AppTheme.lightTheme.colorScheme.shadow.withValues(alpha: 0.1),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(16),
-        child: GestureDetector(
-          onTap: widget.onImageTap,
-          onLongPress: widget.onLongPress,
-          onDoubleTap: _onDoubleTap,
-          child: AnimatedBuilder(
-            animation: _animationController,
-            builder: (context, child) {
-              if (_animation != null) {
-                _transformationController.value = _animation!.value;
-              }
-              return InteractiveViewer(
-                transformationController: _transformationController,
-                minScale: 1.0,
-                maxScale: 4.0,
-                child: SizedBox(
-                  width: double.infinity,
-                  height: double.infinity,
-                  child: CustomImageWidget(
-                    imageUrl: widget.imageUrl,
-                    width: double.infinity,
-                    height: double.infinity,
-                    fit: BoxFit.cover,
-                  ),
-                ),
-              );
-            },
-          ),
+    return GestureDetector(
+      onTap: onImageTap,
+      onLongPress: onLongPress,
+      child: Container(
+        height: 30.h,
+        width: double.infinity,
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surfaceContainerHighest,
+          // You might add borderRadius or other decorations here
+        ),
+        child: ClipRRect(
+          // Optional: If you want rounded corners
+          borderRadius: BorderRadius.circular(10), // Example
+          child: imageWidget,
         ),
       ),
     );

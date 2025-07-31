@@ -15,14 +15,14 @@ class CropDetectionResults extends StatefulWidget {
 }
 
 class _CropDetectionResultsState extends State<CropDetectionResults> {
-  // Mock detection result data
-  final Map<String, dynamic> detectionResult = {
-    "cropName": "Bell Pepper",
-    "confidence": 87.5,
-    "timestamp": DateTime.now().subtract(Duration(minutes: 2)),
-    "imageUrl":
-        "https://images.pexels.com/photos/594137/pexels-photo-594137.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
-    "cropInfo": {
+  bool _isImageZoomed = false;
+  late String imagePath;
+  late String detectedCrop;
+  late double confidence;
+
+  final Map<String, Map<String, dynamic>> cropDatabase = {
+    "bell_pepper": {
+      "displayName": "Bell Pepper",
       "scientificName": "Capsicum annuum",
       "family": "Solanaceae",
       "growingTips": [
@@ -50,10 +50,92 @@ class _CropDetectionResultsState extends State<CropDetectionResults> {
         "Flea beetles: Small jumping beetles creating holes",
         "Spider mites: Tiny pests causing stippled leaves"
       ]
+    },
+    "tomato": {
+      "displayName": "Tomato",
+      "scientificName": "Solanum lycopersicum",
+      "family": "Solanaceae",
+      "growingTips": [
+        "Plant in rich, well-draining soil with pH 6.0-6.8",
+        "Provide support with cages or stakes",
+        "Water deeply but less frequently",
+        "Mulch around plants to retain moisture",
+        "Prune suckers for better fruit production"
+      ],
+      "seasonalRecommendations": [
+        "Spring: Start seeds indoors 6-8 weeks before last frost",
+        "Summer: Transplant outdoors when soil is warm",
+        "Fall: Harvest green tomatoes before first frost",
+        "Winter: Store ripe tomatoes at room temperature"
+      ],
+      "diseaseWarnings": [
+        "Early blight: Dark spots with concentric rings",
+        "Late blight: Water-soaked spots on leaves",
+        "Fusarium wilt: Yellowing leaves starting from bottom",
+        "Blossom end rot: Dark, sunken bottom on fruits"
+      ],
+      "pestAlerts": [
+        "Hornworms: Large green caterpillars",
+        "Aphids: Small soft-bodied insects",
+        "Whiteflies: Small white flying insects",
+        "Cutworms: Cut stems at soil level"
+      ]
+    },
+    // Add more crops as needed - this should match your ML model labels
+    "default": {
+      "displayName": "Unknown Crop",
+      "scientificName": "Species not identified",
+      "family": "Family unknown",
+      "growingTips": [
+        "Ensure adequate sunlight for the plant",
+        "Water regularly but avoid overwatering",
+        "Use well-draining soil",
+        "Monitor for pests and diseases regularly"
+      ],
+      "seasonalRecommendations": [
+        "Follow general seasonal gardening practices",
+        "Adapt care based on local climate conditions",
+        "Consult local agricultural extension for advice"
+      ],
+      "diseaseWarnings": [
+        "Monitor for common plant diseases",
+        "Look for unusual spots or discoloration",
+        "Check for wilting or stunted growth"
+      ],
+      "pestAlerts": [
+        "Inspect regularly for common garden pests",
+        "Look for holes in leaves or damaged stems",
+        "Check undersides of leaves for eggs"
+      ]
     }
   };
 
-  bool _isImageZoomed = false;
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    // Get the arguments passed from the camera screen
+    final args = ModalRoute.of(context)?.settings.arguments;
+
+    if (args != null && args is CropDetectionResultsArgs) {
+      imagePath = args.imagePath;
+      detectedCrop = args.detectedCrop;
+      confidence = args.confidence;
+    } else {
+      // Handle case where no arguments are passed (shouldn't happen)
+      debugPrint("⚠️ No arguments received in CropDetectionResults");
+      imagePath = "";
+      detectedCrop = "unknown";
+      confidence = 0.0;
+    }
+  }
+
+  Map<String, dynamic> get cropInfo {
+    // Convert detected crop name to lowercase and replace spaces with underscores
+    String cropKey = detectedCrop.toLowerCase().replaceAll(' ', '_');
+    // Return crop info if found, otherwise return default
+    return cropDatabase[cropKey] ?? cropDatabase['default']!;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -93,7 +175,8 @@ class _CropDetectionResultsState extends State<CropDetectionResults> {
             children: [
               // Crop Image Section
               CropImageWidget(
-                imageUrl: detectionResult["imageUrl"] as String,
+                imageUrl: imagePath,
+                isFromFile: true, // This is a local file path
                 onImageTap: () => _toggleImageZoom(),
                 onLongPress: () => _showImageContextMenu(context),
               ),
@@ -104,9 +187,9 @@ class _CropDetectionResultsState extends State<CropDetectionResults> {
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 4.w),
                 child: DetectionResultCardWidget(
-                  cropName: detectionResult["cropName"] as String,
-                  confidence: detectionResult["confidence"] as double,
-                  timestamp: detectionResult["timestamp"] as DateTime,
+                  cropName: cropInfo['displayName'] ?? detectedCrop,
+                  confidence: confidence,
+                  timestamp: DateTime.now(),
                 ),
               ),
 
@@ -114,9 +197,8 @@ class _CropDetectionResultsState extends State<CropDetectionResults> {
 
               // Crop Information Section
               CropInfoSectionWidget(
-                cropInfo: detectionResult["cropInfo"] as Map<String, dynamic>,
+                cropInfo: cropInfo,
               ),
-
               SizedBox(height: 3.h),
 
               // Action Buttons
@@ -248,7 +330,7 @@ class _CropDetectionResultsState extends State<CropDetectionResults> {
   }
 
   void _scanAnother(BuildContext context) {
-    Navigator.pushNamed(context, '/crop-scanner-camera');
+    Navigator.pop(context);
   }
 
   void _saveToGallery() {
@@ -292,4 +374,16 @@ class _CropDetectionResultsState extends State<CropDetectionResults> {
       ),
     );
   }
+}
+
+class CropDetectionResultsArgs {
+  final String imagePath;
+  final String detectedCrop;
+  final double confidence;
+
+  CropDetectionResultsArgs({
+    required this.imagePath,
+    required this.detectedCrop,
+    required this.confidence,
+  });
 }

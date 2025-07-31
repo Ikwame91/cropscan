@@ -130,17 +130,27 @@ class CropScannerCameraState extends State<CropScannerCamera>
 
   Future<void> _navigateToResults(
       String imagePath, Map<String, dynamic> result) async {
-    // Type-safe navigation
-    await Navigator.pushNamed(
+    debugPrint("🚀 Navigating to results screen");
+    debugPrint("Image path: $imagePath");
+    debugPrint("Detection result: $result");
+
+    // Type-safe navigation with proper arguments
+    final navigationResult = await Navigator.pushNamed(
       context,
-      AppRoutes
-          .cropDetectionResults, // Assuming you have an AppRoutes class/constant
+      AppRoutes.cropDetectionResults,
       arguments: CropDetectionResultsArgs(
         imagePath: imagePath,
-        detectedCrop: result['label'],
-        confidence: result['confidence'],
+        detectedCrop: result['label'] ?? 'Unknown',
+        confidence: (result['confidence'] ?? 0.0).toDouble(),
       ),
     );
+
+    debugPrint("✅ Returned from results screen");
+
+    // Optional: Handle any return data from results screen
+    if (navigationResult != null) {
+      debugPrint("Results screen returned: $navigationResult");
+    }
   }
 
   void _showSnackBar(String message, {Color? backgroundColor}) {
@@ -258,15 +268,21 @@ class CropScannerCameraState extends State<CropScannerCamera>
   Future _setupCameraController(int cameraIndex) async {
     if (_cameraController != null) {
       await _cameraController!.dispose();
+      _cameraController = null;
     }
     _cameraController = CameraController(
       _cameras![cameraIndex],
-      ResolutionPreset.high,
+      ResolutionPreset.medium,
       enableAudio: false,
+      // imageFormatGroup: ImageFormatGroup.jpeg,
     );
 
     try {
       await _cameraController!.initialize();
+      if (!mounted) {
+        await _cameraController!.dispose();
+        return;
+      }
       _minZoomLevel = await _cameraController!.getMinZoomLevel();
       _maxZoomLevel = await _cameraController!.getMaxZoomLevel();
 
@@ -277,6 +293,11 @@ class CropScannerCameraState extends State<CropScannerCamera>
       _cameraController!.setFlashMode(FlashMode.off);
     } on CameraException catch (e) {
       debugPrint("Error initializing camera: $e ");
+
+      if (_cameraController != null) {
+        await _cameraController!.dispose();
+        _cameraController = null;
+      }
       setState(() {
         _hasPermission = false;
       });
@@ -405,7 +426,11 @@ class CropScannerCameraState extends State<CropScannerCamera>
     }
 
     try {
-      final File image = File(imageFile.path); // Keep this
+      final File image = File(imageFile.path);
+
+      if (!await image.exists()) {
+        throw Exception("Image file does not exist");
+      }
       final Map<String, dynamic>? result =
           await tfliteModelServices.predictImage(image);
 
@@ -440,6 +465,13 @@ class CropScannerCameraState extends State<CropScannerCamera>
             ModelPredictionStatus.predicting) {
       return;
     }
+    // Prevent multiple simultaneous captures
+    if (_isCapturing) {
+      debugPrint("Capture already in progress, ignoring...");
+      return;
+    }
+
+    _isCapturing = true;
 
     _captureAnimationController.forward().then((_) {
       _captureAnimationController.reverse();
@@ -459,9 +491,12 @@ class CropScannerCameraState extends State<CropScannerCamera>
       _showErrorDialog(
           "Failed to capture image: ${e.description}"); // Use _showErrorDialog
       _resetDetectionState(); // Ensure reset if camera capture fails
+    } finally {
+      _isCapturing = false;
     }
   }
 
+  bool _isCapturing = false;
   void _openGallery() async {
     HapticFeedback.lightImpact();
     final tfliteService = context.read<TfLiteModelServices>();
@@ -491,28 +526,51 @@ class CropScannerCameraState extends State<CropScannerCamera>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
+    debugPrint("App lifecycle state changed to: $state");
+
     if (_cameraController == null || !_cameraController!.value.isInitialized) {
       return;
     }
-    if (state == AppLifecycleState.inactive) {
-      _cameraController!.dispose();
-    } else if (state == AppLifecycleState.resumed) {
-      // Re-initialize camera only if it was disposed AND we have permission
-      if (_hasPermission &&
-          (_cameraController == null ||
-              !_cameraController!.value.isInitialized)) {
-        _initilizeCameraComponents();
-      }
+
+    switch (state) {
+      case AppLifecycleState.inactive:
+      case AppLifecycleState.paused:
+        debugPrint("Pausing camera...");
+        // Don't dispose, just pause
+        break;
+
+      case AppLifecycleState.resumed:
+        debugPrint("Resuming camera...");
+        // Re-initialize camera only if it was disposed AND we have permission
+        if (_hasPermission &&
+            (_cameraController == null ||
+                !_cameraController!.value.isInitialized)) {
+          _initilizeCameraComponents();
+        }
+        break;
+
+      case AppLifecycleState.detached:
+        debugPrint("App detached, disposing camera...");
+        _cameraController?.dispose();
+        _cameraController = null;
+        break;
+
+      case AppLifecycleState.hidden:
+        // Handle if needed
+        break;
     }
   }
 
   @override
   void dispose() {
+    debugPrint("🔄 Disposing camera resources...");
     _cameraController?.dispose();
+    _cameraController = null;
     _focusAnimationController.dispose();
     _captureAnimationController.dispose();
     WidgetsBinding.instance.removeObserver(this);
     _restoreOrientation();
+    debugPrint("✅ Camera resources disposed");
     super.dispose();
   }
 
