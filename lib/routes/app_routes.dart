@@ -4,7 +4,8 @@ import 'package:flutter/material.dart';
 import '../presentation/dashboard_home/dashboard_home.dart';
 import '../presentation/crop_scanner_camera/crop_scanner_camera.dart';
 import '../presentation/user_profile_settings/user_profile_settings.dart';
-import '../presentation/crop_detection_results/crop_detection_results.dart';
+import '../presentation/crop_detection_results/crop_detection_results.dart'
+    hide CropDetectionResultsArgs;
 import '../presentation/weather_dashboard/weather_dashboard.dart';
 import '../presentation/detection_history/detection_history.dart';
 
@@ -23,10 +24,23 @@ class AppRoutes {
     initial: (context) => MainScreen(),
     dashboardHome: (context) => const DashboardHome(),
     cropScannerCamera: (context) => const CropScannerCamera(),
-    cropDetectionResults: (context) => const CropDetectionResults(),
     weatherDashboard: (context) => const WeatherDashboard(),
     detectionHistory: (context) => const DetectionHistory(),
     cropscreen: (context) => const CropScreen(),
     userProfileSettings: (context) => const UserProfileSettings(),
+    cropDetectionResults: (context) {
+      final args = ModalRoute.of(context)!.settings.arguments;
+      if (args is CropDetectionResultsArgs) {
+        return CropDetectionResults(
+          imagePath: args.imagePath,
+          detectedCrop: args.detectedCrop,
+          confidence: args.confidence,
+        );
+      }
+      debugPrint(
+          "Error: CropDetectionResults received null or invalid arguments.");
+      return const Text(
+          'Error: Invalid arguments for Crop Detection Results screen.');
+    }
   };
 }
