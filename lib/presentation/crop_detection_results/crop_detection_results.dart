@@ -8,7 +8,15 @@ import './widgets/crop_info_section_widget.dart';
 import './widgets/detection_result_card_widget.dart';
 
 class CropDetectionResults extends StatefulWidget {
-  const CropDetectionResults({super.key});
+  final String imagePath;
+  final String detectedCrop;
+  final double confidence;
+
+  const CropDetectionResults(
+      {super.key,
+      required this.imagePath,
+      required this.detectedCrop,
+      required this.confidence});
 
   @override
   State<CropDetectionResults> createState() => _CropDetectionResultsState();
@@ -16,10 +24,6 @@ class CropDetectionResults extends StatefulWidget {
 
 class _CropDetectionResultsState extends State<CropDetectionResults> {
   bool _isImageZoomed = false;
-  late String imagePath;
-  late String detectedCrop;
-  late double confidence;
-
   final Map<String, Map<String, dynamic>> cropDatabase = {
     "bell_pepper": {
       "displayName": "Bell Pepper",
@@ -110,31 +114,17 @@ class _CropDetectionResultsState extends State<CropDetectionResults> {
     }
   };
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-
-    // Get the arguments passed from the camera screen
-    final args = ModalRoute.of(context)?.settings.arguments;
-
-    if (args != null && args is CropDetectionResultsArgs) {
-      imagePath = args.imagePath;
-      detectedCrop = args.detectedCrop;
-      confidence = args.confidence;
-    } else {
-      // Handle case where no arguments are passed (shouldn't happen)
-      debugPrint("⚠️ No arguments received in CropDetectionResults");
-      imagePath = "";
-      detectedCrop = "unknown";
-      confidence = 0.0;
-    }
-  }
-
   Map<String, dynamic> get cropInfo {
     // Convert detected crop name to lowercase and replace spaces with underscores
-    String cropKey = detectedCrop.toLowerCase().replaceAll(' ', '_');
+    String cropKey = widget.detectedCrop.toLowerCase().replaceAll(' ', '_');
     // Return crop info if found, otherwise return default
     return cropDatabase[cropKey] ?? cropDatabase['default']!;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    // You can put any initial setup here, but the args are already available via widget.
   }
 
   @override
@@ -175,7 +165,7 @@ class _CropDetectionResultsState extends State<CropDetectionResults> {
             children: [
               // Crop Image Section
               CropImageWidget(
-                imageUrl: imagePath,
+                imageUrl: widget.imagePath,
                 isFromFile: true, // This is a local file path
                 onImageTap: () => _toggleImageZoom(),
                 onLongPress: () => _showImageContextMenu(context),
@@ -187,8 +177,8 @@ class _CropDetectionResultsState extends State<CropDetectionResults> {
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 4.w),
                 child: DetectionResultCardWidget(
-                  cropName: cropInfo['displayName'] ?? detectedCrop,
-                  confidence: confidence,
+                  cropName: cropInfo['displayName'] ?? widget.detectedCrop,
+                  confidence: widget.confidence,
                   timestamp: DateTime.now(),
                 ),
               ),

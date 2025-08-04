@@ -143,7 +143,7 @@ class TfLiteModelServices extends ChangeNotifier {
         _outputLength,
         0.0,
       ).reshape([1, _outputLength]);
-      await _isolateInterpreter!.run([inputTensor], outputBuffer);
+      await _isolateInterpreter!.run(inputTensor, outputBuffer);
 
       // Process results
       final result = _processInferenceResults(outputBuffer[0]);

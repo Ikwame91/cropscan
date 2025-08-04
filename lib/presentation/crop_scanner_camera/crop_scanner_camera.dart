@@ -129,10 +129,14 @@ class CropScannerCameraState extends State<CropScannerCamera>
   }
 
   Future<void> _navigateToResults(
-      String imagePath, Map<String, dynamic> result) async {
+    String detectedCrop,
+    double confidence,
+    String imagePath,
+  ) async {
     debugPrint("🚀 Navigating to results screen");
     debugPrint("Image path: $imagePath");
-    debugPrint("Detection result: $result");
+    debugPrint(
+        "Detection result: {label: $detectedCrop, confidence: $confidence}");
 
     // Type-safe navigation with proper arguments
     final navigationResult = await Navigator.pushNamed(
@@ -140,8 +144,8 @@ class CropScannerCameraState extends State<CropScannerCamera>
       AppRoutes.cropDetectionResults,
       arguments: CropDetectionResultsArgs(
         imagePath: imagePath,
-        detectedCrop: result['label'] ?? 'Unknown',
-        confidence: (result['confidence'] ?? 0.0).toDouble(),
+        detectedCrop: detectedCrop,
+        confidence: confidence,
       ),
     );
 
@@ -445,7 +449,11 @@ class CropScannerCameraState extends State<CropScannerCamera>
         await Future.delayed(_detectionFeedbackDuration);
         if (mounted) {
           // Changed to use new helper for navigation
-          await _navigateToResults(imageFile.path, result);
+          await _navigateToResults(
+            result['label'],
+            result['confidence'],
+            imageFile.path,
+          );
         }
       } else {
         _showErrorDialog("Detection failed. Please try again.");
