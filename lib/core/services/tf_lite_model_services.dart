@@ -186,9 +186,9 @@ class TfLiteModelServices extends ChangeNotifier {
     for (int y = 0; y < _inputSize; y++) {
       for (int x = 0; x < _inputSize; x++) {
         final pixel = resizedImage.getPixel(x, y);
-        inputData[index++] = pixel.r / 255.0;
-        inputData[index++] = pixel.g / 255.0;
-        inputData[index++] = pixel.b / 255.0;
+        inputData[index++] = pixel.r.toDouble();
+        inputData[index++] = pixel.g.toDouble();
+        inputData[index++] = pixel.b.toDouble();
       }
     }
 
