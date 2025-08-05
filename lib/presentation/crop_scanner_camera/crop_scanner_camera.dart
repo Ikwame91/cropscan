@@ -264,24 +264,40 @@ class CropScannerCameraState extends State<CropScannerCamera>
     await _checkAndInitializeCamera();
   }
 
+  Future<void> _configureCameraSettings() async {
+    if (_cameraController?.value.isInitialized == true) {
+      try {
+        await _cameraController!.setExposureMode(ExposureMode.auto);
+        await _cameraController!.setFocusMode(FocusMode.auto);
+        debugPrint("📸 Camera settings configured");
+      } catch (e) {
+        debugPrint("Warning: Could not configure camera settings: $e");
+      }
+    }
+  }
+
   Future _setupCameraController(int cameraIndex) async {
     if (_cameraController != null) {
+      await _cameraController!.pausePreview();
       await _cameraController!.dispose();
+
       _cameraController = null;
     }
     _cameraController = CameraController(
       _cameras![cameraIndex],
       ResolutionPreset.medium,
       enableAudio: false,
-      // imageFormatGroup: ImageFormatGroup.jpeg,
+      imageFormatGroup: ImageFormatGroup.jpeg,
     );
-
     try {
       await _cameraController!.initialize();
       if (!mounted) {
         await _cameraController!.dispose();
         return;
       }
+
+      await _configureCameraSettings();
+
       _minZoomLevel = await _cameraController!.getMinZoomLevel();
       _maxZoomLevel = await _cameraController!.getMaxZoomLevel();
 
@@ -328,6 +344,8 @@ class CropScannerCameraState extends State<CropScannerCamera>
     if (_cameras == null || _cameras!.length < 2) {
       return;
     }
+    await _cameraController?.pausePreview();
+
     if (_isFlashOn) {
       await _cameraController!.setFlashMode(FlashMode.off);
       setState(() {
@@ -465,35 +483,31 @@ class CropScannerCameraState extends State<CropScannerCamera>
     if (_cameraController == null ||
         !_cameraController!.value.isInitialized ||
         context.read<TfLiteModelServices>().status ==
-            ModelPredictionStatus.predicting) {
-      return;
-    }
-    // Prevent multiple simultaneous captures
-    if (_isCapturing) {
-      debugPrint("Capture already in progress, ignoring...");
+            ModelPredictionStatus.predicting ||
+        _isCapturing) {
+      debugPrint(
+        "Capture blocked: camera not ready or capture in progress",
+      );
       return;
     }
 
     _isCapturing = true;
 
-    _captureAnimationController.forward().then((_) {
-      _captureAnimationController.reverse();
-    });
-
-    HapticFeedback.heavyImpact();
-
-    XFile? imageFile;
     try {
-      imageFile = await _cameraController!.takePicture();
+      _captureAnimationController.forward().then((_) {
+        _captureAnimationController.reverse();
+      });
+
+      HapticFeedback.heavyImpact();
+
+      final imageFile = await _cameraController!.takePicture();
       debugPrint("Image captured: ${imageFile.path}");
 
-      // Trigger the ML prediction
       await _performDetection(imageFile);
-    } on CameraException catch (e) {
+    } catch (e) {
       debugPrint("Error taking picture: $e");
-      _showErrorDialog(
-          "Failed to capture image: ${e.description}"); // Use _showErrorDialog
-      _resetDetectionState(); // Ensure reset if camera capture fails
+      _showErrorDialog("Failed to capture image: ${_sanitizeError(e)}");
+      _resetDetectionState();
     } finally {
       _isCapturing = false;
     }
@@ -527,6 +541,21 @@ class CropScannerCameraState extends State<CropScannerCamera>
     }
   }
 
+// Add these helper methods
+  Future<void> _pauseCameraPreview() async {
+    if (_cameraController?.value.isInitialized == true) {
+      await _cameraController!.pausePreview();
+      debugPrint("📹 Camera preview paused");
+    }
+  }
+
+  Future<void> _resumeCameraPreview() async {
+    if (_cameraController?.value.isInitialized == true) {
+      await _cameraController!.resumePreview();
+      debugPrint("📹 Camera preview resumed");
+    }
+  }
+
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     debugPrint("App lifecycle state changed to: $state");
@@ -539,26 +568,29 @@ class CropScannerCameraState extends State<CropScannerCamera>
       case AppLifecycleState.inactive:
       case AppLifecycleState.paused:
         debugPrint("Pausing camera...");
+        _pauseCameraPreview();
         // Don't dispose, just pause
         break;
 
       case AppLifecycleState.resumed:
         debugPrint("Resuming camera...");
-        // Re-initialize camera only if it was disposed AND we have permission
-        if (_hasPermission &&
-            (_cameraController == null ||
-                !_cameraController!.value.isInitialized)) {
-          _initilizeCameraComponents();
+        if (_hasPermission) {
+          if (_cameraController?.value.isInitialized == true) {
+            _resumeCameraPreview();
+          } else {
+            _initilizeCameraComponents();
+          }
         }
         break;
-
       case AppLifecycleState.detached:
         debugPrint("App detached, disposing camera...");
+        _cameraController?.pausePreview();
         _cameraController?.dispose();
         _cameraController = null;
         break;
 
       case AppLifecycleState.hidden:
+        _pauseCameraPreview();
         // Handle if needed
         break;
     }
