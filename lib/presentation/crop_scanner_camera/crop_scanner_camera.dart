@@ -41,7 +41,7 @@ class CropScannerCameraState extends State<CropScannerCamera>
   double _confidence = 0.0;
   bool _showDetectionFeedback = false;
 
-  static const Duration _detectionFeedbackDuration = Duration(seconds: 2);
+  static const Duration _detectionFeedbackDuration = Duration(seconds: 15);
   static const Duration _focusAnimationDuration = Duration(milliseconds: 500);
   static const Duration _captureAnimationDuration = Duration(milliseconds: 300);
   static const double _detectionFrameHorizontalMargin =
@@ -169,25 +169,6 @@ class CropScannerCameraState extends State<CropScannerCamera>
     );
   }
 
-// This method will now be called externally when the tab is selected
-  Future<void> initializeCameraOnDemand() async {
-    if (_cameraController == null || !_cameraController!.value.isInitialized) {
-      await _checkAndInitializeCamera();
-    }
-
-    final tfliteModelServices = context.read<TfLiteModelServices>();
-    if (tfliteModelServices.status == ModelPredictionStatus.initial ||
-        tfliteModelServices.status == ModelPredictionStatus.error) {
-      try {
-        await tfliteModelServices.loadModelAndLabels();
-      } catch (e) {
-        debugPrint("Error loading ML model: $e");
-        _showErrorDialog(
-            "Failed to load crop detection model. Please restart the app.");
-      }
-    }
-  }
-
   Future<void> _checkAndInitializeCamera() async {
     debugPrint("Starting camera initialization...");
     var cameraStatus = await Permission.camera.status;
@@ -204,7 +185,6 @@ class CropScannerCameraState extends State<CropScannerCamera>
       setState(() {
         _hasPermission = false;
       });
-      // _showPermissionDeniedDialog(); // This dialog explicitly links to settings
     } else {
       final Map<Permission, PermissionStatus> statuses = await [
         Permission.camera,
@@ -223,10 +203,25 @@ class CropScannerCameraState extends State<CropScannerCamera>
         setState(() {
           _hasPermission = false;
         });
+      }
+    }
+  }
 
-        // _showSnackBar(
-        //     "Camera and photo permissions were denied. Please grant them to use this feature.",
-        //     backgroundColor: Colors.orange);
+// This method will now be called externally when the tab is selected
+  Future<void> initializeCameraOnDemand() async {
+    if (_cameraController == null || !_cameraController!.value.isInitialized) {
+      await _checkAndInitializeCamera();
+    }
+
+    final tfliteModelServices = context.read<TfLiteModelServices>();
+    if (tfliteModelServices.status == ModelPredictionStatus.initial ||
+        tfliteModelServices.status == ModelPredictionStatus.error) {
+      try {
+        await tfliteModelServices.loadModelAndLabels();
+      } catch (e) {
+        debugPrint("Error loading ML model: $e");
+        _showErrorDialog(
+            "Failed to load crop detection model. Please restart the app.");
       }
     }
   }
