@@ -12,6 +12,7 @@ class CameraOverlayWidget extends StatelessWidget {
   final VoidCallback? onFlipCamera;
   final Animation<double>? captureAnimation;
   final bool isControlsDisabled;
+  final VoidCallback? onClose;
 
   const CameraOverlayWidget({
     super.key,
@@ -23,6 +24,7 @@ class CameraOverlayWidget extends StatelessWidget {
     this.onFlipCamera,
     this.captureAnimation,
     this.isControlsDisabled = false,
+    this.onClose,
   });
   @override
   Widget build(BuildContext context) {
@@ -55,7 +57,7 @@ class CameraOverlayWidget extends StatelessWidget {
                 icon: 'close',
                 onPressed: isControlsDisabled
                     ? null
-                    : () => Navigator.of(context).pop(),
+                    : onClose ?? () => Navigator.of(context).pop(),
               ),
               Text(
                 'CropScan',

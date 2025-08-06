@@ -106,6 +106,15 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   void _navigateToTab(int index) {
+    if (_currentIndex == _scanTabIndex && index != _scanTabIndex) {
+      _cameraScreenKey.currentState?.pauseCameraPreview();
+    }
+
+    // If we're entering the camera tab, resume the camera
+    if (index == _scanTabIndex && _currentIndex != _scanTabIndex) {
+      _cameraScreenKey.currentState?.resumeCameraPreview();
+    }
+
     if (mounted) {
       setState(() => _currentIndex = index);
     }
@@ -167,11 +176,14 @@ class _MainScreenState extends State<MainScreen> {
   ScanTabConfig _getScanTabConfig(ModelPredictionStatus status) {
     switch (status) {
       case ModelPredictionStatus.loading:
-        return ScanTabConfig('downloading', 'Loading...', Colors.orange);
+        // Keep camera icon but change color to show loading
+        return ScanTabConfig('camera_alt', 'Loading...', Colors.orange);
       case ModelPredictionStatus.error:
-        return ScanTabConfig('error_outline', 'Error', Colors.red);
+        return ScanTabConfig(
+            'camera_alt', 'Scan', Colors.red); // Keep camera, just red
       case ModelPredictionStatus.predicting:
-        return ScanTabConfig('autorenew', 'Predicting...', Colors.blue);
+        return ScanTabConfig(
+            'camera_alt', 'Scanning...', Colors.blue); // Keep camera, just blue
       case ModelPredictionStatus.initial:
       case ModelPredictionStatus.ready:
         return ScanTabConfig(

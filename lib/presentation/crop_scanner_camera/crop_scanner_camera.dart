@@ -41,7 +41,7 @@ class CropScannerCameraState extends State<CropScannerCamera>
   double _confidence = 0.0;
   bool _showDetectionFeedback = false;
 
-  static const Duration _detectionFeedbackDuration = Duration(seconds: 15);
+  static const Duration _detectionFeedbackDuration = Duration(seconds: 3);
   static const Duration _focusAnimationDuration = Duration(milliseconds: 500);
   static const Duration _captureAnimationDuration = Duration(milliseconds: 300);
   static const double _detectionFrameHorizontalMargin =
@@ -556,6 +556,18 @@ class CropScannerCameraState extends State<CropScannerCamera>
     }
   }
 
+  void pauseCameraPreview() async {
+    await _pauseCameraPreview();
+  }
+
+  void resumeCameraPreview() async {
+    await _resumeCameraPreview();
+  }
+
+  void _goBackToHome() {
+    Navigator.of(context).popUntil((route) => route.isFirst);
+  }
+
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     debugPrint("App lifecycle state changed to: $state");
@@ -652,11 +664,13 @@ class CropScannerCameraState extends State<CropScannerCamera>
             // Camera Controls
             CameraOverlayWidget(
               isTop: true,
+              onClose: _goBackToHome,
               onFlashToggle: _toggleFlash,
               isFlashOn: _isFlashOn,
               isControlsDisabled: mlStatus == ModelPredictionStatus.predicting,
             ),
             CameraOverlayWidget(
+              onClose: _goBackToHome,
               isTop: false,
               onCapture: _captureImage,
               onGallery: _openGallery,
