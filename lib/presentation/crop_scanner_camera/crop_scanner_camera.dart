@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:camera/camera.dart';
 import 'package:cropscan_pro/core/services/tf_lite_model_services.dart';
 import 'package:cropscan_pro/presentation/crop_scanner_camera/widgets/crop_info.dart';
+import 'package:cropscan_pro/providers/naviagtion_provider.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -62,7 +63,50 @@ class CropScannerCameraState extends State<CropScannerCamera>
     WidgetsBinding.instance.addObserver(this);
     _initializeAnimations();
     _lockOrientation();
-    _checkAndInitializeCamera();
+    if (kDebugMode) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _checkAndInitializeCamera();
+      });
+    } else {
+      _checkAndInitializeCamera();
+    }
+  }
+
+  @override
+  void reassemble() {
+    super.reassemble();
+    // Hot reload detected - dispose and reinitialize
+    if (kDebugMode) {
+      debugPrint("🔥 Hot reload detected - reinitializing camera");
+
+      // More aggressive disposal for hot reload
+      _disposeForHotReload();
+
+      // Longer delay to ensure complete cleanup
+      Future.delayed(const Duration(milliseconds: 500), () {
+        if (mounted) {
+          _checkAndInitializeCamera();
+        }
+      });
+    }
+  }
+
+  void _disposeForHotReload() {
+    if (_cameraController != null) {
+      try {
+        // Pause first
+        _cameraController!.pausePreview();
+
+        // Then dispose with delay
+        Future.delayed(const Duration(milliseconds: 100), () {
+          _cameraController?.dispose();
+          _cameraController = null;
+        });
+      } catch (e) {
+        debugPrint("Error disposing camera for hot reload: $e");
+        _cameraController = null;
+      }
+    }
   }
 
   void _initializeAnimations() {
@@ -581,7 +625,9 @@ class CropScannerCameraState extends State<CropScannerCamera>
   }
 
   void _goBackToHome() {
-    Navigator.of(context).popUntil((route) => route.isFirst);
+    debugPrint("🔙 Going back to home screen");
+    final navigationProvider = context.read<NavigationProvider>();
+    navigationProvider.navigateToTab(0);
   }
 
   @override
@@ -628,6 +674,7 @@ class CropScannerCameraState extends State<CropScannerCamera>
   void dispose() {
     debugPrint("🔄 Disposing camera resources...");
 
+    // Dispose camera synchronously for hot reload safety
     _disposeCamera();
 
     try {
@@ -637,7 +684,6 @@ class CropScannerCameraState extends State<CropScannerCamera>
       debugPrint("Error disposing animation controllers: $e");
     }
 
-    // Remove observers and restore orientation
     WidgetsBinding.instance.removeObserver(this);
     _restoreOrientation();
 
@@ -645,19 +691,18 @@ class CropScannerCameraState extends State<CropScannerCamera>
     super.dispose();
   }
 
-  Future<void> _disposeCamera() async {
+  void _disposeCamera() {
     if (_cameraController != null) {
       try {
-        // Pause preview first
-        if (_cameraController!.value.isInitialized) {
-          await _cameraController!.pausePreview();
-        }
-
-        // Add small delay to ensure pause completes
-        await Future.delayed(const Duration(milliseconds: 100));
-
-        // Dispose camera controller
-        await _cameraController!.dispose();
+        // Don't await in dispose() - use Future.microtask for async cleanup
+        Future.microtask(() async {
+          try {
+            await _cameraController?.pausePreview();
+            await _cameraController?.dispose();
+          } catch (e) {
+            debugPrint("Async camera disposal error: $e");
+          }
+        });
       } catch (e) {
         debugPrint("Error during camera disposal: $e");
       } finally {
@@ -715,7 +760,6 @@ class CropScannerCameraState extends State<CropScannerCamera>
               isControlsDisabled: mlStatus == ModelPredictionStatus.predicting,
             ),
             CameraOverlayWidget(
-              onClose: _goBackToHome,
               isTop: false,
               onCapture: _captureImage,
               onGallery: _openGallery,

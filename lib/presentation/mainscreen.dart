@@ -37,7 +37,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
 
   @override
   void dispose() {
-    _cameraScreenKey.currentState?.pauseCameraPreview();
+    _cameraScreenKey.currentState?.dispose();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
@@ -77,6 +77,11 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   void _onTabTapped(int index) async {
     final navigationProvider = context.read<NavigationProvider>();
 
+    if (navigationProvider.currentIndex == _scanTabIndex &&
+        index != _scanTabIndex) {
+      debugPrint("🔄 Leaving camera tab - pausing camera");
+      _cameraScreenKey.currentState?.pauseCameraPreview();
+    }
     if (index == _scanTabIndex) {
       await _handleScanTabTap(navigationProvider);
     } else {
