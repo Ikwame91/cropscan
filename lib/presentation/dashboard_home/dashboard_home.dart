@@ -1,6 +1,7 @@
 import 'package:cropscan_pro/models/crop_detection.dart';
 import 'package:cropscan_pro/models/farming_alert.dart';
 import 'package:cropscan_pro/providers/farming_alerts_provider.dart';
+import 'package:cropscan_pro/providers/naviagtion_provider.dart';
 import 'package:cropscan_pro/providers/recent_detection_providers.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -93,6 +94,11 @@ class DashboardHome extends StatelessWidget {
     );
   }
 
+  void _navigateToCamera(BuildContext context) {
+    final navigationProvider = context.read<NavigationProvider>();
+    navigationProvider.navigateToCamera();
+  }
+
   @override
   Widget build(BuildContext context) {
     final recentDetectionsProvider = context.watch<RecentDetectionsProvider>();
@@ -148,8 +154,7 @@ class DashboardHome extends StatelessWidget {
 
                     // Scan Crop Card
                     ScanCropCardWidget(
-                      onTap: () =>
-                          Navigator.pushNamed(context, '/crop-scanner-camera'),
+                      onTap: () => _navigateToCamera(context),
                     ),
                     SizedBox(height: 3.h),
 

@@ -3,6 +3,7 @@
 import 'package:cropscan_pro/core/app_export.dart'
     show AppTheme, CustomIconWidget;
 import 'package:cropscan_pro/core/services/tf_lite_model_services.dart';
+import 'package:cropscan_pro/providers/naviagtion_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:cropscan_pro/presentation/dashboard_home/dashboard_home.dart';
 import 'package:cropscan_pro/presentation/crop_scanner_camera/crop_scanner_camera.dart';
@@ -19,20 +20,48 @@ class MainScreen extends StatefulWidget {
   State<MainScreen> createState() => _MainScreenState();
 }
 
-class _MainScreenState extends State<MainScreen> {
+class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   static const Duration _snackBarDuration = Duration(seconds: 2);
   static const Duration _errorSnackBarDuration = Duration(seconds: 4);
   static const int _scanTabIndex = 1;
 
-  // State
-  int _currentIndex = 0;
   final GlobalKey<CropScannerCameraState> _cameraScreenKey = GlobalKey();
   late final List<Widget> _screens;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _initializeScreens();
+  }
+
+  @override
+  void dispose() {
+    _cameraScreenKey.currentState?.pauseCameraPreview();
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    final navigationProvider = context.read<NavigationProvider>();
+
+    switch (state) {
+      case AppLifecycleState.paused:
+      case AppLifecycleState.inactive:
+        _cameraScreenKey.currentState?.pauseCameraPreview();
+        break;
+      case AppLifecycleState.resumed:
+        if (navigationProvider.currentIndex == _scanTabIndex) {
+          _cameraScreenKey.currentState?.resumeCameraPreview();
+        }
+        break;
+      case AppLifecycleState.detached:
+      case AppLifecycleState.hidden:
+        _cameraScreenKey.currentState?.pauseCameraPreview();
+        break;
+    }
   }
 
   void _initializeScreens() {
@@ -45,32 +74,28 @@ class _MainScreenState extends State<MainScreen> {
     ];
   }
 
-  void goToTab(int index) {
-    if (mounted) {
-      setState(() => _currentIndex = index);
-    }
-  }
-
   void _onTabTapped(int index) async {
+    final navigationProvider = context.read<NavigationProvider>();
+
     if (index == _scanTabIndex) {
-      await _handleScanTabTap();
+      await _handleScanTabTap(navigationProvider);
     } else {
-      _navigateToTab(index);
+      navigationProvider.navigateToTab(index);
     }
   }
 
-  Future<void> _handleScanTabTap() async {
+  Future<void> _handleScanTabTap(NavigationProvider navigationProvider) async {
     final tfliteService = context.read<TfLiteModelServices>();
 
     switch (tfliteService.status) {
       case ModelPredictionStatus.initial:
-        await _loadModelAndNavigate(tfliteService);
+        await _loadModelAndNavigate(tfliteService, navigationProvider);
         break;
       case ModelPredictionStatus.loading:
         _showLoadingMessage();
         break;
       case ModelPredictionStatus.ready:
-        _navigateToScanTab();
+        _navigateToScanTab(navigationProvider);
         break;
       case ModelPredictionStatus.error:
         _showErrorMessage();
@@ -81,13 +106,14 @@ class _MainScreenState extends State<MainScreen> {
     }
   }
 
-  Future<void> _loadModelAndNavigate(TfLiteModelServices service) async {
+  Future<void> _loadModelAndNavigate(TfLiteModelServices service,
+      NavigationProvider navigationProvider) async {
     _showSnackBar("Loading AI model for scanning...", _snackBarDuration);
 
     try {
       await service.loadModelAndLabels();
       if (mounted && service.status == ModelPredictionStatus.ready) {
-        _navigateToScanTab();
+        _navigateToScanTab(navigationProvider);
       }
     } catch (e) {
       if (mounted) {
@@ -100,24 +126,9 @@ class _MainScreenState extends State<MainScreen> {
     }
   }
 
-  void _navigateToScanTab() {
-    _navigateToTab(_scanTabIndex);
+  void _navigateToScanTab(NavigationProvider navigationProvider) {
+    navigationProvider.navigateToCamera();
     _cameraScreenKey.currentState?.initializeCameraOnDemand();
-  }
-
-  void _navigateToTab(int index) {
-    if (_currentIndex == _scanTabIndex && index != _scanTabIndex) {
-      _cameraScreenKey.currentState?.pauseCameraPreview();
-    }
-
-    // If we're entering the camera tab, resume the camera
-    if (index == _scanTabIndex && _currentIndex != _scanTabIndex) {
-      _cameraScreenKey.currentState?.resumeCameraPreview();
-    }
-
-    if (mounted) {
-      setState(() => _currentIndex = index);
-    }
   }
 
   void _showLoadingMessage() {
@@ -155,19 +166,30 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<TfLiteModelServices>(
-      builder: (context, tfliteService, child) {
+    return Consumer2<TfLiteModelServices, NavigationProvider>(
+      builder: (context, tfliteService, navigationProvider, child) {
         final scanTabConfig = _getScanTabConfig(tfliteService.status);
+
+        // Handle camera initialization when flag is set
+        if (navigationProvider.shouldInitializeCamera) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            _cameraScreenKey.currentState?.initializeCameraOnDemand();
+            navigationProvider.resetCameraInitFlag();
+          });
+        }
 
         return Scaffold(
           backgroundColor: AppTheme.lightTheme.scaffoldBackgroundColor,
           body: SafeArea(
             child: IndexedStack(
-              index: _currentIndex,
+              index: navigationProvider.currentIndex,
               children: _screens,
             ),
           ),
-          bottomNavigationBar: _buildBottomNavigationBar(scanTabConfig),
+          bottomNavigationBar: _buildBottomNavigationBar(
+            scanTabConfig,
+            navigationProvider.currentIndex,
+          ),
         );
       },
     );
@@ -176,29 +198,27 @@ class _MainScreenState extends State<MainScreen> {
   ScanTabConfig _getScanTabConfig(ModelPredictionStatus status) {
     switch (status) {
       case ModelPredictionStatus.loading:
-        // Keep camera icon but change color to show loading
         return ScanTabConfig('camera_alt', 'Loading...', Colors.orange);
       case ModelPredictionStatus.error:
-        return ScanTabConfig(
-            'camera_alt', 'Scan', Colors.red); // Keep camera, just red
+        return ScanTabConfig('camera_alt', 'Scan', Colors.red);
       case ModelPredictionStatus.predicting:
-        return ScanTabConfig(
-            'camera_alt', 'Scanning...', Colors.blue); // Keep camera, just blue
+        return ScanTabConfig('camera_alt', 'Scanning...', Colors.blue);
       case ModelPredictionStatus.initial:
       case ModelPredictionStatus.ready:
         return ScanTabConfig(
           'camera_alt',
           'Scan',
-          _currentIndex == _scanTabIndex
+          context.read<NavigationProvider>().currentIndex == _scanTabIndex
               ? AppTheme.lightTheme.colorScheme.primary
               : AppTheme.lightTheme.colorScheme.onSurfaceVariant,
         );
     }
   }
 
-  BottomNavigationBar _buildBottomNavigationBar(ScanTabConfig scanConfig) {
+  BottomNavigationBar _buildBottomNavigationBar(
+      ScanTabConfig scanConfig, int currentIndex) {
     return BottomNavigationBar(
-      currentIndex: _currentIndex,
+      currentIndex: currentIndex,
       onTap: _onTabTapped,
       type: BottomNavigationBarType.fixed,
       backgroundColor: AppTheme.lightTheme.colorScheme.surface,
@@ -214,14 +234,14 @@ class _MainScreenState extends State<MainScreen> {
         fontWeight: FontWeight.w500,
         color: Colors.black,
       ),
-      items: _buildNavigationItems(scanConfig),
+      items: _buildNavigationItems(scanConfig, currentIndex),
     );
   }
 
   List<BottomNavigationBarItem> _buildNavigationItems(
-      ScanTabConfig scanConfig) {
+      ScanTabConfig scanConfig, int currentIndex) {
     return [
-      _buildNavItem('home', 'Home', 0),
+      _buildNavItem('home', 'Home', 0, currentIndex),
       BottomNavigationBarItem(
         icon: CustomIconWidget(
           iconName: scanConfig.iconName,
@@ -230,18 +250,18 @@ class _MainScreenState extends State<MainScreen> {
         ),
         label: scanConfig.label,
       ),
-      _buildNavItem('wb_sunny', 'Weather', 2),
-      _buildNavItem('local_florist', 'My Crops', 3),
-      _buildNavItem('person', 'Profile', 4),
+      _buildNavItem('wb_sunny', 'Weather', 2, currentIndex),
+      _buildNavItem('local_florist', 'My Crops', 3, currentIndex),
+      _buildNavItem('person', 'Profile', 4, currentIndex),
     ];
   }
 
   BottomNavigationBarItem _buildNavItem(
-      String iconName, String label, int index) {
+      String iconName, String label, int index, int currentIndex) {
     return BottomNavigationBarItem(
       icon: CustomIconWidget(
         iconName: iconName,
-        color: _currentIndex == index
+        color: currentIndex == index
             ? AppTheme.lightTheme.colorScheme.primary
             : AppTheme.lightTheme.colorScheme.onSurfaceVariant,
         size: 24,

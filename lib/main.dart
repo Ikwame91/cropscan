@@ -1,5 +1,6 @@
 import 'package:cropscan_pro/core/services/tf_lite_model_services.dart';
 import 'package:cropscan_pro/providers/farming_alerts_provider.dart';
+import 'package:cropscan_pro/providers/naviagtion_provider.dart';
 import 'package:cropscan_pro/providers/recent_detection_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -22,6 +23,10 @@ void main() async {
 
   runApp(MultiProvider(
     providers: [
+      ChangeNotifierProvider(
+        create: (_) => NavigationProvider(),
+        lazy: true,
+      ),
       ChangeNotifierProvider(
         create: (_) => FarmingAlertsProvider(),
         lazy: true,

@@ -1,21 +1,24 @@
+import 'package:cropscan_pro/presentation/crop_scanner_camera/widgets/crop_info.dart';
 import 'package:flutter/material.dart';
 import 'package:sizer/sizer.dart';
 
 import '../../core/app_export.dart';
 import './widgets/action_buttons_widget.dart';
 import './widgets/crop_image_widget.dart';
-import './widgets/crop_info_section_widget.dart';
+
 import './widgets/detection_result_card_widget.dart';
 
 class CropDetectionResults extends StatefulWidget {
   final String imagePath;
   final String detectedCrop;
   final double confidence;
+  final CropInfo cropInfo;
 
   const CropDetectionResults(
       {super.key,
       required this.imagePath,
       required this.detectedCrop,
+      required this.cropInfo,
       required this.confidence});
 
   @override
@@ -24,102 +27,6 @@ class CropDetectionResults extends StatefulWidget {
 
 class _CropDetectionResultsState extends State<CropDetectionResults> {
   bool _isImageZoomed = false;
-  final Map<String, Map<String, dynamic>> cropDatabase = {
-    "bell_pepper": {
-      "displayName": "Bell Pepper",
-      "scientificName": "Capsicum annuum",
-      "family": "Solanaceae",
-      "growingTips": [
-        "Plant in well-draining soil with pH 6.0-6.8",
-        "Provide 6-8 hours of direct sunlight daily",
-        "Water consistently but avoid waterlogging",
-        "Space plants 18-24 inches apart",
-        "Support with stakes as plants grow"
-      ],
-      "seasonalRecommendations": [
-        "Spring: Start seeds indoors 8-10 weeks before last frost",
-        "Summer: Transplant outdoors after soil warms to 60°F",
-        "Fall: Harvest before first frost, around 70-80 days",
-        "Winter: Store harvested peppers in cool, dry place"
-      ],
-      "diseaseWarnings": [
-        "Bacterial spot: Yellow spots with dark centers on leaves",
-        "Anthracnose: Dark, sunken spots on fruits",
-        "Powdery mildew: White powdery coating on leaves",
-        "Blossom end rot: Dark, sunken areas on fruit bottom"
-      ],
-      "pestAlerts": [
-        "Aphids: Small green insects on leaves and stems",
-        "Hornworms: Large green caterpillars eating leaves",
-        "Flea beetles: Small jumping beetles creating holes",
-        "Spider mites: Tiny pests causing stippled leaves"
-      ]
-    },
-    "tomato": {
-      "displayName": "Tomato",
-      "scientificName": "Solanum lycopersicum",
-      "family": "Solanaceae",
-      "growingTips": [
-        "Plant in rich, well-draining soil with pH 6.0-6.8",
-        "Provide support with cages or stakes",
-        "Water deeply but less frequently",
-        "Mulch around plants to retain moisture",
-        "Prune suckers for better fruit production"
-      ],
-      "seasonalRecommendations": [
-        "Spring: Start seeds indoors 6-8 weeks before last frost",
-        "Summer: Transplant outdoors when soil is warm",
-        "Fall: Harvest green tomatoes before first frost",
-        "Winter: Store ripe tomatoes at room temperature"
-      ],
-      "diseaseWarnings": [
-        "Early blight: Dark spots with concentric rings",
-        "Late blight: Water-soaked spots on leaves",
-        "Fusarium wilt: Yellowing leaves starting from bottom",
-        "Blossom end rot: Dark, sunken bottom on fruits"
-      ],
-      "pestAlerts": [
-        "Hornworms: Large green caterpillars",
-        "Aphids: Small soft-bodied insects",
-        "Whiteflies: Small white flying insects",
-        "Cutworms: Cut stems at soil level"
-      ]
-    },
-    // Add more crops as needed - this should match your ML model labels
-    "default": {
-      "displayName": "Unknown Crop",
-      "scientificName": "Species not identified",
-      "family": "Family unknown",
-      "growingTips": [
-        "Ensure adequate sunlight for the plant",
-        "Water regularly but avoid overwatering",
-        "Use well-draining soil",
-        "Monitor for pests and diseases regularly"
-      ],
-      "seasonalRecommendations": [
-        "Follow general seasonal gardening practices",
-        "Adapt care based on local climate conditions",
-        "Consult local agricultural extension for advice"
-      ],
-      "diseaseWarnings": [
-        "Monitor for common plant diseases",
-        "Look for unusual spots or discoloration",
-        "Check for wilting or stunted growth"
-      ],
-      "pestAlerts": [
-        "Inspect regularly for common garden pests",
-        "Look for holes in leaves or damaged stems",
-        "Check undersides of leaves for eggs"
-      ]
-    }
-  };
-
-  Map<String, dynamic> get cropInfo {
-    // Convert detected crop name to lowercase and replace spaces with underscores
-    String cropKey = widget.detectedCrop.toLowerCase().replaceAll(' ', '_');
-    // Return crop info if found, otherwise return default
-    return cropDatabase[cropKey] ?? cropDatabase['default']!;
-  }
 
   @override
   void initState() {
@@ -143,7 +50,7 @@ class _CropDetectionResultsState extends State<CropDetectionResults> {
           ),
         ),
         title: Text(
-          'Detection Results',
+          widget.cropInfo.displayName, // ← USE CLEAN DISPLAY NAME
           style: AppTheme.lightTheme.appBarTheme.titleTextStyle,
         ),
         actions: [
@@ -166,7 +73,7 @@ class _CropDetectionResultsState extends State<CropDetectionResults> {
               // Crop Image Section
               CropImageWidget(
                 imageUrl: widget.imagePath,
-                isFromFile: true, // This is a local file path
+                isFromFile: true,
                 onImageTap: () => _toggleImageZoom(),
                 onLongPress: () => _showImageContextMenu(context),
               ),
@@ -177,20 +84,26 @@ class _CropDetectionResultsState extends State<CropDetectionResults> {
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 4.w),
                 child: DetectionResultCardWidget(
-                  cropName: cropInfo['displayName'] ?? widget.detectedCrop,
+                  cropName: widget.cropInfo.displayName, // ← USE PROCESSED NAME
                   confidence: widget.confidence,
                   timestamp: DateTime.now(),
+                  statusColor:
+                      widget.cropInfo.statusColor, // ← ADD STATUS COLOR
+                  condition: widget.cropInfo.condition, // ← ADD CONDITION
                 ),
               ),
-
               SizedBox(height: 3.h),
 
               // Crop Information Section
-              CropInfoSectionWidget(
-                cropInfo: cropInfo,
+              // CropInfoSectionWidget(
+              //   cropInfo: cropInfo,
+              // ),
+              SizedBox(height: 3.h),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 4.w),
+                child: _buildCropInfoSection(),
               ),
               SizedBox(height: 3.h),
-
               // Action Buttons
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 4.w),
@@ -207,6 +120,216 @@ class _CropDetectionResultsState extends State<CropDetectionResults> {
         ),
       ),
     );
+  }
+
+  Widget _buildCropInfoSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Section Title
+        Text(
+          'Crop Analysis',
+          style: AppTheme.lightTheme.textTheme.titleLarge?.copyWith(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        SizedBox(height: 2.h),
+
+        // Crop Type Card
+        _buildInfoCard(
+          title: 'Crop Type',
+          content: widget.cropInfo.cropType,
+          icon: 'eco',
+          color: AppTheme.lightTheme.colorScheme.primary,
+        ),
+
+        SizedBox(height: 1.5.h),
+
+        // Health Status Card
+        _buildInfoCard(
+          title: 'Health Status',
+          content: widget.cropInfo.condition,
+          icon: _getConditionIcon(widget.cropInfo.condition),
+          color: widget.cropInfo.statusColor,
+        ),
+
+        SizedBox(height: 1.5.h),
+
+        // Confidence Card
+        _buildInfoCard(
+          title: 'Detection Confidence',
+          content: '${(widget.confidence * 100).toStringAsFixed(1)}%',
+          icon: 'analytics',
+          color: _getConfidenceColor(widget.confidence),
+        ),
+
+        SizedBox(height: 2.h),
+
+        // Description Section
+        Container(
+          width: double.infinity,
+          padding: EdgeInsets.all(4.w),
+          decoration: BoxDecoration(
+            color: AppTheme.lightTheme.colorScheme.surface,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: AppTheme.lightTheme.dividerColor,
+              width: 1,
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  CustomIconWidget(
+                    iconName: 'info',
+                    color: AppTheme.lightTheme.colorScheme.primary,
+                    size: 20,
+                  ),
+                  SizedBox(width: 2.w),
+                  Text(
+                    'Description',
+                    style: AppTheme.lightTheme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 1.h),
+              Text(
+                widget.cropInfo.description,
+                style: AppTheme.lightTheme.textTheme.bodyMedium,
+              ),
+            ],
+          ),
+        ),
+
+        SizedBox(height: 2.h),
+
+        // Recommended Action Section
+        Container(
+          width: double.infinity,
+          padding: EdgeInsets.all(4.w),
+          decoration: BoxDecoration(
+            color: widget.cropInfo.statusColor.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: widget.cropInfo.statusColor.withOpacity(0.3),
+              width: 1,
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  CustomIconWidget(
+                    iconName: 'lightbulb',
+                    color: widget.cropInfo.statusColor,
+                    size: 20,
+                  ),
+                  SizedBox(width: 2.w),
+                  Text(
+                    'Recommended Action',
+                    style: AppTheme.lightTheme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: widget.cropInfo.statusColor,
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 1.h),
+              Text(
+                widget.cropInfo.recommendedAction,
+                style: AppTheme.lightTheme.textTheme.bodyMedium?.copyWith(
+                  color: AppTheme.lightTheme.colorScheme.onSurface,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildInfoCard({
+    required String title,
+    required String content,
+    required String icon,
+    required Color color,
+  }) {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(4.w),
+      decoration: BoxDecoration(
+        color: AppTheme.lightTheme.colorScheme.surface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: AppTheme.lightTheme.dividerColor,
+          width: 1,
+        ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: EdgeInsets.all(2.w),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: CustomIconWidget(
+              iconName: icon,
+              color: color,
+              size: 24,
+            ),
+          ),
+          SizedBox(width: 4.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: AppTheme.lightTheme.textTheme.bodySmall?.copyWith(
+                    color: AppTheme.lightTheme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
+                SizedBox(height: 0.5.h),
+                Text(
+                  content,
+                  style: AppTheme.lightTheme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: color,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _getConditionIcon(String condition) {
+    switch (condition.toLowerCase()) {
+      case 'healthy':
+        return 'check_circle';
+      case 'disease detected':
+        return 'warning';
+      case 'pest detected':
+        return 'bug_report';
+      case 'virus detected':
+        return 'coronavirus';
+      default:
+        return 'help';
+    }
+  }
+
+  Color _getConfidenceColor(double confidence) {
+    if (confidence >= 0.8) return Colors.green;
+    if (confidence >= 0.6) return Colors.orange;
+    return Colors.red;
   }
 
   void _toggleImageZoom() {
@@ -370,10 +493,12 @@ class CropDetectionResultsArgs {
   final String imagePath;
   final String detectedCrop;
   final double confidence;
+  final CropInfo cropInfo;
 
   CropDetectionResultsArgs({
     required this.imagePath,
     required this.detectedCrop,
     required this.confidence,
+    required this.cropInfo,
   });
 }

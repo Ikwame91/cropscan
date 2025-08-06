@@ -7,15 +7,23 @@ class DetectionResultCardWidget extends StatelessWidget {
   final String cropName;
   final double confidence;
   final DateTime timestamp;
-
+  final Color? statusColor;
+  final String? condition;
   const DetectionResultCardWidget({
     super.key,
     required this.cropName,
     required this.confidence,
+    this.statusColor,
+    this.condition,
     required this.timestamp,
   });
 
   Color _getConfidenceColor() {
+    // Use provided statusColor if available, otherwise use confidence-based logic
+    if (statusColor != null) {
+      return statusColor!;
+    }
+
     if (confidence >= 80) {
       return AppTheme.getSuccessColor(true);
     } else if (confidence >= 60) {
@@ -33,6 +41,11 @@ class DetectionResultCardWidget extends StatelessWidget {
     } else {
       return 'Low Confidence';
     }
+  }
+
+  String _getConditionText() {
+    // Use provided condition if available, otherwise use confidence-based text
+    return condition ?? _getConfidenceText();
   }
 
   String _formatTimestamp() {
@@ -133,7 +146,7 @@ class DetectionResultCardWidget extends StatelessWidget {
                 ),
                 SizedBox(width: 3.w),
                 Text(
-                  _getConfidenceText(),
+                  _getConditionText(), //
                   style: AppTheme.lightTheme.textTheme.bodyMedium?.copyWith(
                     color: _getConfidenceColor(),
                     fontWeight: FontWeight.w500,

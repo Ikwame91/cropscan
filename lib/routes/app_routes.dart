@@ -35,6 +35,7 @@ class AppRoutes {
           imagePath: args.imagePath,
           detectedCrop: args.detectedCrop,
           confidence: args.confidence,
+          cropInfo: args.cropInfo,
         );
       }
       debugPrint(

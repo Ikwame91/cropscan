@@ -4,6 +4,8 @@ import 'dart:io';
 
 import 'package:camera/camera.dart';
 import 'package:cropscan_pro/core/services/tf_lite_model_services.dart';
+import 'package:cropscan_pro/presentation/crop_scanner_camera/widgets/crop_info.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
@@ -134,20 +136,23 @@ class CropScannerCameraState extends State<CropScannerCamera>
     String imagePath,
   ) async {
     debugPrint("🚀 Navigating to results screen");
-    debugPrint("Image path: $imagePath");
-    debugPrint(
-        "Detection result: {label: $detectedCrop, confidence: $confidence}");
+    debugPrint("Raw detection result: $detectedCrop");
+    debugPrint("Confidence: $confidence");
+
+    final CropInfo cropInfo = CropInfoMapper.getCropInfo(detectedCrop) ??
+        CropInfoMapper.getDefaultInfo(detectedCrop);
+
+    debugPrint("Processed crop info: ${cropInfo.displayName}");
 
     // Type-safe navigation with proper arguments
-    final navigationResult = await Navigator.pushNamed(
-      context,
-      AppRoutes.cropDetectionResults,
-      arguments: CropDetectionResultsArgs(
-        imagePath: imagePath,
-        detectedCrop: detectedCrop,
-        confidence: confidence,
-      ),
-    );
+    final navigationResult =
+        await Navigator.pushNamed(context, AppRoutes.cropDetectionResults,
+            arguments: CropDetectionResultsArgs(
+              imagePath: imagePath,
+              detectedCrop: detectedCrop, // Keep raw label for reference
+              confidence: confidence,
+              cropInfo: cropInfo,
+            ));
 
     debugPrint("✅ Returned from results screen");
 
@@ -209,6 +214,9 @@ class CropScannerCameraState extends State<CropScannerCamera>
 
 // This method will now be called externally when the tab is selected
   Future<void> initializeCameraOnDemand() async {
+    if (kDebugMode) {
+      await Future.delayed(const Duration(milliseconds: 200));
+    }
     if (_cameraController == null || !_cameraController!.value.isInitialized) {
       await _checkAndInitializeCamera();
     }
@@ -278,11 +286,19 @@ class CropScannerCameraState extends State<CropScannerCamera>
 
   Future _setupCameraController(int cameraIndex) async {
     if (_cameraController != null) {
-      await _cameraController!.pausePreview();
-      await _cameraController!.dispose();
-
-      _cameraController = null;
+      try {
+        await _cameraController!.pausePreview();
+        await Future.delayed(const Duration(milliseconds: 50)); // Small delay
+        await _cameraController!.dispose();
+      } catch (e) {
+        debugPrint("Error disposing previous camera: $e");
+      } finally {
+        _cameraController = null;
+      }
     }
+
+    await Future.delayed(const Duration(milliseconds: 100));
+
     _cameraController = CameraController(
       _cameras![cameraIndex],
       ResolutionPreset.medium,
@@ -611,14 +627,43 @@ class CropScannerCameraState extends State<CropScannerCamera>
   @override
   void dispose() {
     debugPrint("🔄 Disposing camera resources...");
-    _cameraController?.dispose();
-    _cameraController = null;
-    _focusAnimationController.dispose();
-    _captureAnimationController.dispose();
+
+    _disposeCamera();
+
+    try {
+      _focusAnimationController.dispose();
+      _captureAnimationController.dispose();
+    } catch (e) {
+      debugPrint("Error disposing animation controllers: $e");
+    }
+
+    // Remove observers and restore orientation
     WidgetsBinding.instance.removeObserver(this);
     _restoreOrientation();
+
     debugPrint("✅ Camera resources disposed");
     super.dispose();
+  }
+
+  Future<void> _disposeCamera() async {
+    if (_cameraController != null) {
+      try {
+        // Pause preview first
+        if (_cameraController!.value.isInitialized) {
+          await _cameraController!.pausePreview();
+        }
+
+        // Add small delay to ensure pause completes
+        await Future.delayed(const Duration(milliseconds: 100));
+
+        // Dispose camera controller
+        await _cameraController!.dispose();
+      } catch (e) {
+        debugPrint("Error during camera disposal: $e");
+      } finally {
+        _cameraController = null;
+      }
+    }
   }
 
   @override
@@ -928,10 +973,12 @@ class CropDetectionResultsArgs {
   final String imagePath;
   final String detectedCrop;
   final double confidence;
+  final CropInfo cropInfo;
 
   CropDetectionResultsArgs({
     required this.imagePath,
     required this.detectedCrop,
     required this.confidence,
+    required this.cropInfo,
   });
 }
