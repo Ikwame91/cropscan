@@ -201,6 +201,8 @@ class CropScannerCameraState extends State<CropScannerCamera>
             ));
 
     debugPrint("✅ Returned from results screen");
+    // Reset detection state after navigation
+    _resetDetectionState();
 
     // Optional: Handle any return data from results screen
     if (navigationResult != null) {
@@ -649,7 +651,14 @@ class CropScannerCameraState extends State<CropScannerCamera>
       );
       return;
     }
-
+    if (!_cameraController!.value.isPreviewPaused) {
+      try {
+        await _cameraController!.resumePreview();
+        await Future.delayed(const Duration(milliseconds: 100));
+      } catch (e) {
+        debugPrint("Error resuming preview before capture: $e");
+      }
+    }
     _isCapturing = true;
 
     try {
@@ -681,6 +690,8 @@ class CropScannerCameraState extends State<CropScannerCamera>
       _showSnackBar("Please wait, detection is in progress.");
       return;
     }
+
+    // DON'T reset detection state here - gallery selection shouldn't affect camera
     final ImagePicker imagePicker = ImagePicker();
     XFile? image;
     try {
@@ -688,7 +699,7 @@ class CropScannerCameraState extends State<CropScannerCamera>
       if (image != null) {
         debugPrint("Image selected: ${image.path}");
 
-        // Trigger the ML prediction
+        // Trigger the ML prediction without affecting camera state
         await _performDetection(image);
       } else {
         _showSnackBar("Image selection cancelled");
@@ -696,6 +707,7 @@ class CropScannerCameraState extends State<CropScannerCamera>
     } catch (e) {
       debugPrint("Error picking image from gallery: $e");
       _showErrorDialog("Failed to pick image from gallery.");
+      // Only reset detection state on error, not camera state
       _resetDetectionState();
     }
   }
@@ -712,23 +724,45 @@ class CropScannerCameraState extends State<CropScannerCamera>
 
     switch (state) {
       case AppLifecycleState.inactive:
+        // DON'T dispose on inactive - user might just be switching apps briefly
+        debugPrint("App inactive - maintaining camera state");
+        break;
+
       case AppLifecycleState.paused:
-        debugPrint(
-            "App paused/inactive - disposing camera to prevent freeze...");
-        // CRITICAL FIX: Dispose camera completely when app goes to background
-        _disposeCamera();
+        // Only pause preview, don't dispose camera completely
+        debugPrint("App paused - pausing camera preview only");
+        try {
+          _cameraController?.pausePreview();
+        } catch (e) {
+          debugPrint("Error pausing preview: $e");
+        }
         break;
 
       case AppLifecycleState.resumed:
-        debugPrint("App resumed - reinitializing camera...");
-        // CRITICAL FIX: Reinitialize camera completely when app resumes
-        if (_hasPermission) {
-          // Add small delay to ensure proper cleanup before reinit
-          Future.delayed(const Duration(milliseconds: 200), () {
-            if (mounted) {
-              _initilizeCameraComponents();
-            }
-          });
+        debugPrint("App resumed - resuming camera preview");
+        // Only resume preview if camera exists, otherwise reinitialize
+        try {
+          if (_cameraController?.value.isInitialized == true) {
+            _cameraController?.resumePreview();
+            debugPrint("✅ Camera preview resumed");
+          } else if (_hasPermission) {
+            // Only reinitialize if camera was actually lost
+            Future.delayed(const Duration(milliseconds: 200), () {
+              if (mounted) {
+                _initilizeCameraComponents();
+              }
+            });
+          }
+        } catch (e) {
+          debugPrint("Error resuming preview: $e");
+          // Fallback to reinitialization
+          if (_hasPermission) {
+            Future.delayed(const Duration(milliseconds: 200), () {
+              if (mounted) {
+                _initilizeCameraComponents();
+              }
+            });
+          }
         }
         break;
 
@@ -738,7 +772,8 @@ class CropScannerCameraState extends State<CropScannerCamera>
         break;
 
       case AppLifecycleState.hidden:
-        debugPrint("App hidden - disposing camera...");
+        // Dispose only when truly hidden for extended period
+        debugPrint("App hidden, disposing camera...");
         _disposeCamera();
         break;
     }
@@ -871,10 +906,31 @@ class CropScannerCameraState extends State<CropScannerCamera>
 
   Widget _buildLoadingInterface(TfLiteModelServices tfliteService) {
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: Colors.black, // Dark background like camera interface
       body: SafeArea(
-        child: Center(
-          child: _buildLoadingContent(tfliteService),
+        child: Stack(
+          children: [
+            // Show last camera frame if available to maintain visual continuity
+            if (_cameraController?.value.isInitialized == true)
+              Opacity(
+                opacity: 0.3,
+                child: CameraPreviewWidget(
+                  isFrontCamera: _isFrontCamera,
+                  zoomLevel: _currentZoomLevel,
+                  onTapToFocus: (_) {}, // Disabled during loading
+                  onPinchToZoom: (_) {}, // Disabled during loading
+                  controller: _cameraController,
+                ),
+              ),
+
+            // Overlay with loading content
+            Container(
+              color: Colors.black.withOpacity(0.7),
+              child: Center(
+                child: _buildLoadingContent(tfliteService),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -992,14 +1048,36 @@ class CropScannerCameraState extends State<CropScannerCamera>
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        CircularProgressIndicator(
-          valueColor: AlwaysStoppedAnimation<Color>(
-              Theme.of(context).colorScheme.primary),
+        // More user-friendly loading indicator
+        Container(
+          width: 80,
+          height: 80,
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(40),
+          ),
+          child: Center(
+            child: CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+              strokeWidth: 3,
+            ),
+          ),
         ),
-        SizedBox(height: 2.h),
+        SizedBox(height: 3.h),
         Text(
-          'Initializing camera...',
-          style: Theme.of(context).textTheme.titleMedium,
+          'Starting camera...',
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                color: Colors.white,
+                fontWeight: FontWeight.w500,
+              ),
+          textAlign: TextAlign.center,
+        ),
+        SizedBox(height: 1.h),
+        Text(
+          'Please wait a moment',
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: Colors.white.withOpacity(0.7),
+              ),
           textAlign: TextAlign.center,
         ),
       ],

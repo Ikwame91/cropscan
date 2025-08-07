@@ -1,6 +1,5 @@
 import 'dart:developer';
-import 'dart:math' as math show log;
-
+import 'dart:math' as math;
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/widgets.dart';
@@ -23,8 +22,7 @@ class TfLiteModelServices extends ChangeNotifier {
   static const int _inputSize = 256;
   static const int _channels = 3;
   static const int _outputLength = 16;
-  static const double _confidenceThreshold = 0.75;
-  static const double _cropDetectionThreshold = 0.85;
+
   // Getters
   Interpreter? get interpreter => _interpreter;
   List<String>? get labels => _labels;
@@ -219,27 +217,52 @@ class TfLiteModelServices extends ChangeNotifier {
       }
     }
 
-    // Calculate entropy to detect uncertain predictions (non-crop images)
+    // Calculate entropy for uncertainty detection
     double entropy = 0.0;
     for (double prob in probabilities) {
-      if (prob > 0) {
+      if (prob > 0.0001) {
         entropy -= prob * (math.log(prob) / math.log(2));
       }
     }
-    final bool isLikelyCrop =
-        entropy < 3.5 && maxConfidence > _cropDetectionThreshold;
 
-    final isConfident = maxConfidence >= _confidenceThreshold && isLikelyCrop;
+    // Define four clear "fail" conditions that indicate a non-crop image.
+    final bool hasUnrealisticConfidence =
+        maxConfidence > 0.95 && !_hasReasonableDistribution(probabilities);
+    final bool hasConfusion = _hasConfusedPrediction(probabilities);
+    final bool hasFlatDistribution = entropy > 3.0;
+    final bool isSuspiciouslyConfident = entropy < 0.5 && maxConfidence > 0.98;
 
     String predictedLabel;
-    if (!isLikelyCrop) {
+    bool isConfident;
+    bool isLikelyCrop;
+
+    // Main Logic: A single, clear `if` statement for rejection
+    if (hasUnrealisticConfidence ||
+        hasConfusion ||
+        hasFlatDistribution ||
+        isSuspiciouslyConfident) {
       predictedLabel = "Not a crop";
-    } else if (predictedIndex >= 0 &&
-        _labels != null &&
-        predictedIndex < _labels!.length) {
-      predictedLabel = _labels![predictedIndex];
-    } else {
-      predictedLabel = "Unknown";
+      isLikelyCrop = false;
+      isConfident = false;
+    }
+    // Strict Crop Detection: Only proceed if confidence and distribution are good
+    else if (maxConfidence >= 0.75 &&
+        maxConfidence <= 0.95 &&
+        entropy >= 1.0 &&
+        entropy <= 3.5) {
+      predictedLabel = predictedIndex >= 0 &&
+              _labels != null &&
+              predictedIndex < _labels!.length
+          ? _labels![predictedIndex]
+          : "Unknown";
+      isLikelyCrop = true;
+      isConfident = maxConfidence >= 0.85;
+    }
+    // Low Confidence / Uncertain: For predictions that don't meet the strict criteria
+    else {
+      predictedLabel = "Uncertain detection";
+      isLikelyCrop = false;
+      isConfident = false;
     }
 
     return {
@@ -248,6 +271,12 @@ class TfLiteModelServices extends ChangeNotifier {
       'isConfident': isConfident,
       'isLikelyCrop': isLikelyCrop,
       'entropy': entropy,
+      'debugInfo': {
+        'hasUnrealisticConfidence': hasUnrealisticConfidence,
+        'hasConfusion': hasConfusion,
+        'hasFlatDistribution': hasFlatDistribution,
+        'isSuspiciouslyConfident': isSuspiciouslyConfident,
+      },
       'allProbabilities': Map.fromIterables(
         _labels ?? List.generate(_outputLength, (i) => 'Class_$i'),
         probabilities,
@@ -255,8 +284,36 @@ class TfLiteModelServices extends ChangeNotifier {
     };
   }
 
+  // Helper function to check if the probability distribution is "reasonable".
+  bool _hasReasonableDistribution(List<double> probabilities) {
+    List<double> sortedProbs = List.from(probabilities)
+      ..sort((a, b) => b.compareTo(a));
+    if (sortedProbs.isEmpty) return false;
+    final double maxProb = sortedProbs[0];
+    final double secondMaxProb = sortedProbs.length > 1 ? sortedProbs[1] : 0.0;
+    if (maxProb < 0.6 || maxProb > 0.98) return false;
+    if (secondMaxProb > maxProb * 0.8) return false;
+    int significantPredictions = probabilities.where((p) => p > 0.1).length;
+    if (significantPredictions > 4) return false;
+    return true;
+  }
+
+  // Helper function to check for "confused" predictions.
+  bool _hasConfusedPrediction(List<double> probabilities) {
+    List<double> sortedProbs = List.from(probabilities)
+      ..sort((a, b) => b.compareTo(a));
+    if (sortedProbs.length < 2) return false;
+    int closeValues = 0;
+    for (int i = 0; i < sortedProbs.length - 1; i++) {
+      if (sortedProbs[i] > 0.3 &&
+          (sortedProbs[i] - sortedProbs[i + 1]).abs() < 0.2) {
+        closeValues++;
+      }
+    }
+    return closeValues >= 2;
+  }
+
   String _sanitizeError(dynamic error) {
-    // Sanitize error messages to prevent information disclosure
     final errorStr = error.toString();
     final parts = errorStr.split(':');
     return parts.length > 1 ? parts.last.trim() : errorStr;
