@@ -537,23 +537,40 @@ class CropScannerCameraState extends State<CropScannerCamera>
       if (!await image.exists()) {
         throw Exception("Image file does not exist");
       }
+
       final Map<String, dynamic>? result =
           await tfliteModelServices.predictImage(image);
 
       if (result != null) {
+        final String detectedLabel = result['label'];
+        final double confidence = result['confidence'];
+        final bool isLikelyCrop = result['isLikelyCrop'] ?? false;
+
+        // Handle non-crop detection
+        if (!isLikelyCrop || detectedLabel == "Not a crop") {
+          _showNonCropDialog();
+          _resetDetectionState();
+          return;
+        }
+
+        // Handle low confidence crop detection
+        if (!result['isConfident']) {
+          _showLowConfidenceDialog(detectedLabel, confidence);
+          _resetDetectionState();
+          return;
+        }
         // Use helper for state updates
         _setDetectionState(
           showFeedback: true,
-          detectedCrop: result['label'],
-          confidence: result['confidence'],
+          detectedCrop: detectedLabel,
+          confidence: confidence,
         );
 
         await Future.delayed(_detectionFeedbackDuration);
         if (mounted) {
-          // Changed to use new helper for navigation
           await _navigateToResults(
-            result['label'],
-            result['confidence'],
+            detectedLabel,
+            confidence,
             imageFile.path,
           );
         }
@@ -566,6 +583,59 @@ class CropScannerCameraState extends State<CropScannerCamera>
     } finally {
       _resetDetectionState();
     }
+  }
+
+  void _showNonCropDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Row(
+            children: [
+              Icon(Icons.info_outline, color: Colors.orange),
+              SizedBox(width: 8),
+              Text("Not a Crop"),
+            ],
+          ),
+          content: Text(
+            "The image doesn't appear to contain a recognizable crop. Please take a clear photo of a crop leaf or plant.",
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text("OK"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showLowConfidenceDialog(String detectedLabel, double confidence) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Row(
+            children: [
+              Icon(Icons.warning_amber, color: Colors.orange),
+              SizedBox(width: 8),
+              Text("Low Confidence"),
+            ],
+          ),
+          content: Text(
+            "Detected: $detectedLabel (${(confidence * 100).toStringAsFixed(1)}%)\n\n"
+            "The confidence is low. Try taking a clearer photo with better lighting and focus on the crop leaves.",
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text("OK"),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   void _captureImage() async {

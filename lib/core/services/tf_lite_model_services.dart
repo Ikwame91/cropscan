@@ -1,4 +1,6 @@
 import 'dart:developer';
+import 'dart:math' as math show log;
+
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/widgets.dart';
@@ -21,8 +23,8 @@ class TfLiteModelServices extends ChangeNotifier {
   static const int _inputSize = 256;
   static const int _channels = 3;
   static const int _outputLength = 16;
-  static const double _confidenceThreshold = 0.5;
-
+  static const double _confidenceThreshold = 0.75;
+  static const double _cropDetectionThreshold = 0.85;
   // Getters
   Interpreter? get interpreter => _interpreter;
   List<String>? get labels => _labels;
@@ -172,11 +174,22 @@ class TfLiteModelServices extends ChangeNotifier {
       throw Exception("Failed to decode image");
     }
 
+    var processedImage = originalImage;
+    if (processedImage.hasAlpha) {
+      processedImage = img.copyResize(
+        img.fill(
+            img.Image(width: originalImage.width, height: originalImage.height),
+            color: img.ColorRgb8(255, 255, 255)),
+        width: originalImage.width,
+        height: originalImage.height,
+      );
+      img.compositeImage(processedImage, originalImage);
+    }
     final resizedImage = img.copyResize(
       originalImage,
       width: _inputSize,
       height: _inputSize,
-      interpolation: img.Interpolation.linear,
+      interpolation: img.Interpolation.cubic,
     );
 
     // Efficient tensor creation using Float32List
@@ -206,17 +219,35 @@ class TfLiteModelServices extends ChangeNotifier {
       }
     }
 
-    final isConfident = maxConfidence >= _confidenceThreshold;
-    final predictedLabel = (predictedIndex >= 0 &&
-            _labels != null &&
-            predictedIndex < _labels!.length)
-        ? _labels![predictedIndex]
-        : "Unknown";
+    // Calculate entropy to detect uncertain predictions (non-crop images)
+    double entropy = 0.0;
+    for (double prob in probabilities) {
+      if (prob > 0) {
+        entropy -= prob * (math.log(prob) / math.log(2));
+      }
+    }
+    final bool isLikelyCrop =
+        entropy < 3.5 && maxConfidence > _cropDetectionThreshold;
+
+    final isConfident = maxConfidence >= _confidenceThreshold && isLikelyCrop;
+
+    String predictedLabel;
+    if (!isLikelyCrop) {
+      predictedLabel = "Not a crop";
+    } else if (predictedIndex >= 0 &&
+        _labels != null &&
+        predictedIndex < _labels!.length) {
+      predictedLabel = _labels![predictedIndex];
+    } else {
+      predictedLabel = "Unknown";
+    }
 
     return {
       'label': predictedLabel,
       'confidence': maxConfidence,
       'isConfident': isConfident,
+      'isLikelyCrop': isLikelyCrop,
+      'entropy': entropy,
       'allProbabilities': Map.fromIterables(
         _labels ?? List.generate(_outputLength, (i) => 'Class_$i'),
         probabilities,
