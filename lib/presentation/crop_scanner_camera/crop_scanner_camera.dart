@@ -161,9 +161,11 @@ class CropScannerCameraState extends State<CropScannerCamera>
     if (mounted) {
       setState(() {
         _showDetectionFeedback = false;
-        // Optionally reset detected crop/confidence here if you want to clear previous results
-        // _detectedCrop = '';
-        // _confidence = 0.0;
+        // CRITICAL FIX: Clear previous detection results completely
+        _detectedCrop = '';
+        _confidence = 0.0;
+        _focusPoint = null;
+        _isCapturing = false;
       });
     }
   }
@@ -329,10 +331,14 @@ class CropScannerCameraState extends State<CropScannerCamera>
   }
 
   Future _setupCameraController(int cameraIndex) async {
+    // CRITICAL FIX: Reset detection state and dispose previous controller completely
+    _resetDetectionState();
+
     if (_cameraController != null) {
       try {
         await _cameraController!.pausePreview();
-        await Future.delayed(const Duration(milliseconds: 50)); // Small delay
+        await Future.delayed(
+            const Duration(milliseconds: 100)); // Increased delay
         await _cameraController!.dispose();
       } catch (e) {
         debugPrint("Error disposing previous camera: $e");
@@ -341,7 +347,8 @@ class CropScannerCameraState extends State<CropScannerCamera>
       }
     }
 
-    await Future.delayed(const Duration(milliseconds: 100));
+    // Longer delay to ensure complete cleanup
+    await Future.delayed(const Duration(milliseconds: 200));
 
     _cameraController = CameraController(
       _cameras![cameraIndex],
@@ -349,6 +356,7 @@ class CropScannerCameraState extends State<CropScannerCamera>
       enableAudio: false,
       imageFormatGroup: ImageFormatGroup.jpeg,
     );
+
     try {
       await _cameraController!.initialize();
       if (!mounted) {
@@ -364,8 +372,21 @@ class CropScannerCameraState extends State<CropScannerCamera>
       setState(() {
         _currentZoomLevel = 1.0;
         _isFlashOn = false;
+        _focusPoint = null; // Reset focus point
       });
-      _cameraController!.setFlashMode(FlashMode.off);
+
+      await _cameraController!.setFlashMode(FlashMode.off);
+
+      // CRITICAL FIX: Ensure preview is properly started
+      await Future.delayed(const Duration(milliseconds: 100));
+      if (_cameraController?.value.isInitialized == true && mounted) {
+        try {
+          await _cameraController!.resumePreview();
+          debugPrint("✅ Camera preview resumed after setup");
+        } catch (e) {
+          debugPrint("Warning: Could not resume preview: $e");
+        }
+      }
     } on CameraException catch (e) {
       debugPrint("Error initializing camera: $e ");
 
@@ -378,6 +399,7 @@ class CropScannerCameraState extends State<CropScannerCamera>
       });
       _showErrorDialog("Failed to initialize camera. Please try again.");
     }
+
     if (mounted) {
       setState(() {});
     }
@@ -404,6 +426,10 @@ class CropScannerCameraState extends State<CropScannerCamera>
     if (_cameras == null || _cameras!.length < 2) {
       return;
     }
+
+    // CRITICAL FIX: Reset detection state when switching cameras
+    _resetDetectionState();
+
     await _cameraController?.pausePreview();
 
     if (_isFlashOn) {
@@ -412,12 +438,15 @@ class CropScannerCameraState extends State<CropScannerCamera>
         _isFlashOn = false;
       });
     }
+
     _selectedCameraIndex = _selectedCameraIndex == 0 ? 1 : 0;
     await _setupCameraController(_selectedCameraIndex);
+
     setState(() {
       _isFrontCamera = _cameras![_selectedCameraIndex].lensDirection ==
           CameraLensDirection.front;
     });
+
     HapticFeedback.lightImpact();
   }
 
@@ -601,29 +630,6 @@ class CropScannerCameraState extends State<CropScannerCamera>
     }
   }
 
-// Add these helper methods
-  Future<void> _pauseCameraPreview() async {
-    if (_cameraController?.value.isInitialized == true) {
-      await _cameraController!.pausePreview();
-      debugPrint("📹 Camera preview paused");
-    }
-  }
-
-  Future<void> _resumeCameraPreview() async {
-    if (_cameraController?.value.isInitialized == true) {
-      await _cameraController!.resumePreview();
-      debugPrint("📹 Camera preview resumed");
-    }
-  }
-
-  void pauseCameraPreview() async {
-    await _pauseCameraPreview();
-  }
-
-  void resumeCameraPreview() async {
-    await _resumeCameraPreview();
-  }
-
   void _goBackToHome() {
     debugPrint("🔙 Going back to home screen");
     final navigationProvider = context.read<NavigationProvider>();
@@ -634,38 +640,36 @@ class CropScannerCameraState extends State<CropScannerCamera>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     debugPrint("App lifecycle state changed to: $state");
 
-    if (_cameraController == null || !_cameraController!.value.isInitialized) {
-      return;
-    }
-
     switch (state) {
       case AppLifecycleState.inactive:
       case AppLifecycleState.paused:
-        debugPrint("Pausing camera...");
-        _pauseCameraPreview();
-        // Don't dispose, just pause
+        debugPrint(
+            "App paused/inactive - disposing camera to prevent freeze...");
+        // CRITICAL FIX: Dispose camera completely when app goes to background
+        _disposeCamera();
         break;
 
       case AppLifecycleState.resumed:
-        debugPrint("Resuming camera...");
+        debugPrint("App resumed - reinitializing camera...");
+        // CRITICAL FIX: Reinitialize camera completely when app resumes
         if (_hasPermission) {
-          if (_cameraController?.value.isInitialized == true) {
-            _resumeCameraPreview();
-          } else {
-            _initilizeCameraComponents();
-          }
+          // Add small delay to ensure proper cleanup before reinit
+          Future.delayed(const Duration(milliseconds: 200), () {
+            if (mounted) {
+              _initilizeCameraComponents();
+            }
+          });
         }
         break;
+
       case AppLifecycleState.detached:
         debugPrint("App detached, disposing camera...");
-        _cameraController?.pausePreview();
-        _cameraController?.dispose();
-        _cameraController = null;
+        _disposeCamera();
         break;
 
       case AppLifecycleState.hidden:
-        _pauseCameraPreview();
-        // Handle if needed
+        debugPrint("App hidden - disposing camera...");
+        _disposeCamera();
         break;
     }
   }
@@ -694,18 +698,23 @@ class CropScannerCameraState extends State<CropScannerCamera>
   void _disposeCamera() {
     if (_cameraController != null) {
       try {
-        // Don't await in dispose() - use Future.microtask for async cleanup
-        Future.microtask(() async {
-          try {
-            await _cameraController?.pausePreview();
-            await _cameraController?.dispose();
-          } catch (e) {
-            debugPrint("Async camera disposal error: $e");
-          }
-        });
+        debugPrint("🗑️ Disposing camera controller...");
+        // CRITICAL FIX: Synchronous disposal to prevent state conflicts
+        _cameraController?.dispose();
+        _cameraController = null;
+
+        // Reset camera-related state only if widget is still mounted
+        if (mounted) {
+          setState(() {
+            _currentZoomLevel = 1.0;
+            _isFlashOn = false;
+            _focusPoint = null;
+          });
+        }
+
+        debugPrint("✅ Camera controller disposed successfully");
       } catch (e) {
         debugPrint("Error during camera disposal: $e");
-      } finally {
         _cameraController = null;
       }
     }
