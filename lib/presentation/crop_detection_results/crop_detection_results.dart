@@ -488,17 +488,3 @@ class _CropDetectionResultsState extends State<CropDetectionResults> {
     );
   }
 }
-
-class CropDetectionResultsArgs {
-  final String imagePath;
-  final String detectedCrop;
-  final double confidence;
-  final CropInfo cropInfo;
-
-  CropDetectionResultsArgs({
-    required this.imagePath,
-    required this.detectedCrop,
-    required this.confidence,
-    required this.cropInfo,
-  });
-}

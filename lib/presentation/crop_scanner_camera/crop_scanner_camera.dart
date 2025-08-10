@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:camera/camera.dart';
 import 'package:cropscan_pro/core/services/tf_lite_model_services.dart';
+import 'package:cropscan_pro/models/crop_detection_args.dart';
 import 'package:cropscan_pro/presentation/crop_scanner_camera/widgets/crop_info.dart';
 import 'package:cropscan_pro/providers/naviagtion_provider.dart';
 import 'package:flutter/foundation.dart';
@@ -38,6 +39,7 @@ class CropScannerCameraState extends State<CropScannerCamera>
   double _maxZoomLevel = 1.0;
   bool _hasPermission = false;
   Offset? _focusPoint;
+  bool _isPickingFromGallery = false;
 
   // state value variables for Ml prediction results and status
   String _detectedCrop = '';
@@ -689,6 +691,7 @@ class CropScannerCameraState extends State<CropScannerCamera>
   }
 
   bool _isCapturing = false;
+
   void _openGallery() async {
     HapticFeedback.lightImpact();
     final tfliteService = context.read<TfLiteModelServices>();
@@ -698,15 +701,14 @@ class CropScannerCameraState extends State<CropScannerCamera>
       return;
     }
 
-    // DON'T reset detection state here - gallery selection shouldn't affect camera
+    _isPickingFromGallery = true;
+
     final ImagePicker imagePicker = ImagePicker();
     XFile? image;
     try {
       image = await imagePicker.pickImage(source: ImageSource.gallery);
       if (image != null) {
         debugPrint("Image selected: ${image.path}");
-
-        // Trigger the ML prediction without affecting camera state
         await _performDetection(image);
       } else {
         _showSnackBar("Image selection cancelled");
@@ -714,8 +716,15 @@ class CropScannerCameraState extends State<CropScannerCamera>
     } catch (e) {
       debugPrint("Error picking image from gallery: $e");
       _showErrorDialog("Failed to pick image from gallery.");
-      // Only reset detection state on error, not camera state
       _resetDetectionState();
+    } finally {
+      _isPickingFromGallery = false;
+
+      // IMPORTANT: On Android 14/15 the Preview use case is often DETACHED.
+      // Recreate the controller to rebind all use cases reliably.
+      await Future.delayed(const Duration(milliseconds: 120));
+      _disposeCamera();
+      await _initilizeCameraComponents();
     }
   }
 
@@ -920,19 +929,18 @@ class CropScannerCameraState extends State<CropScannerCamera>
 
   Widget _buildLoadingInterface(TfLiteModelServices tfliteService) {
     return Scaffold(
-      backgroundColor: Colors.black, // Dark background like camera interface
+      backgroundColor: Colors.black,
       body: SafeArea(
         child: Stack(
           children: [
-            // Show last camera frame if available to maintain visual continuity
             if (_cameraController?.value.isInitialized == true)
               Opacity(
                 opacity: 0.3,
                 child: CameraPreviewWidget(
                   isFrontCamera: _isFrontCamera,
                   zoomLevel: _currentZoomLevel,
-                  onTapToFocus: (_) {}, // Disabled during loading
-                  onPinchToZoom: (_) {}, // Disabled during loading
+                  onTapToFocus: (_) {},
+                  onPinchToZoom: (_) {},
                   controller: _cameraController,
                 ),
               ),
@@ -1182,18 +1190,4 @@ class CropScannerCameraState extends State<CropScannerCamera>
       DeviceOrientation.portraitDown,
     ]);
   }
-}
-
-class CropDetectionResultsArgs {
-  final String imagePath;
-  final String detectedCrop;
-  final double confidence;
-  final CropInfo cropInfo;
-
-  CropDetectionResultsArgs({
-    required this.imagePath,
-    required this.detectedCrop,
-    required this.confidence,
-    required this.cropInfo,
-  });
 }

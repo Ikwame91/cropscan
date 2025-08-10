@@ -1,10 +1,10 @@
-import '../presentation/crop_scanner_camera/widgets/crop_info.dart';
+import 'package:cropscan_pro/presentation/crop_scanner_camera/widgets/crop_info.dart';
 
 class CropDetectionResultsArgs {
   final String imagePath;
   final String detectedCrop;
   final double confidence;
-  final CropInfo? cropInfo;
+  final CropInfo cropInfo;
 
   CropDetectionResultsArgs({
     required this.imagePath,
@@ -12,9 +12,4 @@ class CropDetectionResultsArgs {
     required this.confidence,
     required this.cropInfo,
   });
-
-  @override
-  String toString() {
-    return 'CropDetectionResultsArgs(imagePath: $imagePath, detectedCrop: $detectedCrop, confidence: $confidence, cropInfo: $cropInfo)';
-  }
 }

@@ -1,11 +1,12 @@
+import 'package:cropscan_pro/models/crop_detection_args.dart';
 import 'package:cropscan_pro/presentation/alert_screen/cropscreen.dart';
+import 'package:cropscan_pro/presentation/crop_detection_results/crop_detection_results.dart';
+import 'package:cropscan_pro/presentation/crop_scanner_camera/widgets/crop_info.dart';
 import 'package:cropscan_pro/presentation/mainscreen.dart';
 import 'package:flutter/material.dart';
 import '../presentation/dashboard_home/dashboard_home.dart';
 import '../presentation/crop_scanner_camera/crop_scanner_camera.dart';
 import '../presentation/user_profile_settings/user_profile_settings.dart';
-import '../presentation/crop_detection_results/crop_detection_results.dart'
-    hide CropDetectionResultsArgs;
 import '../presentation/weather_dashboard/weather_dashboard.dart';
 import '../presentation/detection_history/detection_history.dart';
 
@@ -30,6 +31,7 @@ class AppRoutes {
     userProfileSettings: (context) => const UserProfileSettings(),
     cropDetectionResults: (context) {
       final args = ModalRoute.of(context)!.settings.arguments;
+
       if (args is CropDetectionResultsArgs) {
         return CropDetectionResults(
           imagePath: args.imagePath,
@@ -38,10 +40,28 @@ class AppRoutes {
           cropInfo: args.cropInfo,
         );
       }
+
+      if (args is Map) {
+        try {
+          return CropDetectionResults(
+            imagePath: args['imagePath'] as String,
+            detectedCrop: args['detectedCrop'] as String,
+            confidence: (args['confidence'] as num).toDouble(),
+            cropInfo: args['cropInfo'] as CropInfo,
+          );
+        } catch (_) {}
+      }
+
       debugPrint(
-          "Error: CropDetectionResults received null or invalid arguments.");
-      return const Text(
-          'Error: Invalid arguments for Crop Detection Results screen.');
+          "Error: CropDetectionResults received null or invalid arguments. Got: ${args.runtimeType}");
+      return Scaffold(
+        body: Center(
+          child: Text(
+            'Error: Invalid arguments for Crop Detection Results screen.',
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
+        ),
+      );
     }
   };
 }
