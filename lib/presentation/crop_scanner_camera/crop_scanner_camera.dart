@@ -551,7 +551,11 @@ class CropScannerCameraState extends State<CropScannerCamera>
 
       final Map<String, dynamic>? result =
           await tfliteModelServices.predictImage(image);
-
+      if (!mounted) {
+        debugPrint(
+            "Widget disposed during prediction, skipping result processing");
+        return;
+      }
       if (result != null) {
         final String detectedLabel = result['label'];
         final double confidence = result['confidence'];
@@ -586,13 +590,17 @@ class CropScannerCameraState extends State<CropScannerCamera>
           );
         }
       } else {
-        _showErrorDialog("Detection failed. Please try again.");
+        if (mounted) {
+          _showErrorDialog("Detection failed. Please try again.");
+        }
       }
     } catch (e) {
       debugPrint("Error during detection: $e");
       _showErrorDialog("Failed to process image: ${_sanitizeError(e)}");
     } finally {
-      _resetDetectionState();
+      if (mounted) {
+        _resetDetectionState();
+      }
     }
   }
 
@@ -720,11 +728,18 @@ class CropScannerCameraState extends State<CropScannerCamera>
     } finally {
       _isPickingFromGallery = false;
 
-      // IMPORTANT: On Android 14/15 the Preview use case is often DETACHED.
-      // Recreate the controller to rebind all use cases reliably.
-      await Future.delayed(const Duration(milliseconds: 120));
-      _disposeCamera();
-      await _initilizeCameraComponents();
+      if (_cameraController?.value.isInitialized == true) {
+        try {
+          if (_cameraController!.value.isPreviewPaused) {
+            await _cameraController!.resumePreview();
+            debugPrint("✅ Preview resumed after gallery");
+          }
+        } catch (e) {
+          debugPrint("Warning: Could not resume preview after gallery: $e");
+          // If resume fails, mark for reinitialization on next camera access
+          _hasPermission = false;
+        }
+      }
     }
   }
 
@@ -740,59 +755,51 @@ class CropScannerCameraState extends State<CropScannerCamera>
 
     switch (state) {
       case AppLifecycleState.inactive:
-        // Just pause preview on inactive - don't dispose yet
-        debugPrint("App inactive - pausing preview");
-        try {
-          _cameraController?.pausePreview();
-        } catch (e) {
-          debugPrint("Error pausing preview on inactive: $e");
+        // Only pause if not picking from gallery
+        if (!_isPickingFromGallery) {
+          debugPrint("App inactive - pausing preview");
+          try {
+            _cameraController?.pausePreview();
+          } catch (e) {
+            debugPrint("Error pausing preview on inactive: $e");
+          }
         }
         break;
-
       case AppLifecycleState.paused:
-        // MEMORY LEAK FIX: Dispose camera on pause to prevent buffer accumulation
-        debugPrint("App paused - disposing camera to prevent buffer leak");
-        _disposeCamera();
+        // Only dispose on real pause (not gallery activity)
+        if (!_isPickingFromGallery) {
+          debugPrint("App paused - disposing camera to prevent buffer leak");
+          _disposeCamera();
+        }
         break;
 
       case AppLifecycleState.resumed:
         debugPrint("App resumed - checking camera state");
-        // More robust resume logic
-        if (_hasPermission && mounted) {
+        // Don't immediately reinitialize if coming back from gallery
+        if (!_isPickingFromGallery && _hasPermission && mounted) {
           if (_cameraController == null ||
               !_cameraController!.value.isInitialized) {
-            // Camera was disposed, need to reinitialize
             debugPrint("Camera needs reinitialization");
             Future.delayed(const Duration(milliseconds: 500), () {
-              if (mounted && _hasPermission) {
+              if (mounted && _hasPermission && !_isPickingFromGallery) {
                 _initilizeCameraComponents();
               }
             });
           } else {
-            // Camera exists but might be paused
             debugPrint("Resuming existing camera");
             try {
               _cameraController?.resumePreview();
             } catch (e) {
-              debugPrint("Error resuming preview, reinitializing: $e");
-              Future.delayed(const Duration(milliseconds: 200), () {
-                if (mounted && _hasPermission) {
-                  _initilizeCameraComponents();
-                }
-              });
+              debugPrint("Error resuming preview, will reinitialize: $e");
+              _hasPermission = false; // Mark for reinitialization
             }
           }
         }
         break;
 
       case AppLifecycleState.detached:
-        debugPrint("App detached, disposing camera...");
-        _disposeCamera();
-        break;
-
       case AppLifecycleState.hidden:
-        // Dispose only when truly hidden for extended period
-        debugPrint("App hidden, disposing camera...");
+        debugPrint("App detached/hidden, disposing camera...");
         _disposeCamera();
         break;
     }
