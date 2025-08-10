@@ -171,21 +171,29 @@ class CropInfoMapper {
       recommendedAction:
           'Continue regular watering and fertilization schedule.',
     ),
+    'not_a_crop': CropInfo(
+      displayName: 'Not a Crop',
+      cropType: 'N/A',
+      condition: 'Not a Crop',
+      description: 'The image provided does not appear to be a crop.',
+      statusColor: Colors.grey,
+      recommendedAction: 'Please provide a clear image of a plant.',
+    ),
   };
 
-  static CropInfo? getCropInfo(String rawLabel) {
-    return _cropDatabase[rawLabel];
-  }
-
-  static CropInfo getDefaultInfo(String rawLabel) {
+  static CropInfo getCropInfo(String rawLabel) {
+    // First, try to get a specific, hard-coded entry.
+    final cropInfo = _cropDatabase[rawLabel];
+    if (cropInfo != null) {
+      return cropInfo;
+    }
     return CropInfo(
       displayName: _cleanDisplayName(rawLabel),
-      cropType: 'Unknown',
-      condition: 'Detected',
-      description: 'Crop detected but detailed information is not available.',
-      statusColor: Colors.grey,
-      recommendedAction:
-          'Consult with agricultural expert for proper diagnosis.',
+      cropType: _extractCropType(rawLabel),
+      condition: _determineCondition(rawLabel),
+      description: _generateDescription(rawLabel),
+      statusColor: _getStatusColor(rawLabel),
+      recommendedAction: _generateRecommendedAction(rawLabel),
     );
   }
 
@@ -200,5 +208,92 @@ class CropInfoMapper {
             ? ''
             : word[0].toUpperCase() + word.substring(1).toLowerCase())
         .join(' ');
+  }
+
+  static String _extractCropType(String rawName) {
+    return rawName.split('_')[0].replaceAll('(', ' (');
+  }
+
+  static String _determineCondition(String rawName) {
+    if (rawName.toLowerCase().contains('healthy')) {
+      return 'Healthy';
+    } else if (rawName.toLowerCase().contains('blight') ||
+        rawName.toLowerCase().contains('rust') ||
+        rawName.toLowerCase().contains('spot') ||
+        rawName.toLowerCase().contains('mold') ||
+        rawName.toLowerCase().contains('virus') ||
+        rawName.toLowerCase().contains('cercospora')) {
+      return 'Disease Detected';
+    } else if (rawName.toLowerCase().contains('mite')) {
+      return 'Pest Detected';
+    } else if (rawName.toLowerCase().contains('not_a_crop')) {
+      return 'Not a Crop';
+    } else {
+      return 'Needs Attention';
+    }
+  }
+
+  static String _generateDescription(String rawName) {
+    final condition = _determineCondition(rawName);
+    final cropType = _extractCropType(rawName);
+
+    switch (condition) {
+      case 'Healthy':
+        return 'Your $cropType appears to be in good health with no visible signs of disease or pest damage.';
+      case 'Disease Detected':
+        return 'Disease symptoms detected in your $cropType. Early intervention is recommended.';
+      case 'Pest Detected':
+        return 'Pest activity detected on your $cropType. Consider appropriate pest control measures.';
+      case 'Not a Crop':
+        return 'The image provided does not appear to be a crop. Please provide a clear image of a plant.';
+      default:
+        return 'Your $cropType may require attention. Monitor closely for any changes.';
+    }
+  }
+
+  static String _generateRecommendedAction(String rawName) {
+    final condition = _determineCondition(rawName);
+
+    switch (condition) {
+      case 'Healthy':
+        return 'Continue regular care and monitoring. Maintain current watering and fertilization schedule.';
+      case 'Disease Detected':
+        return 'Apply appropriate fungicide, improve air circulation, and remove affected plant parts if necessary.';
+      case 'Pest Detected':
+        return 'Apply organic or chemical pest control methods. Check neighboring plants for similar issues.';
+      case 'Not a Crop':
+        return 'Try taking a new photo, ensuring the plant is clearly visible and well-lit.';
+      default:
+        return 'Monitor the plant closely and consult with local agricultural experts if symptoms persist.';
+    }
+  }
+
+  static Color _getStatusColor(String rawName) {
+    final condition = _determineCondition(rawName);
+
+    switch (condition) {
+      case 'Healthy':
+        return Colors.green;
+      case 'Disease Detected':
+        return Colors.red;
+      case 'Pest Detected':
+        return Colors.orange;
+      case 'Not a Crop':
+        return Colors.grey;
+      default:
+        return Colors.amber;
+    }
+  }
+
+  static CropInfo getDefaultInfo(String rawLabel) {
+    return CropInfo(
+      displayName: _cleanDisplayName(rawLabel),
+      cropType: 'Unknown',
+      condition: 'Detected',
+      description: 'Crop detected but detailed information is not available.',
+      statusColor: Colors.grey,
+      recommendedAction:
+          'Consult with agricultural expert for proper diagnosis.',
+    );
   }
 }

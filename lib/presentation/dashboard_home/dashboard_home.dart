@@ -1,5 +1,7 @@
 import 'package:cropscan_pro/models/crop_detection.dart';
 import 'package:cropscan_pro/models/farming_alert.dart';
+import 'package:cropscan_pro/presentation/crop_detection_results/crop_detection_results.dart';
+import 'package:cropscan_pro/presentation/crop_scanner_camera/widgets/crop_info.dart';
 import 'package:cropscan_pro/providers/farming_alerts_provider.dart';
 import 'package:cropscan_pro/providers/naviagtion_provider.dart';
 import 'package:cropscan_pro/providers/recent_detection_providers.dart';
@@ -32,8 +34,19 @@ class DashboardHome extends StatelessWidget {
   }
 
   void _onDetectionCardTap(BuildContext context, CropDetection detection) {
-    Navigator.pushNamed(context, '/crop-detection-results',
-        arguments: detection);
+    // Create the proper arguments object
+    final args = CropDetectionResultsArgs(
+      imagePath: detection.imageUrl,
+      detectedCrop: detection.cropName,
+      confidence: detection.confidence,
+      cropInfo: CropInfoMapper.getCropInfo(detection.cropName),
+    );
+
+    Navigator.pushNamed(
+      context,
+      '/crop-detection-results',
+      arguments: args,
+    );
   }
 
   void _onAlertLongPress(BuildContext context, FarmingAlert alert) {

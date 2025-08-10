@@ -217,7 +217,7 @@ class TfLiteModelServices extends ChangeNotifier {
       }
     }
 
-    // Calculate entropy for uncertainty detection
+    // Calculate entropy for uncertainty detection. A low value means high confidence in a single class.
     double entropy = 0.0;
     for (double prob in probabilities) {
       if (prob > 0.0001) {
@@ -225,31 +225,27 @@ class TfLiteModelServices extends ChangeNotifier {
       }
     }
 
-    // Define four clear "fail" conditions that indicate a non-crop image.
-    final bool hasUnrealisticConfidence =
-        maxConfidence > 0.95 && !_hasReasonableDistribution(probabilities);
-    final bool hasConfusion = _hasConfusedPrediction(probabilities);
-    final bool hasFlatDistribution = entropy > 3.0;
-    final bool isSuspiciouslyConfident = entropy < 0.5 && maxConfidence > 0.98;
+    // Define "fail" conditions for non-crop images. These are intentionally strict.
+    final bool hasUnrealisticConfidence = maxConfidence > 0.98;
+    final bool hasHighConfusion = _hasConfusedPrediction(probabilities);
+    final bool hasFlatDistribution = entropy > 3.5;
 
     String predictedLabel;
     bool isConfident;
     bool isLikelyCrop;
 
-    // Main Logic: A single, clear `if` statement for rejection
-    if (hasUnrealisticConfidence ||
-        hasConfusion ||
-        hasFlatDistribution ||
-        isSuspiciouslyConfident) {
+    // First, check for definitive "fail" conditions.
+    if (hasUnrealisticConfidence || hasHighConfusion || hasFlatDistribution) {
       predictedLabel = "Not a crop";
       isLikelyCrop = false;
       isConfident = false;
     }
-    // Strict Crop Detection: Only proceed if confidence and distribution are good
-    else if (maxConfidence >= 0.75 &&
-        maxConfidence <= 0.95 &&
-        entropy >= 1.0 &&
-        entropy <= 3.5) {
+    // Next, check for a confident, but not overly confident, prediction.
+    // We are making these thresholds more forgiving for real images.
+    else if (maxConfidence >= 0.70 &&
+        maxConfidence <= 0.98 &&
+        entropy >= 0.5 &&
+        entropy <= 3.0) {
       predictedLabel = predictedIndex >= 0 &&
               _labels != null &&
               predictedIndex < _labels!.length
@@ -258,7 +254,7 @@ class TfLiteModelServices extends ChangeNotifier {
       isLikelyCrop = true;
       isConfident = maxConfidence >= 0.85;
     }
-    // Low Confidence / Uncertain: For predictions that don't meet the strict criteria
+    // Finally, handle everything else as an uncertain prediction.
     else {
       predictedLabel = "Uncertain detection";
       isLikelyCrop = false;
@@ -273,9 +269,8 @@ class TfLiteModelServices extends ChangeNotifier {
       'entropy': entropy,
       'debugInfo': {
         'hasUnrealisticConfidence': hasUnrealisticConfidence,
-        'hasConfusion': hasConfusion,
+        'hasHighConfusion': hasHighConfusion,
         'hasFlatDistribution': hasFlatDistribution,
-        'isSuspiciouslyConfident': isSuspiciouslyConfident,
       },
       'allProbabilities': Map.fromIterables(
         _labels ?? List.generate(_outputLength, (i) => 'Class_$i'),
@@ -284,33 +279,14 @@ class TfLiteModelServices extends ChangeNotifier {
     };
   }
 
-  // Helper function to check if the probability distribution is "reasonable".
-  bool _hasReasonableDistribution(List<double> probabilities) {
-    List<double> sortedProbs = List.from(probabilities)
-      ..sort((a, b) => b.compareTo(a));
-    if (sortedProbs.isEmpty) return false;
-    final double maxProb = sortedProbs[0];
-    final double secondMaxProb = sortedProbs.length > 1 ? sortedProbs[1] : 0.0;
-    if (maxProb < 0.6 || maxProb > 0.98) return false;
-    if (secondMaxProb > maxProb * 0.8) return false;
-    int significantPredictions = probabilities.where((p) => p > 0.1).length;
-    if (significantPredictions > 4) return false;
-    return true;
-  }
-
-  // Helper function to check for "confused" predictions.
+  // Helper function to check for "confused" predictions by looking for multiple close values.
   bool _hasConfusedPrediction(List<double> probabilities) {
     List<double> sortedProbs = List.from(probabilities)
       ..sort((a, b) => b.compareTo(a));
     if (sortedProbs.length < 2) return false;
-    int closeValues = 0;
-    for (int i = 0; i < sortedProbs.length - 1; i++) {
-      if (sortedProbs[i] > 0.3 &&
-          (sortedProbs[i] - sortedProbs[i + 1]).abs() < 0.2) {
-        closeValues++;
-      }
-    }
-    return closeValues >= 2;
+    // Check if the top two predictions are very close in value
+    return (sortedProbs[0] - sortedProbs[1]).abs() < 0.2 &&
+        sortedProbs[0] > 0.4;
   }
 
   String _sanitizeError(dynamic error) {

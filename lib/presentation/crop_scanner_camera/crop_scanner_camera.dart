@@ -185,8 +185,7 @@ class CropScannerCameraState extends State<CropScannerCamera>
     debugPrint("Raw detection result: $detectedCrop");
     debugPrint("Confidence: $confidence");
 
-    final CropInfo cropInfo = CropInfoMapper.getCropInfo(detectedCrop) ??
-        CropInfoMapper.getDefaultInfo(detectedCrop);
+    final CropInfo cropInfo = CropInfoMapper.getCropInfo(detectedCrop);
 
     debugPrint("Processed crop info: ${cropInfo.displayName}");
 
@@ -284,6 +283,10 @@ class CropScannerCameraState extends State<CropScannerCamera>
 
   Future<void> _initilizeCameraComponents() async {
     debugPrint("Initializing camera components...");
+
+    // Reset any previous state
+    _resetDetectionState();
+
     try {
       _cameras = await availableCameras();
       debugPrint("Available cameras: ${_cameras?.length ?? 0}");
@@ -298,16 +301,20 @@ class CropScannerCameraState extends State<CropScannerCamera>
         await _setupCameraController(_selectedCameraIndex);
       } else {
         debugPrint("No cameras found");
-        setState(() {
-          _hasPermission = false;
-        });
+        if (mounted) {
+          setState(() {
+            _hasPermission = false;
+          });
+        }
         _showErrorDialog("No cameras found on this device");
       }
     } catch (e) {
       debugPrint("Error initializing camera components: $e");
-      setState(() {
-        _hasPermission = false;
-      });
+      if (mounted) {
+        setState(() {
+          _hasPermission = false;
+        });
+      }
       _showErrorDialog("Failed to initialize camera: $e");
     }
   }
@@ -724,44 +731,47 @@ class CropScannerCameraState extends State<CropScannerCamera>
 
     switch (state) {
       case AppLifecycleState.inactive:
-        // DON'T dispose on inactive - user might just be switching apps briefly
-        debugPrint("App inactive - maintaining camera state");
-        break;
-
-      case AppLifecycleState.paused:
-        // Only pause preview, don't dispose camera completely
-        debugPrint("App paused - pausing camera preview only");
+        // Just pause preview on inactive - don't dispose yet
+        debugPrint("App inactive - pausing preview");
         try {
           _cameraController?.pausePreview();
         } catch (e) {
-          debugPrint("Error pausing preview: $e");
+          debugPrint("Error pausing preview on inactive: $e");
         }
         break;
 
+      case AppLifecycleState.paused:
+        // MEMORY LEAK FIX: Dispose camera on pause to prevent buffer accumulation
+        debugPrint("App paused - disposing camera to prevent buffer leak");
+        _disposeCamera();
+        break;
+
       case AppLifecycleState.resumed:
-        debugPrint("App resumed - resuming camera preview");
-        // Only resume preview if camera exists, otherwise reinitialize
-        try {
-          if (_cameraController?.value.isInitialized == true) {
-            _cameraController?.resumePreview();
-            debugPrint("✅ Camera preview resumed");
-          } else if (_hasPermission) {
-            // Only reinitialize if camera was actually lost
-            Future.delayed(const Duration(milliseconds: 200), () {
-              if (mounted) {
+        debugPrint("App resumed - checking camera state");
+        // More robust resume logic
+        if (_hasPermission && mounted) {
+          if (_cameraController == null ||
+              !_cameraController!.value.isInitialized) {
+            // Camera was disposed, need to reinitialize
+            debugPrint("Camera needs reinitialization");
+            Future.delayed(const Duration(milliseconds: 500), () {
+              if (mounted && _hasPermission) {
                 _initilizeCameraComponents();
               }
             });
-          }
-        } catch (e) {
-          debugPrint("Error resuming preview: $e");
-          // Fallback to reinitialization
-          if (_hasPermission) {
-            Future.delayed(const Duration(milliseconds: 200), () {
-              if (mounted) {
-                _initilizeCameraComponents();
-              }
-            });
+          } else {
+            // Camera exists but might be paused
+            debugPrint("Resuming existing camera");
+            try {
+              _cameraController?.resumePreview();
+            } catch (e) {
+              debugPrint("Error resuming preview, reinitializing: $e");
+              Future.delayed(const Duration(milliseconds: 200), () {
+                if (mounted && _hasPermission) {
+                  _initilizeCameraComponents();
+                }
+              });
+            }
           }
         }
         break;
@@ -804,6 +814,10 @@ class CropScannerCameraState extends State<CropScannerCamera>
     if (_cameraController != null) {
       try {
         debugPrint("🗑️ Disposing camera controller...");
+
+        // Stop preview first to clear buffers
+        _cameraController?.pausePreview();
+
         // CRITICAL FIX: Synchronous disposal to prevent state conflicts
         _cameraController?.dispose();
         _cameraController = null;
