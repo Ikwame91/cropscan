@@ -30,6 +30,10 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _initializeScreens();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<NavigationProvider>().setCameraKey(_cameraScreenKey);
+    });
   }
 
   @override
