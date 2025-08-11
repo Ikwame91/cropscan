@@ -126,7 +126,7 @@ class DashboardHome extends StatelessWidget {
         farmingAlertsProvider.farmingAlerts;
     final bool alertsLoading = farmingAlertsProvider.isLoading;
     final String? alertsError = farmingAlertsProvider.errorMessage;
-    final int unreadAlertsCount = farmingAlertsProvider.unreadAlertsCount;
+    // final int unreadAlertsCount = farmingAlertsProvider.unreadAlertsCount;
 
     return Scaffold(
       backgroundColor: AppTheme.lightTheme.scaffoldBackgroundColor,
@@ -141,12 +141,17 @@ class DashboardHome extends StatelessWidget {
                 floating: true,
                 backgroundColor: AppTheme.lightTheme.colorScheme.primary,
                 title: Text(
-                  'CropScan ',
-                  style: AppTheme.lightTheme.textTheme.titleLarge?.copyWith(
-                    color: AppTheme.lightTheme.colorScheme.onPrimary,
-                    fontWeight: FontWeight.bold,
+                  'CropCare Vision',
+                  style: GoogleFonts.playfairDisplay(
+                    textStyle:
+                        AppTheme.lightTheme.textTheme.titleLarge?.copyWith(
+                      color: AppTheme.lightTheme.colorScheme.onPrimary,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 1.2,
+                    ),
                   ),
                 ),
+                centerTitle: true,
                 actions: [
                   IconButton(
                     onPressed: () =>
@@ -291,27 +296,38 @@ class DashboardHome extends StatelessWidget {
                       children: [
                         Text(
                           'Farming Alerts',
-                          style: AppTheme.lightTheme.textTheme.titleLarge
-                              ?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Container(
-                          padding: EdgeInsets.symmetric(
-                              horizontal: 2.w, vertical: 0.5.h),
-                          decoration: BoxDecoration(
-                            color: AppTheme.lightTheme.colorScheme.primary,
-                            borderRadius: BorderRadius.circular(12.0),
-                          ),
-                          child: Text(
-                            '$unreadAlertsCount', // Display unread count from provider
-                            style: AppTheme.lightTheme.textTheme.labelSmall
+                          style: GoogleFonts.poppins(
+                            textStyle: AppTheme.lightTheme.textTheme.titleLarge
                                 ?.copyWith(
-                              color: AppTheme.lightTheme.colorScheme.onPrimary,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
                         ),
+                        if (farmingAlerts.length > 3)
+                          GestureDetector(
+                            onTap: () {
+                              if (kDebugMode) {
+                                print('View All Alerts pressed');
+                              }
+                            },
+                            child: Container(
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: 2.w, vertical: 0.6.h),
+                              decoration: BoxDecoration(
+                                color: AppTheme.lightTheme.colorScheme.primary,
+                                borderRadius: BorderRadius.circular(6.0),
+                              ),
+                              child: Text(
+                                'View All (${farmingAlerts.length}) Alerts ',
+                                style: AppTheme.lightTheme.textTheme.labelSmall
+                                    ?.copyWith(
+                                  color:
+                                      AppTheme.lightTheme.colorScheme.onPrimary,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
                       ],
                     ),
                     SizedBox(height: 2.h),
@@ -391,20 +407,7 @@ class DashboardHome extends StatelessWidget {
                             ),
                           )),
 
-                    if (farmingAlerts.length > 3)
-                      Center(
-                        child: TextButton(
-                          onPressed: () {
-                            if (kDebugMode) {
-                              print('View All Alerts pressed');
-                            }
-                          },
-                          child:
-                              Text('View All Alerts (${farmingAlerts.length})'),
-                        ),
-                      ),
-
-                    SizedBox(height: 10.h), // Bottom padding for FAB
+                    SizedBox(height: 1.h), // Bottom padding for FAB
                   ]),
                 ),
               ),
