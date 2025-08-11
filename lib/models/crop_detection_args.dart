@@ -1,4 +1,4 @@
-import 'package:cropscan_pro/presentation/crop_scanner_camera/widgets/crop_info.dart';
+import 'package:cropscan_pro/models/crop_info.dart';
 
 class CropDetectionResultsArgs {
   final String imagePath;

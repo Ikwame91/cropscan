@@ -1,4 +1,6 @@
-import 'package:cropscan_pro/presentation/crop_scanner_camera/widgets/crop_info.dart';
+import 'package:cropscan_pro/models/crop_info.dart';
+import 'package:cropscan_pro/models/crop_models.dart';
+import 'package:cropscan_pro/models/enhanced_crop_info.dart';
 import 'package:flutter/material.dart';
 import 'package:sizer/sizer.dart';
 
@@ -27,11 +29,35 @@ class CropDetectionResults extends StatefulWidget {
 
 class _CropDetectionResultsState extends State<CropDetectionResults> {
   bool _isImageZoomed = false;
+  EnhancedCropInfo? _enhancedCropInfo;
+  bool _isLoadingEnhancedInfo = true;
 
   @override
   void initState() {
     super.initState();
+    _loadEnhancedCropInfo();
     // You can put any initial setup here, but the args are already available via widget.
+  }
+
+  Future<void> _loadEnhancedCropInfo() async {
+    try {
+      // Initialize the enhanced crop database
+      await EnhancedCropInfoService.loadDatabase();
+
+      // Try to get enhanced info for the detected crop
+      _enhancedCropInfo =
+          EnhancedCropInfoService.getCropInfo(widget.detectedCrop);
+
+      debugPrint("Enhanced info loaded: ${_enhancedCropInfo != null}");
+    } catch (e) {
+      debugPrint("Error loading enhanced crop info: $e");
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoadingEnhancedInfo = false;
+        });
+      }
+    }
   }
 
   @override
@@ -101,7 +127,7 @@ class _CropDetectionResultsState extends State<CropDetectionResults> {
               SizedBox(height: 3.h),
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 4.w),
-                child: _buildCropInfoSection(),
+                child: _buildEnhancedCropInfoSection(),
               ),
               SizedBox(height: 3.h),
               // Action Buttons
@@ -118,6 +144,339 @@ class _CropDetectionResultsState extends State<CropDetectionResults> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildEnhancedCropInfoSection() {
+    if (_isLoadingEnhancedInfo) {
+      return Center(
+        child: Padding(
+          padding: EdgeInsets.symmetric(vertical: 4.h),
+          child: CircularProgressIndicator(
+            color: AppTheme.lightTheme.colorScheme.primary,
+          ),
+        ),
+      );
+    }
+    // If enhanced info is available, show detailed information
+    if (_enhancedCropInfo != null) {
+      return _buildDetailedCropInfo(_enhancedCropInfo!);
+    }
+
+    // Fallback to basic info
+
+    return _buildCropInfoSection();
+  }
+
+  Widget _buildDetailedCropInfo(EnhancedCropInfo enhancedInfo) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Section Title
+        Text(
+          'Detailed Crop Analysis',
+          style: AppTheme.lightTheme.textTheme.titleLarge?.copyWith(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        SizedBox(height: 2.h),
+
+        // Basic Information Card
+        _buildExpandableInfoCard(
+          title: 'Basic Information',
+          icon: 'info',
+          color: AppTheme.lightTheme.colorScheme.primary,
+          children: [
+            _buildInfoRow('Crop Type', enhancedInfo.basicInfo.cropType),
+            _buildInfoRow(
+                'Scientific Name', enhancedInfo.basicInfo.scientificName),
+            _buildInfoRow('Condition', enhancedInfo.basicInfo.condition),
+            if (enhancedInfo.basicInfo.diseaseType.isNotEmpty)
+              _buildInfoRow('Disease Type', enhancedInfo.basicInfo.diseaseType),
+            if (enhancedInfo.basicInfo.pathogen.isNotEmpty)
+              _buildInfoRow('Pathogen', enhancedInfo.basicInfo.pathogen),
+            if (enhancedInfo.basicInfo.severity.isNotEmpty)
+              _buildInfoRow('Severity', enhancedInfo.basicInfo.severity),
+          ],
+        ),
+        SizedBox(height: 1.5.h),
+
+        // Symptoms (if available)
+        if (enhancedInfo.symptoms != null)
+          _buildExpandableInfoCard(
+            title: 'Symptoms',
+            icon: 'medical_services',
+            color: Colors.orange,
+            children: [
+              _buildListInfoRow(
+                  'Early Stage', enhancedInfo.symptoms!.earlyStage),
+              _buildListInfoRow(
+                  'Advanced Stage', enhancedInfo.symptoms!.advancedStage),
+              _buildListInfoRow(
+                  'Affected Parts', enhancedInfo.symptoms!.affectedParts),
+              _buildInfoRow('Weather Conditions',
+                  enhancedInfo.symptoms!.weatherConditions),
+            ],
+          ),
+        if (enhancedInfo.treatment != null)
+          _buildExpandableInfoCard(
+            title: 'Treatment Options',
+            icon: 'healing',
+            color: Colors.green,
+            children: [
+              _buildListInfoRow(
+                  'Immediate Actions', enhancedInfo.treatment!.immediateAction),
+              if (enhancedInfo.treatment!.organicSolutions.isNotEmpty)
+                _buildOrganicSolutionsRow(
+                    enhancedInfo.treatment!.organicSolutions),
+              if (enhancedInfo.treatment!.chemicalSolutions.isNotEmpty)
+                _buildChemicalSolutionsRow(
+                    enhancedInfo.treatment!.chemicalSolutions),
+            ],
+          ),
+
+        SizedBox(height: 1.5.h),
+
+        // Treatment (if available)
+        if (enhancedInfo.treatment != null)
+          _buildExpandableInfoCard(
+            title: 'Treatment Options',
+            icon: 'healing',
+            color: Colors.green,
+            children: [
+              _buildInfoRow(
+                  'Chemical Treatment', enhancedInfo.treatment!.chemical),
+              _buildInfoRow(
+                  'Organic Treatment', enhancedInfo.treatment!.organic),
+            ],
+          ),
+
+        SizedBox(height: 1.5.h),
+
+        // Prevention (if available)
+        if (enhancedInfo.prevention != null)
+          _buildExpandableInfoCard(
+            title: 'Prevention Methods',
+            icon: 'shield',
+            color: Colors.blue,
+            children: [
+              _buildInfoRow('Cultural Practices',
+                  enhancedInfo.prevention!.culturalPractices),
+              _buildInfoRow(
+                  'Chemical Control', enhancedInfo.prevention!.chemicalControl),
+            ],
+          ),
+
+        SizedBox(height: 1.5.h),
+
+        // Maintenance (if available)
+        if (enhancedInfo.maintenance != null)
+          _buildExpandableInfoCard(
+            title: 'Crop Maintenance',
+            icon: 'agriculture',
+            color: Colors.teal,
+            children: [
+              _buildInfoRow('Irrigation', enhancedInfo.maintenance!.irrigation),
+              if (enhancedInfo.maintenance!.fertilization != null)
+                _buildInfoRow(
+                    'Fertilization',
+                    'N: ${enhancedInfo.maintenance!.fertilization!.nitrogen}, '
+                        'P: ${enhancedInfo.maintenance!.fertilization!.phosphorus}, '
+                        'K: ${enhancedInfo.maintenance!.fertilization!.potassium}'),
+              if (enhancedInfo.maintenance!.monitoring != null)
+                _buildListInfoRow('Key Metrics',
+                    enhancedInfo.maintenance!.monitoring!.keyMetrics ?? []),
+            ],
+          ),
+      ],
+    );
+  }
+
+  Widget _buildOrganicSolutionsRow(List<OrganicSolution> solutions) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: 1.h),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Organic Solutions:',
+            style: AppTheme.lightTheme.textTheme.bodyMedium?.copyWith(
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          SizedBox(height: 0.5.h),
+          ...solutions
+              .map((solution) => Padding(
+                    padding: EdgeInsets.only(left: 2.w, bottom: 0.5.h),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '• ${solution.method}',
+                          style: AppTheme.lightTheme.textTheme.bodyMedium
+                              ?.copyWith(
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        if (solution.application != null)
+                          Text(
+                            '  Application: ${solution.application}',
+                            style: AppTheme.lightTheme.textTheme.bodySmall,
+                          ),
+                      ],
+                    ),
+                  ))
+              .toList(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildChemicalSolutionsRow(List<ChemicalSolution> solutions) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: 1.h),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Chemical Solutions:',
+            style: AppTheme.lightTheme.textTheme.bodyMedium?.copyWith(
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          SizedBox(height: 0.5.h),
+          ...solutions.map((solution) => Padding(
+                padding: EdgeInsets.only(left: 2.w, bottom: 0.5.h),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '• ${solution.activeIngredient}',
+                      style: AppTheme.lightTheme.textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    if (solution.tradeNames != null &&
+                        solution.tradeNames!.isNotEmpty)
+                      Text(
+                        '  Trade names: ${solution.tradeNames!.join(', ')}',
+                        style: AppTheme.lightTheme.textTheme.bodySmall,
+                      ),
+                  ],
+                ),
+              )),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildListInfoRow(String label, List<String> values) {
+    if (values.isEmpty) return const SizedBox.shrink();
+
+    return Padding(
+      padding: EdgeInsets.only(bottom: 1.h),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '$label:',
+            style: AppTheme.lightTheme.textTheme.bodyMedium?.copyWith(
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          SizedBox(height: 0.5.h),
+          ...values.map((value) => Padding(
+                padding: EdgeInsets.only(left: 2.w, bottom: 0.5.h),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('• ', style: AppTheme.lightTheme.textTheme.bodyMedium),
+                    Expanded(
+                      child: Text(
+                        value,
+                        style: AppTheme.lightTheme.textTheme.bodyMedium,
+                      ),
+                    ),
+                  ],
+                ),
+              )),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildExpandableInfoCard({
+    required String title,
+    required String icon,
+    required Color color,
+    required List<Widget> children,
+  }) {
+    return Container(
+      width: double.infinity,
+      margin: EdgeInsets.only(bottom: 1.h),
+      decoration: BoxDecoration(
+        color: AppTheme.lightTheme.colorScheme.surface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: AppTheme.lightTheme.dividerColor,
+          width: 1,
+        ),
+      ),
+      child: ExpansionTile(
+        leading: Container(
+          padding: EdgeInsets.all(1.5.w),
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: CustomIconWidget(
+            iconName: icon,
+            color: color,
+            size: 20,
+          ),
+        ),
+        title: Text(
+          title,
+          style: AppTheme.lightTheme.textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        children: [
+          Padding(
+            padding: EdgeInsets.all(4.w),
+            child: Column(
+              children: children,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoRow(String label, String value) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: 1.h),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            flex: 2,
+            child: Text(
+              '$label:',
+              style: AppTheme.lightTheme.textTheme.bodyMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          Expanded(
+            flex: 3,
+            child: Text(
+              value,
+              style: AppTheme.lightTheme.textTheme.bodyMedium,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -374,21 +733,6 @@ class _CropDetectionResultsState extends State<CropDetectionResults> {
             ),
             ListTile(
               leading: CustomIconWidget(
-                iconName: 'wallpaper',
-                color: AppTheme.lightTheme.colorScheme.primary,
-                size: 24,
-              ),
-              title: Text(
-                'Set as Wallpaper',
-                style: AppTheme.lightTheme.textTheme.bodyLarge,
-              ),
-              onTap: () {
-                Navigator.pop(context);
-                _setAsWallpaper();
-              },
-            ),
-            ListTile(
-              leading: CustomIconWidget(
                 iconName: 'copy',
                 color: AppTheme.lightTheme.colorScheme.primary,
                 size: 24,
@@ -454,20 +798,6 @@ class _CropDetectionResultsState extends State<CropDetectionResults> {
           style: AppTheme.lightTheme.snackBarTheme.contentTextStyle,
         ),
         backgroundColor: AppTheme.getSuccessColor(true),
-        behavior: AppTheme.lightTheme.snackBarTheme.behavior,
-        shape: AppTheme.lightTheme.snackBarTheme.shape,
-      ),
-    );
-  }
-
-  void _setAsWallpaper() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          'Setting as wallpaper...',
-          style: AppTheme.lightTheme.snackBarTheme.contentTextStyle,
-        ),
-        backgroundColor: AppTheme.lightTheme.colorScheme.primary,
         behavior: AppTheme.lightTheme.snackBarTheme.behavior,
         shape: AppTheme.lightTheme.snackBarTheme.shape,
       ),

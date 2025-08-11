@@ -40,5 +40,6 @@ flutter:
   assets:
     - assets/
     - assets/images/
+    - assets/data/
     - assets/ml_models/converted_model.tflite
     - assets/ml_models/labels.txt

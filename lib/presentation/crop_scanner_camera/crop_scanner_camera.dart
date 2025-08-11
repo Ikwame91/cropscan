@@ -5,7 +5,8 @@ import 'dart:io';
 import 'package:camera/camera.dart';
 import 'package:cropscan_pro/core/services/tf_lite_model_services.dart';
 import 'package:cropscan_pro/models/crop_detection_args.dart';
-import 'package:cropscan_pro/presentation/crop_scanner_camera/widgets/crop_info.dart';
+import 'package:cropscan_pro/models/crop_info.dart';
+import 'package:cropscan_pro/presentation/crop_scanner_camera/widgets/enhancedloadingoverlay.dart';
 import 'package:cropscan_pro/providers/naviagtion_provider.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -18,7 +19,6 @@ import '../../core/app_export.dart';
 import './widgets/camera_overlay_widget.dart';
 import './widgets/camera_preview_widget.dart';
 import './widgets/detection_feedback_widget.dart';
-import './widgets/loading_overlay_widget.dart';
 
 class CropScannerCamera extends StatefulWidget {
   const CropScannerCamera({super.key});
@@ -77,37 +77,53 @@ class CropScannerCameraState extends State<CropScannerCamera>
   @override
   void reassemble() {
     super.reassemble();
-    // Hot reload detected - dispose and reinitialize
     if (kDebugMode) {
-      debugPrint("🔥 Hot reload detected - reinitializing camera");
+      debugPrint("🔥 Hot reload detected");
 
-      // More aggressive disposal for hot reload
-      _disposeForHotReload();
-
-      // Longer delay to ensure complete cleanup
-      Future.delayed(const Duration(milliseconds: 500), () {
-        if (mounted) {
-          _checkAndInitializeCamera();
+      // Safer context access with error handling
+      try {
+        final navigationProvider = context.read<NavigationProvider>();
+        if (navigationProvider.currentIndex == 1) {
+          // Only reinitialize if camera is actually broken
+          if (_cameraController == null ||
+              !_cameraController!.value.isInitialized ||
+              _cameraController!.value.hasError) {
+            debugPrint("Camera needs reinitialization after hot reload");
+            _handleHotReloadRecovery();
+          } else {
+            debugPrint("Camera appears healthy, skipping hot reload reinit");
+          }
+        } else {
+          debugPrint("Camera tab not active - skipping reinit");
         }
-      });
+      } catch (e) {
+        debugPrint("Error accessing NavigationProvider during hot reload: $e");
+        // Fallback: only reinitialize if camera is broken
+        if (_cameraController == null ||
+            !_cameraController!.value.isInitialized) {
+          _handleHotReloadRecovery();
+        }
+      }
     }
   }
 
-  void _disposeForHotReload() {
-    if (_cameraController != null) {
-      try {
-        // Pause first
-        _cameraController!.pausePreview();
-
-        // Then dispose with delay
-        Future.delayed(const Duration(milliseconds: 100), () {
-          _cameraController?.dispose();
-          _cameraController = null;
-        });
-      } catch (e) {
-        debugPrint("Error disposing camera for hot reload: $e");
+  Future<void> _handleHotReloadRecovery() async {
+    try {
+      if (_cameraController != null) {
+        await _cameraController?.pausePreview();
+        await Future.delayed(const Duration(milliseconds: 200));
+        await _cameraController?.dispose();
         _cameraController = null;
       }
+
+      // Longer delay for complete cleanup
+      await Future.delayed(const Duration(milliseconds: 800));
+
+      if (mounted && _hasPermission) {
+        await _checkAndInitializeCamera();
+      }
+    } catch (e) {
+      debugPrint("Hot reload recovery error: $e");
     }
   }
 
@@ -834,6 +850,15 @@ class CropScannerCameraState extends State<CropScannerCamera>
         // Stop preview first to clear buffers
         _cameraController?.pausePreview();
 
+        Future.microtask(() async {
+          try {
+            // Force buffer cleanup by setting to null resolution briefly
+            await _cameraController?.setZoomLevel(1.0);
+          } catch (e) {
+            debugPrint("Buffer cleanup warning: $e");
+          }
+        });
+
         // CRITICAL FIX: Synchronous disposal to prevent state conflicts
         _cameraController?.dispose();
         _cameraController = null;
@@ -924,8 +949,9 @@ class CropScannerCameraState extends State<CropScannerCamera>
             // or if the ML model is currently loading/predicting via its status
             if (mlStatus == ModelPredictionStatus.predicting ||
                 mlStatus == ModelPredictionStatus.loading)
-              const LoadingOverlayWidget(), // Consider if this should still be shown or if _isDetecting suffices
-
+              const Enhancedloadingoverlay(
+                minimumDuration: Duration(seconds: 3),
+              ),
             // Zoom Indicator
             if (_currentZoomLevel > 1.0) _buildZoomIndicator(),
           ],

@@ -1,7 +1,7 @@
 import 'package:cropscan_pro/models/crop_detection.dart';
 import 'package:cropscan_pro/models/crop_detection_args.dart';
+import 'package:cropscan_pro/models/crop_info.dart';
 import 'package:cropscan_pro/models/farming_alert.dart';
-import 'package:cropscan_pro/presentation/crop_scanner_camera/widgets/crop_info.dart';
 import 'package:cropscan_pro/providers/farming_alerts_provider.dart';
 import 'package:cropscan_pro/providers/naviagtion_provider.dart';
 import 'package:cropscan_pro/providers/recent_detection_providers.dart';

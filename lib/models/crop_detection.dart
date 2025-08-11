@@ -1,11 +1,10 @@
-// lib/models/crop_detection.dart
 class CropDetection {
   final String id;
   final String cropName;
   final double confidence;
   final String imageUrl;
   final DateTime detectedAt;
-  final String status; // e.g., "Healthy", "Disease Detected", "Pest Detected"
+  final String status;
 
   CropDetection({
     required this.id,

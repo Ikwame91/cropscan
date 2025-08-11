@@ -37,6 +37,7 @@ class RecentDetectionCardWidget extends StatelessWidget {
           ],
         ),
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Crop image
@@ -44,11 +45,11 @@ class RecentDetectionCardWidget extends StatelessWidget {
               borderRadius: BorderRadius.vertical(top: Radius.circular(12.0)),
               child: SizedBox(
                 width: double.infinity,
-                height: 12.h,
+                height: 10.h,
                 child: CustomImageWidget(
                   imageUrl: imageUrl,
                   width: double.infinity,
-                  height: 15.h,
+                  height: 12.h,
                   fit: BoxFit.cover,
                 ),
               ),

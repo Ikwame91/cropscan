@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:sizer/sizer.dart';
 
 import '../../../core/app_export.dart';
@@ -99,9 +100,11 @@ class DetectionResultCardWidget extends StatelessWidget {
             // Crop Name
             Text(
               cropName,
-              style: AppTheme.lightTheme.textTheme.headlineMedium?.copyWith(
-                fontWeight: FontWeight.bold,
+              style: GoogleFonts.poppins(
+                fontSize: 24.sp,
+                fontWeight: FontWeight.w700,
                 color: AppTheme.lightTheme.colorScheme.onSurface,
+                letterSpacing: 0.5,
               ),
             ),
 

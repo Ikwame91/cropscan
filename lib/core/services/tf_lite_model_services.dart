@@ -1,5 +1,5 @@
 import 'dart:developer';
-import 'dart:math' as math;
+// import 'dart:math' as math;
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/widgets.dart';
@@ -22,7 +22,9 @@ class TfLiteModelServices extends ChangeNotifier {
   static const int _inputSize = 256;
   static const int _channels = 3;
   static const int _outputLength = 16;
-
+  static const double _highConfidenceThreshold = 0.85; // Rename for clarity
+  static const double _lowConfidenceThreshold =
+      0.40; // New threshold to check for non-cro
   // Getters
   Interpreter? get interpreter => _interpreter;
   List<String>? get labels => _labels;
@@ -217,61 +219,26 @@ class TfLiteModelServices extends ChangeNotifier {
       }
     }
 
-    // Calculate entropy for uncertainty detection. A low value means high confidence in a single class.
-    double entropy = 0.0;
-    for (double prob in probabilities) {
-      if (prob > 0.0001) {
-        entropy -= prob * (math.log(prob) / math.log(2));
-      }
-    }
-
-    // Define "fail" conditions for non-crop images. These are intentionally strict.
-    final bool hasUnrealisticConfidence = maxConfidence > 0.98;
-    final bool hasHighConfusion = _hasConfusedPrediction(probabilities);
-    final bool hasFlatDistribution = entropy > 3.5;
+    // A more robust check: a very low maxConfidence likely means it's not a crop.
+    final bool isLikelyCrop = maxConfidence > _lowConfidenceThreshold;
+    final bool isConfident = maxConfidence >= _highConfidenceThreshold;
 
     String predictedLabel;
-    bool isConfident;
-    bool isLikelyCrop;
-
-    // First, check for definitive "fail" conditions.
-    if (hasUnrealisticConfidence || hasHighConfusion || hasFlatDistribution) {
+    if (!isLikelyCrop) {
       predictedLabel = "Not a crop";
-      isLikelyCrop = false;
-      isConfident = false;
-    }
-    // Next, check for a confident, but not overly confident, prediction.
-    // We are making these thresholds more forgiving for real images.
-    else if (maxConfidence >= 0.70 &&
-        maxConfidence <= 0.98 &&
-        entropy >= 0.5 &&
-        entropy <= 3.0) {
-      predictedLabel = predictedIndex >= 0 &&
-              _labels != null &&
-              predictedIndex < _labels!.length
-          ? _labels![predictedIndex]
-          : "Unknown";
-      isLikelyCrop = true;
-      isConfident = maxConfidence >= 0.85;
-    }
-    // Finally, handle everything else as an uncertain prediction.
-    else {
-      predictedLabel = "Uncertain detection";
-      isLikelyCrop = false;
-      isConfident = false;
+    } else if (predictedIndex >= 0 &&
+        _labels != null &&
+        predictedIndex < _labels!.length) {
+      predictedLabel = _labels![predictedIndex];
+    } else {
+      predictedLabel = "Unknown";
     }
 
     return {
       'label': predictedLabel,
       'confidence': maxConfidence,
       'isConfident': isConfident,
-      'isLikelyCrop': isLikelyCrop,
-      'entropy': entropy,
-      'debugInfo': {
-        'hasUnrealisticConfidence': hasUnrealisticConfidence,
-        'hasHighConfusion': hasHighConfusion,
-        'hasFlatDistribution': hasFlatDistribution,
-      },
+      'isLikelyCrop': isLikelyCrop, // Add this back for reference if needed
       'allProbabilities': Map.fromIterables(
         _labels ?? List.generate(_outputLength, (i) => 'Class_$i'),
         probabilities,
@@ -279,15 +246,88 @@ class TfLiteModelServices extends ChangeNotifier {
     };
   }
 
-  // Helper function to check for "confused" predictions by looking for multiple close values.
-  bool _hasConfusedPrediction(List<double> probabilities) {
-    List<double> sortedProbs = List.from(probabilities)
-      ..sort((a, b) => b.compareTo(a));
-    if (sortedProbs.length < 2) return false;
-    // Check if the top two predictions are very close in value
-    return (sortedProbs[0] - sortedProbs[1]).abs() < 0.2 &&
-        sortedProbs[0] > 0.4;
-  }
+  // Map<String, dynamic> _processInferenceResults(List<double> probabilities) {
+  //   double maxConfidence = 0.0;
+  //   int predictedIndex = -1;
+
+  //   for (int i = 0; i < probabilities.length; i++) {
+  //     if (probabilities[i] > maxConfidence) {
+  //       maxConfidence = probabilities[i];
+  //       predictedIndex = i;
+  //     }
+  //   }
+
+  //   // Calculate entropy for uncertainty detection. A low value means high confidence in a single class.
+  //   double entropy = 0.0;
+  //   for (double prob in probabilities) {
+  //     if (prob > 0.0001) {
+  //       entropy -= prob * (math.log(prob) / math.log(2));
+  //     }
+  //   }
+
+  //   // Define "fail" conditions for non-crop images. These are intentionally strict.
+  //   final bool hasUnrealisticConfidence = maxConfidence > 0.98;
+  //   final bool hasHighConfusion = _hasConfusedPrediction(probabilities);
+  //   final bool hasFlatDistribution = entropy > 3.5;
+
+  //   String predictedLabel;
+  //   bool isConfident;
+  //   bool isLikelyCrop;
+
+  //   // First, check for definitive "fail" conditions.
+  //   if (hasUnrealisticConfidence || hasHighConfusion || hasFlatDistribution) {
+  //     predictedLabel = "Not a crop";
+  //     isLikelyCrop = false;
+  //     isConfident = false;
+  //   }
+  //   // Next, check for a confident, but not overly confident, prediction.
+  //   // We are making these thresholds more forgiving for real images.
+  //   else if (maxConfidence >= 0.70 &&
+  //       maxConfidence <= 0.98 &&
+  //       entropy >= 0.5 &&
+  //       entropy <= 3.0) {
+  //     predictedLabel = predictedIndex >= 0 &&
+  //             _labels != null &&
+  //             predictedIndex < _labels!.length
+  //         ? _labels![predictedIndex]
+  //         : "Unknown";
+  //     isLikelyCrop = true;
+  //     isConfident = maxConfidence >= 0.85;
+  //   }
+  //   // Finally, handle everything else as an uncertain prediction.
+  //   else {
+  //     predictedLabel = "Uncertain detection";
+  //     isLikelyCrop = false;
+  //     isConfident = false;
+  //   }
+
+  //   return {
+  //     'label': predictedLabel,
+  //     'confidence': maxConfidence,
+  //     'isConfident': isConfident,
+  //     'isLikelyCrop': isLikelyCrop,
+  //     'entropy': entropy,
+  //     'debugInfo': {
+  //       'hasUnrealisticConfidence': hasUnrealisticConfidence,
+  //       'hasHighConfusion': hasHighConfusion,
+  //       'hasFlatDistribution': hasFlatDistribution,
+  //     },
+  //     'allProbabilities': Map.fromIterables(
+  //       _labels ?? List.generate(_outputLength, (i) => 'Class_$i'),
+  //       probabilities,
+  //     ),
+  //   };
+  // }
+
+  // // Helper function to check for "confused" predictions by looking for multiple close values.
+  // bool _hasConfusedPrediction(List<double> probabilities) {
+  //   List<double> sortedProbs = List.from(probabilities)
+  //     ..sort((a, b) => b.compareTo(a));
+  //   if (sortedProbs.length < 2) return false;
+  //   // Check if the top two predictions are very close in value
+  //   return (sortedProbs[0] - sortedProbs[1]).abs() < 0.2 &&
+  //       sortedProbs[0] > 0.4;
+  // }
 
   String _sanitizeError(dynamic error) {
     final errorStr = error.toString();

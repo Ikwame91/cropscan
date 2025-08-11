@@ -1,0 +1,1049 @@
+{
+  "crop_diseases": {
+    "Corn_(maize)___Cercospora_leaf_spot Gray_leaf_spot": {
+      "basic_info": {
+        "display_name": "Corn - Cercospora Leaf Spot",
+        "crop_type": "Corn (Maize)",
+        "scientific_name": "Zea mays",
+        "condition": "Disease Detected",
+        "disease_type": "Fungal",
+        "pathogen": "Cercospora zeae-maydis",
+        "severity": "Moderate to Severe",
+        "status_color": "#FF9800"
+      },
+      "symptoms": {
+        "early_stage": [
+          "Small, tan-brown spots with distinct borders",
+          "Lesions are rectangular and parallel to leaf veins"
+        ],
+        "advanced_stage": [
+          "Lesions merge to form large necrotic areas",
+          "Leaves turn yellow and die prematurely"
+        ],
+        "affected_parts": ["Leaves", "Husks", "Stalks"],
+        "weather_conditions": "Hot and humid weather"
+      },
+      "causes": {
+        "environmental": [
+          "High humidity (>90%)",
+          "Temperatures between 22-30°C",
+          "Prolonged periods of leaf wetness"
+        ],
+        "cultural": [
+          "Infected crop residue from previous seasons",
+          "Susceptible corn varieties",
+          "Dense planting leading to poor air circulation"
+        ]
+      },
+      "treatment": {
+        "immediate_action": [
+          "Remove and destroy infected leaves and crop residue",
+          "Improve air circulation by thinning plants",
+          "Avoid overhead irrigation to reduce leaf wetness"
+        ],
+        "organic_solutions": [
+          {
+            "method": "Copper-based fungicides",
+            "active_ingredient": "Copper hydroxide",
+            "application": "Foliar spray",
+            "timing": "Applied preventatively or at the first sign of disease"
+          }
+        ],
+        "chemical_solutions": [
+          {
+            "active_ingredient": "Propiconazole",
+            "trade_names": ["Tilt", "Banner"],
+            "application_rate": "Follow manufacturer's instructions",
+            "timing": "Applied every 7-14 days during critical growth stages"
+          },
+          {
+            "active_ingredient": "Azoxystrobin",
+            "trade_names": ["Amistar", "Quadris"],
+            "application_rate": "Follow label instructions"
+          }
+        ],
+        "cultural_practices": [
+          "Crop rotation with non-host crops (e.g., soybeans)",
+          "Deep tillage to bury crop residue"
+        ]
+      },
+      "prevention": {
+        "resistant_varieties": ["Pioneer P1197", "Dekalb DKC60-67"],
+        "best_practices": [
+          "Plant resistant hybrids",
+          "Practice crop rotation",
+          "Monitor weather conditions for high-risk periods"
+        ]
+      },
+      "economic_impact": {
+        "yield_loss": "10-60%",
+        "quality_impact": "Reduced grain quality",
+        "treatment_cost": "Varies by product and application frequency",
+        "critical_period": "V12 (12-leaf stage) to R4 (dough stage)"
+      },
+      "monitoring": {
+        "inspection_frequency": "Weekly scouting during high-risk weather",
+        "key_indicators": ["Presence of rectangular lesions on lower leaves"],
+        "action_threshold": "First signs of disease, especially before tasseling"
+      }
+    },
+    "Corn_(maize)___Common_rust_": {
+      "basic_info": {
+        "display_name": "Corn - Common Rust",
+        "crop_type": "Corn (Maize)",
+        "scientific_name": "Zea mays",
+        "condition": "Disease Detected",
+        "disease_type": "Fungal",
+        "pathogen": "Puccinia sorghi",
+        "severity": "Low to Moderate",
+        "status_color": "#FFD700"
+      },
+      "symptoms": {
+        "early_stage": [
+          "Small, circular, light-green to yellow spots on upper leaf surfaces",
+          "Spots develop into raised, cinnamon-brown pustules"
+        ],
+        "advanced_stage": [
+          "Pustules darken to a reddish-brown or black color",
+          "Heavy infection can cause premature leaf death"
+        ],
+        "affected_parts": ["Leaves"],
+        "weather_conditions": "Cool and humid conditions (16-23°C)"
+      },
+      "causes": {
+        "environmental": [
+          "Cool and humid weather",
+          "Moisture from rainfall or dew",
+          "Presence of fungal spores from host plants"
+        ],
+        "cultural": [
+          "Planting susceptible hybrids",
+          "Overwintering spores in the south, migrating north"
+        ]
+      },
+      "treatment": {
+        "immediate_action": [
+          "Fungicide application at first sign of disease"
+        ],
+        "organic_solutions": [
+          {
+            "method": "Sulfur-based fungicides",
+            "active_ingredient": "Sulfur",
+            "application": "Foliar spray",
+            "note": "Can be phytotoxic at high temperatures"
+          }
+        ],
+        "chemical_solutions": [
+          {
+            "active_ingredient": "Azoxystrobin + Propiconazole",
+            "trade_names": ["Quilt Xcel"],
+            "application_rate": "Follow label instructions",
+            "timing": "Applied preventatively or at the beginning of the disease"
+          }
+        ],
+        "cultural_practices": [
+          "Planting resistant hybrids",
+          "Proper plant spacing"
+        ]
+      },
+      "prevention": {
+        "resistant_varieties": ["Many modern hybrids have good resistance"],
+        "best_practices": [
+          "Choose resistant varieties",
+          "Maintain good fertility and plant health"
+        ]
+      },
+      "economic_impact": {
+        "yield_loss": "Generally low unless severe and early",
+        "quality_impact": "Negligible",
+        "treatment_cost": "Cost of fungicide application"
+      },
+      "monitoring": {
+        "inspection_frequency": "Regular scouting, especially in cool, wet periods",
+        "key_indicators": ["Presence of raised, brown pustules on leaves"],
+        "action_threshold": "Severity of infection and timing relative to crop stage"
+      }
+    },
+    "Corn_(maize)___Northern_Leaf_Blight": {
+      "basic_info": {
+        "display_name": "Corn - Northern Leaf Blight",
+        "crop_type": "Corn (Maize)",
+        "scientific_name": "Zea mays",
+        "condition": "Disease Detected",
+        "disease_type": "Fungal",
+        "pathogen": "Exserohilum turcicum",
+        "severity": "Moderate to Severe",
+        "status_color": "#FF4500"
+      },
+      "symptoms": {
+        "early_stage": [
+          "Long, elliptical, gray-green lesions on leaves",
+          "Lesions are 1-6 inches in length"
+        ],
+        "advanced_stage": [
+          "Lesions turn a gray-tan color",
+          "Infected leaves appear scorched and can die"
+        ],
+        "affected_parts": ["Leaves", "Husks"],
+        "weather_conditions": "Cool and humid conditions (18-27°C)"
+      },
+      "causes": {
+        "environmental": [
+          "Favorable cool and humid conditions",
+          "Infected crop residue from previous seasons"
+        ],
+        "cultural": [
+          "Planting susceptible varieties",
+          "Continuous corn cropping"
+        ]
+      },
+      "treatment": {
+        "immediate_action": [
+          "Apply fungicides at the first sign of disease"
+        ],
+        "organic_solutions": [
+          {
+            "method": "Copper fungicides",
+            "application": "Foliar spray"
+          }
+        ],
+        "chemical_solutions": [
+          {
+            "active_ingredient": "Pyrimethanil",
+            "trade_names": ["Scala", "Inspire"],
+            "application_rate": "Follow label instructions",
+            "timing": "Applied every 7-14 days"
+          }
+        ],
+        "cultural_practices": [
+          "Plant resistant hybrids",
+          "Crop rotation"
+        ]
+      },
+      "prevention": {
+        "resistant_varieties": ["Many commercial corn hybrids"],
+        "best_practices": [
+          "Choose resistant hybrids",
+          "Practice crop rotation"
+        ]
+      },
+      "economic_impact": {
+        "yield_loss": "Up to 50%",
+        "critical_period": "After tasseling"
+      },
+      "monitoring": {
+        "inspection_frequency": "Weekly during wet conditions",
+        "key_indicators": ["Presence of long, gray-tan lesions"],
+        "action_threshold": "At 25% of plants showing symptoms"
+      }
+    },
+    "Corn_(maize)___healthy": {
+      "basic_info": {
+        "display_name": "Corn - Healthy",
+        "crop_type": "Corn (Maize)",
+        "scientific_name": "Zea mays",
+        "condition": "Healthy",
+        "status_color": "#4CAF50"
+      },
+      "maintenance": {
+        "watering": {
+          "frequency": "Consistent, deep watering",
+          "amount": "25-30mm per week",
+          "critical_stages": ["Tasseling", "Silking", "Grain filling"]
+        },
+        "fertilization": {
+          "nitrogen": "150-200 kg/ha",
+          "phosphorus": "60-80 kg/ha",
+          "potassium": "120-150 kg/ha",
+          "timing": ["Pre-plant", "V6 stage", "VT stage"]
+        },
+        "monitoring": {
+          "growth_stages": ["VE", "V6", "V12", "VT", "R1", "R6"],
+          "key_metrics": ["Plant height", "Leaf color", "Pest presence"]
+        }
+      }
+    },
+    "Pepper__bell___Bacterial_spot": {
+      "basic_info": {
+        "display_name": "Bell Pepper - Bacterial Spot",
+        "crop_type": "Bell Pepper",
+        "scientific_name": "Capsicum annuum",
+        "condition": "Disease Detected",
+        "disease_type": "Bacterial",
+        "pathogen": "Xanthomonas campestris pv. vesicatoria",
+        "severity": "Moderate to Severe",
+        "status_color": "#FF4500"
+      },
+      "symptoms": {
+        "early_stage": [
+          "Small, water-soaked spots on leaves",
+          "Spots become necrotic with a yellow halo"
+        ],
+        "advanced_stage": [
+          "Spots merge, causing large dead areas",
+          "Raised, blister-like lesions on fruit"
+        ],
+        "affected_parts": ["Leaves", "Stems", "Fruit"],
+        "weather_conditions": "Warm and humid conditions with rain"
+      },
+      "causes": {
+        "environmental": [
+          "High humidity",
+          "Rainfall and splashing water",
+          "Temperatures between 24-30°C"
+        ],
+        "cultural": [
+          "Infected seed or transplants",
+          "Planting in fields with infected residue"
+        ]
+      },
+      "treatment": {
+        "immediate_action": [
+          "Remove and destroy infected plants or plant parts",
+          "Sanitize tools and equipment"
+        ],
+        "organic_solutions": [
+          {
+            "method": "Copper-based bactericides",
+            "application": "Foliar spray"
+          }
+        ],
+        "chemical_solutions": [
+          {
+            "active_ingredient": "Copper + Mancozeb",
+            "note": "Combined products can offer better control"
+          }
+        ],
+        "cultural_practices": [
+          "Use disease-free seeds or transplants",
+          "Practice crop rotation"
+        ]
+      },
+      "prevention": {
+        "resistant_varieties": ["Many commercial varieties have some resistance"],
+        "best_practices": [
+          "Use certified disease-free seeds",
+          "Avoid overhead irrigation",
+          "Practice good field sanitation"
+        ]
+      },
+      "economic_impact": {
+        "yield_loss": "Significant reduction in fruit quality and yield",
+        "quality_impact": "Unmarketable fruit due to lesions"
+      },
+      "monitoring": {
+        "inspection_frequency": "Weekly, especially after heavy rain",
+        "key_indicators": ["Water-soaked spots on new leaves"],
+        "action_threshold": "First signs of disease in the field"
+      }
+    },
+    "Pepper__bell___healthy": {
+      "basic_info": {
+        "display_name": "Bell Pepper - Healthy",
+        "crop_type": "Bell Pepper",
+        "scientific_name": "Capsicum annuum",
+        "condition": "Healthy",
+        "status_color": "#4CAF50"
+      },
+      "maintenance": {
+        "watering": {
+          "frequency": "Consistent watering, especially during fruiting",
+          "amount": "25mm per week",
+          "critical_stages": ["Flowering and fruiting"]
+        },
+        "fertilization": {
+          "nitrogen": "Medium levels",
+          "phosphorus": "High levels",
+          "potassium": "High levels",
+          "timing": ["Pre-plant", "First fruit set"]
+        },
+        "monitoring": {
+          "growth_stages": ["Seedling", "Vegetative", "Flowering", "Fruiting"],
+          "key_metrics": ["Leaf color", "Pest presence", "Fruit quality"]
+        }
+      }
+    },
+    "Tomato_Bacterial_spot": {
+      "basic_info": {
+        "display_name": "Tomato - Bacterial Spot",
+        "crop_type": "Tomato",
+        "scientific_name": "Solanum lycopersicum",
+        "condition": "Disease Detected",
+        "disease_type": "Bacterial",
+        "pathogen": "Xanthomonas spp.",
+        "severity": "Moderate to High",
+        "status_color": "#FF4500"
+      },
+      "symptoms": {
+        "early_stage": [
+          "Small, circular, water-soaked spots on leaves",
+          "Spots become angular with dark centers and yellow borders"
+        ],
+        "advanced_stage": [
+          "Lesions on fruit are raised, dark, and scabby-looking",
+          "Severe defoliation"
+        ],
+        "affected_parts": ["Leaves", "Stems", "Fruit"],
+        "weather_conditions": "Warm, humid conditions"
+      },
+      "causes": {
+        "environmental": [
+          "Rain and wind spread bacteria",
+          "High temperatures (24-30°C)"
+        ],
+        "cultural": [
+          "Infected seeds or transplants",
+          "Presence of bacteria in soil or on equipment"
+        ]
+      },
+      "treatment": {
+        "immediate_action": [
+          "Remove and destroy infected plants",
+          "Apply copper-based bactericide immediately"
+        ],
+        "organic_solutions": [
+          {
+            "method": "Copper fungicides",
+            "application": "Regular foliar sprays"
+          }
+        ],
+        "chemical_solutions": [
+          {
+            "active_ingredient": "Copper + Mancozeb",
+            "note": "Combination sprays are most effective"
+          }
+        ],
+        "cultural_practices": [
+          "Use drip irrigation instead of overhead",
+          "Sanitize tools and stakes"
+        ]
+      },
+      "prevention": {
+        "resistant_varieties": ["Some hybrids have resistance genes"],
+        "best_practices": [
+          "Use certified disease-free seed",
+          "Sanitize all equipment",
+          "Rotate crops"
+        ]
+      },
+      "economic_impact": {
+        "yield_loss": "Significant reduction in marketable fruit",
+        "quality_impact": "Unmarketable fruit"
+      },
+      "monitoring": {
+        "inspection_frequency": "Daily inspection during warm, wet periods",
+        "key_indicators": ["Water-soaked lesions on leaves"],
+        "action_threshold": "First signs of disease"
+      }
+    },
+    "Tomato_Early_blight": {
+      "basic_info": {
+        "display_name": "Tomato - Early Blight",
+        "crop_type": "Tomato",
+        "scientific_name": "Solanum lycopersicum",
+        "condition": "Disease Detected",
+        "disease_type": "Fungal",
+        "pathogen": "Alternaria solani",
+        "severity": "Moderate",
+        "status_color": "#FFD700"
+      },
+      "symptoms": {
+        "early_stage": [
+          "Small, dark, circular spots on lower leaves",
+          "Spots develop into characteristic 'bullseye' concentric rings"
+        ],
+        "advanced_stage": [
+          "Lesions enlarge and merge",
+          "Affected leaves turn yellow and fall off"
+        ],
+        "affected_parts": ["Leaves", "Stems", "Fruit"],
+        "weather_conditions": "Warm temperatures (24-29°C) and high humidity"
+      },
+      "causes": {
+        "environmental": [
+          "Presence of fungal spores in soil",
+          "Splashing rain or irrigation water"
+        ],
+        "cultural": [
+          "Poor soil drainage",
+          "Inadequate plant spacing"
+        ]
+      },
+      "treatment": {
+        "immediate_action": [
+          "Remove and destroy infected leaves",
+          "Apply fungicides immediately"
+        ],
+        "organic_solutions": [
+          {
+            "method": "Copper fungicides",
+            "application": "Foliar spray"
+          },
+          {
+            "method": "Bacillus subtilis-based biofungicides"
+          }
+        ],
+        "chemical_solutions": [
+          {
+            "active_ingredient": "Chlorothalonil",
+            "trade_names": ["Daconil"],
+            "application_rate": "Follow label instructions"
+          },
+          {
+            "active_ingredient": "Mancozeb"
+          }
+        ],
+        "cultural_practices": [
+          "Mulching to prevent soil splash",
+          "Pruning lower leaves"
+        ]
+      },
+      "prevention": {
+        "resistant_varieties": ["Many resistant varieties exist"],
+        "best_practices": [
+          "Practice crop rotation",
+          "Use a layer of mulch",
+          "Avoid overhead watering"
+        ]
+      },
+      "economic_impact": {
+        "yield_loss": "Can be significant if left untreated",
+        "quality_impact": "Reduced fruit size and quality"
+      },
+      "monitoring": {
+        "inspection_frequency": "Weekly scouting, starting with lower leaves",
+        "key_indicators": ["Bullseye-like lesions"],
+        "action_threshold": "When first spots are seen"
+      }
+    },
+    "Tomato_Late_blight": {
+      "basic_info": {
+        "display_name": "Tomato - Late Blight",
+        "crop_type": "Tomato",
+        "scientific_name": "Solanum lycopersicum",
+        "condition": "Disease Detected",
+        "disease_type": "Oomycete",
+        "pathogen": "Phytophthora infestans",
+        "severity": "Severe",
+        "status_color": "#F44336"
+      },
+      "symptoms": {
+        "early_stage": [
+          "Water-soaked lesions on leaves and stems",
+          "Lesions turn brown or black"
+        ],
+        "advanced_stage": [
+          "White, fuzzy growth on the underside of leaves",
+          "Rapid blight and collapse of the entire plant"
+        ],
+        "affected_parts": ["Leaves", "Stems", "Fruit"],
+        "weather_conditions": "Cool and wet weather (18-22°C)"
+      },
+      "causes": {
+        "environmental": [
+          "Cool and wet conditions are ideal for spore germination and spread",
+          "Spores can travel long distances via wind"
+        ],
+        "cultural": [
+          "Infected potato or other tomato plants nearby",
+          "Planting susceptible varieties"
+        ]
+      },
+      "treatment": {
+        "immediate_action": [
+          "Remove and destroy all infected plant parts immediately",
+          "Apply fungicides immediately"
+        ],
+        "organic_solutions": [
+          {
+            "method": "Copper fungicides",
+            "note": "Effective as a preventative measure, but less so as a cure"
+          }
+        ],
+        "chemical_solutions": [
+          {
+            "active_ingredient": "Mancozeb",
+            "note": "Protective fungicide"
+          },
+          {
+            "active_ingredient": "Chlorothalonil"
+          }
+        ],
+        "cultural_practices": [
+          "Avoid overhead irrigation",
+          "Ensure good air circulation"
+        ]
+      },
+      "prevention": {
+        "resistant_varieties": ["Many resistant varieties exist (e.g., 'Defiant', 'Mountain Magic')"],
+        "best_practices": [
+          "Use resistant varieties",
+          "Scout fields frequently, especially after cool, wet weather"
+        ]
+      },
+      "economic_impact": {
+        "yield_loss": "Up to 100% if untreated",
+        "quality_impact": "Fruits rot quickly"
+      },
+      "monitoring": {
+        "inspection_frequency": "Daily during cool and wet periods",
+        "key_indicators": ["Water-soaked lesions on leaves", "White mold on underside of leaves"],
+        "action_threshold": "At the first sign of symptoms"
+      }
+    },
+    "Tomato_Leaf_Mold": {
+      "basic_info": {
+        "display_name": "Tomato - Leaf Mold",
+        "crop_type": "Tomato",
+        "scientific_name": "Solanum lycopersicum",
+        "condition": "Disease Detected",
+        "disease_type": "Fungal",
+        "pathogen": "Passalora fulva",
+        "severity": "Low to Moderate",
+        "status_color": "#FFD700"
+      },
+      "symptoms": {
+        "early_stage": [
+          "Yellowish spots on the upper surface of older leaves",
+          "Spots become slightly fuzzy and olive green to brown on the underside"
+        ],
+        "advanced_stage": [
+          "Leaves curl and die",
+          "Spots may merge to form larger lesions"
+        ],
+        "affected_parts": ["Leaves"],
+        "weather_conditions": "High humidity (>85%) and moderate temperatures (22-24°C)"
+      },
+      "causes": {
+        "environmental": [
+          "Poor air circulation",
+          "High humidity"
+        ],
+        "cultural": [
+          "Infected crop residue"
+        ]
+      },
+      "treatment": {
+        "immediate_action": [
+          "Increase air circulation",
+          "Remove and destroy infected leaves"
+        ],
+        "organic_solutions": [
+          {
+            "method": "Copper fungicides"
+          }
+        ],
+        "chemical_solutions": [
+          {
+            "active_ingredient": "Chlorothalonil"
+          }
+        ],
+        "cultural_practices": [
+          "Increase plant spacing",
+          "Prune lower leaves"
+        ]
+      },
+      "prevention": {
+        "resistant_varieties": ["Many hybrids have resistance to Leaf Mold"],
+        "best_practices": [
+          "Ensure good ventilation in greenhouses or high tunnels",
+          "Avoid excessive watering"
+        ]
+      },
+      "economic_impact": {
+        "yield_loss": "Can reduce yield by up to 30% in severe cases",
+        "quality_impact": "Minor"
+      },
+      "monitoring": {
+        "inspection_frequency": "Weekly",
+        "key_indicators": ["Yellow spots on upper leaf surfaces"],
+        "action_threshold": "First signs of disease"
+      }
+    },
+    "Tomato_Septoria_leaf_spot": {
+      "basic_info": {
+        "display_name": "Tomato - Septoria Leaf Spot",
+        "crop_type": "Tomato",
+        "scientific_name": "Solanum lycopersicum",
+        "condition": "Disease Detected",
+        "disease_type": "Fungal",
+        "pathogen": "Septoria lycopersici",
+        "severity": "Moderate to High",
+        "status_color": "#FFD700"
+      },
+      "symptoms": {
+        "early_stage": [
+          "Small, circular spots with dark borders and gray/white centers",
+          "Spots usually appear on the undersides of older leaves first"
+        ],
+        "advanced_stage": [
+          "Tiny black specks (fruiting bodies) appear within the spots",
+          "Severe defoliation, starting from the bottom of the plant"
+        ],
+        "affected_parts": ["Leaves", "Stems"],
+        "weather_conditions": "Warm and wet conditions"
+      },
+      "causes": {
+        "environmental": [
+          "Presence of fungal spores in soil",
+          "Rain splash from infected soil"
+        ],
+        "cultural": [
+          "Poor sanitation and infected plant debris"
+        ]
+      },
+      "treatment": {
+        "immediate_action": [
+          "Remove infected leaves",
+          "Apply fungicides"
+        ],
+        "organic_solutions": [
+          {
+            "method": "Copper fungicides"
+          }
+        ],
+        "chemical_solutions": [
+          {
+            "active_ingredient": "Chlorothalonil",
+            "trade_names": ["Daconil"]
+          },
+          {
+            "active_ingredient": "Mancozeb"
+          }
+        ],
+        "cultural_practices": [
+          "Mulch to prevent soil splash",
+          "Stake plants to keep leaves off the ground"
+        ]
+      },
+      "prevention": {
+        "resistant_varieties": ["Limited resistant varieties available"],
+        "best_practices": [
+          "Crop rotation",
+          "Sanitize tools and stakes",
+          "Avoid overhead watering"
+        ]
+      },
+      "economic_impact": {
+        "yield_loss": "Significant yield reduction due to defoliation",
+        "quality_impact": "Sunburned fruit on defoliated plants"
+      },
+      "monitoring": {
+        "inspection_frequency": "Weekly scouting",
+        "key_indicators": ["Circular spots with dark borders and light centers"],
+        "action_threshold": "First signs of disease, especially on lower leaves"
+      }
+    },
+    "Tomato_Spider_mites_Two_spotted_spider_mite": {
+      "basic_info": {
+        "display_name": "Tomato - Spider Mites",
+        "crop_type": "Tomato",
+        "scientific_name": "Solanum lycopersicum",
+        "condition": "Pest Detected",
+        "disease_type": "Pest",
+        "pathogen": "Tetranychus urticae",
+        "severity": "Moderate to Severe",
+        "status_color": "#FF4500"
+      },
+      "symptoms": {
+        "early_stage": [
+          "Tiny, light-colored stippling (dots) on leaves",
+          "Leaves develop a silvery or bronze sheen"
+        ],
+        "advanced_stage": [
+          "Fine webbing on leaves and stems",
+          "Leaves turn yellow, dry out, and drop off"
+        ],
+        "affected_parts": ["Leaves", "Stems", "Fruit"],
+        "weather_conditions": "Hot, dry weather"
+      },
+      "causes": {
+        "environmental": [
+          "Hot and dry conditions",
+          "Lack of humidity"
+        ],
+        "cultural": [
+          "Presence of weeds that host mites",
+          "Use of broad-spectrum insecticides that kill natural predators"
+        ]
+      },
+      "treatment": {
+        "immediate_action": [
+          "Spray plants with a strong stream of water to dislodge mites",
+          "Prune and destroy severely infested leaves"
+        ],
+        "organic_solutions": [
+          {
+            "method": "Neem oil",
+            "application": "Foliar spray",
+            "frequency": "Weekly until mites are gone"
+          },
+          {
+            "method": "Insecticidal soap",
+            "application": "Foliar spray"
+          }
+        ],
+        "chemical_solutions": [
+          {
+            "active_ingredient": "Abamectin",
+            "note": "Requires careful application as mites can develop resistance"
+          }
+        ],
+        "cultural_practices": [
+          "Maintain high humidity",
+          "Release predatory mites (e.g., Phytoseiulus persimilis)"
+        ]
+      },
+      "prevention": {
+        "best_practices": [
+          "Monitor plants regularly",
+          "Maintain humidity",
+          "Avoid pesticides that harm natural predators"
+        ]
+      },
+      "economic_impact": {
+        "yield_loss": "Can cause significant yield loss",
+        "quality_impact": "Reduced fruit quality due to plant stress"
+      },
+      "monitoring": {
+        "inspection_frequency": "Daily scouting of leaf undersides",
+        "key_indicators": ["Stippling on leaves", "Presence of webbing"],
+        "action_threshold": "First signs of stippling or webbing"
+      }
+    },
+    "Tomato__Target_Spot": {
+      "basic_info": {
+        "display_name": "Tomato - Target Spot",
+        "crop_type": "Tomato",
+        "scientific_name": "Solanum lycopersicum",
+        "condition": "Disease Detected",
+        "disease_type": "Fungal",
+        "pathogen": "Corynespora cassiicola",
+        "severity": "Moderate",
+        "status_color": "#FFD700"
+      },
+      "symptoms": {
+        "early_stage": [
+          "Small, dark, circular spots on leaves",
+          "Spots have a light brown center with a dark border"
+        ],
+        "advanced_stage": [
+          "Lesions enlarge and develop a 'target-like' appearance with concentric rings",
+          "Severe defoliation of the plant"
+        ],
+        "affected_parts": ["Leaves", "Stems", "Fruit"],
+        "weather_conditions": "High temperatures (25-30°C) and high humidity"
+      },
+      "causes": {
+        "environmental": [
+          "Warm, humid conditions",
+          "Presence of fungal spores in soil or on residue"
+        ],
+        "cultural": [
+          "Poor air circulation",
+          "Lack of crop rotation"
+        ]
+      },
+      "treatment": {
+        "immediate_action": [
+          "Remove and destroy infected leaves",
+          "Apply fungicides immediately"
+        ],
+        "organic_solutions": [
+          {
+            "method": "Copper-based fungicides"
+          }
+        ],
+        "chemical_solutions": [
+          {
+            "active_ingredient": "Azoxystrobin",
+            "trade_names": ["Quadris"]
+          }
+        ],
+        "cultural_practices": [
+          "Crop rotation",
+          "Pruning lower leaves"
+        ]
+      },
+      "prevention": {
+        "resistant_varieties": ["Some hybrids have moderate resistance"],
+        "best_practices": [
+          "Use resistant varieties",
+          "Practice crop rotation",
+          "Ensure good air circulation"
+        ]
+      },
+      "economic_impact": {
+        "yield_loss": "Can be significant if severe defoliation occurs",
+        "quality_impact": "Reduced fruit quality"
+      },
+      "monitoring": {
+        "inspection_frequency": "Weekly scouting",
+        "key_indicators": ["Circular spots with 'target-like' rings"],
+        "action_threshold": "First signs of disease"
+      }
+    },
+    "Tomato__Tomato_YellowLeaf__Curl_Virus": {
+      "basic_info": {
+        "display_name": "Tomato - Yellow Leaf Curl Virus",
+        "crop_type": "Tomato",
+        "scientific_name": "Solanum lycopersicum",
+        "condition": "Virus Detected",
+        "disease_type": "Viral",
+        "pathogen": "Begomovirus",
+        "severity": "Severe",
+        "status_color": "#FF4500"
+      },
+      "symptoms": {
+        "early_stage": [
+          "Leaves become small and cup-shaped",
+          "Yellowing of leaf edges and between veins"
+        ],
+        "advanced_stage": [
+          "Plants are stunted and bushy",
+          "Leaves are leathery and brittle",
+          "Flowers and fruit drop off prematurely"
+        ],
+        "affected_parts": ["Leaves", "Stems", "Flowers"],
+        "weather_conditions": "Warm weather is favorable for the whitefly vector"
+      },
+      "causes": {
+        "environmental": [
+          "Transmitted by the silverleaf whitefly (Bemisia tabaci)"
+        ],
+        "cultural": [
+          "Introduction of infected seedlings",
+          "Lack of whitefly control"
+        ]
+      },
+      "treatment": {
+        "immediate_action": [
+          "Remove and destroy infected plants immediately to prevent spread",
+          "Control the whitefly vector"
+        ],
+        "organic_solutions": [
+          {
+            "method": "Neem oil",
+            "note": "Can deter whiteflies and reduce feeding"
+          }
+        ],
+        "chemical_solutions": [
+          {
+            "active_ingredient": "Imidacloprid",
+            "timing": "Applied as a soil drench or foliar spray"
+          }
+        ],
+        "cultural_practices": [
+          "Use physical barriers (e.g., fine mesh netting)",
+          "Planting resistant varieties"
+        ]
+      },
+      "prevention": {
+        "resistant_varieties": ["Many TYLCV-resistant hybrids are available"],
+        "best_practices": [
+          "Use resistant varieties",
+          "Control whiteflies",
+          "Remove weeds that can harbor whiteflies"
+        ]
+      },
+      "economic_impact": {
+        "yield_loss": "Can be 100% if infected early",
+        "quality_impact": "No marketable fruit"
+      },
+      "monitoring": {
+        "inspection_frequency": "Daily inspection for whiteflies",
+        "key_indicators": ["Small, cupped leaves with yellow edges"],
+        "action_threshold": "First sign of whiteflies or viral symptoms"
+      }
+    },
+    "Tomato__Tomato_mosaic_virus": {
+      "basic_info": {
+        "display_name": "Tomato - Tomato Mosaic Virus",
+        "crop_type": "Tomato",
+        "scientific_name": "Solanum lycopersicum",
+        "condition": "Virus Detected",
+        "disease_type": "Viral",
+        "pathogen": "Tomato mosaic virus (ToMV)",
+        "severity": "Moderate",
+        "status_color": "#FFD700"
+      },
+      "symptoms": {
+        "early_stage": [
+          "Mottling, mosaic pattern (light and dark green areas) on leaves",
+          "Leaves may be stunted or distorted"
+        ],
+        "advanced_stage": [
+          "Leaves become leathery and brittle",
+          "Stunted plant growth",
+          "Fruit may have yellow rings or blotches"
+        ],
+        "affected_parts": ["Leaves", "Fruit"],
+        "weather_conditions": "No specific weather conditions; spread by contact"
+      },
+      "causes": {
+        "environmental": [
+          "No insect vector, spread is mechanical"
+        ],
+        "cultural": [
+          "Infected seed or transplants",
+          "Contaminated tools, hands, or clothing"
+        ]
+      },
+      "treatment": {
+        "immediate_action": [
+          "Remove and destroy infected plants immediately",
+          "Sanitize all tools and hands after handling infected plants"
+        ],
+        "organic_solutions": [],
+        "chemical_solutions": [],
+        "cultural_practices": [
+          "Sanitize everything that comes into contact with the plants",
+          "Avoid smoking or using tobacco products near plants"
+        ]
+      },
+      "prevention": {
+        "resistant_varieties": ["Many varieties are resistant to ToMV"],
+        "best_practices": [
+          "Use resistant varieties",
+          "Use certified disease-free seeds or transplants",
+          "Practice good hygiene in the field"
+        ]
+      },
+      "economic_impact": {
+        "yield_loss": "Can cause significant yield reduction",
+        "quality_impact": "Reduced fruit quality and marketability"
+      },
+      "monitoring": {
+        "inspection_frequency": "Regular scouting",
+        "key_indicators": ["Mottled mosaic pattern on leaves"],
+        "action_threshold": "First sign of symptoms"
+      }
+    },
+    "Tomato_healthy": {
+      "basic_info": {
+        "display_name": "Tomato - Healthy",
+        "crop_type": "Tomato",
+        "scientific_name": "Solanum lycopersicum",
+        "condition": "Healthy",
+        "status_color": "#4CAF50"
+      },
+      "maintenance": {
+        "watering": {
+          "frequency": "Consistent deep watering",
+          "amount": "25-30mm per week",
+          "critical_stages": ["Flowering", "Fruiting"]
+        },
+        "fertilization": {
+          "nitrogen": "Low to medium levels",
+          "phosphorus": "High levels",
+          "potassium": "High levels",
+          "timing": ["Pre-plant", "First flower cluster", "First fruit set"]
+        },
+        "monitoring": {
+          "growth_stages": ["Seedling", "Vegetative", "Flowering", "Fruiting"],
+          "key_metrics": ["Leaf color", "Pest presence", "Fruit quality"]
+        }
+      }
+    }
+  }
+}
