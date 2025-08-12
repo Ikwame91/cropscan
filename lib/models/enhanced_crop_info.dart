@@ -12,6 +12,9 @@ class EnhancedCropInfo {
   final Prevention? prevention;
   final Maintenance? maintenance;
 
+  final MonitoringInfo? monitoring;
+  final String? localTipsGhana;
+
   EnhancedCropInfo({
     required this.basicInfo,
     this.symptoms,
@@ -19,6 +22,8 @@ class EnhancedCropInfo {
     this.treatment,
     this.prevention,
     this.maintenance,
+    this.monitoring,
+    this.localTipsGhana,
   });
 
   factory EnhancedCropInfo.fromJson(Map<String, dynamic> json) {
@@ -36,29 +41,10 @@ class EnhancedCropInfo {
       maintenance: json['maintenance'] != null
           ? Maintenance.fromJson(json['maintenance'])
           : null,
-    );
-  }
-}
-
-class EconomicImpact {
-  final String? yieldLoss;
-  final String? qualityImpact;
-  final String? treatmentCost;
-  final String? criticalPeriod;
-
-  EconomicImpact({
-    this.yieldLoss,
-    this.qualityImpact,
-    this.treatmentCost,
-    this.criticalPeriod,
-  });
-
-  factory EconomicImpact.fromJson(Map<String, dynamic> json) {
-    return EconomicImpact(
-      yieldLoss: json['yield_loss'],
-      qualityImpact: json['quality_impact'],
-      treatmentCost: json['treatment_cost'],
-      criticalPeriod: json['critical_period'],
+      monitoring: json['monitoring'] != null
+          ? MonitoringInfo.fromJson(json['monitoring'])
+          : null,
+      localTipsGhana: json['local_tips_ghana'],
     );
   }
 }
@@ -90,6 +76,7 @@ class EnhancedCropInfoService {
       _cropDatabase = null;
     }
   }
+// Update the getCropInfo method:
 
   static EnhancedCropInfo? getCropInfo(String rawLabel) {
     if (_cropDatabase == null || !_isInitialized) {
@@ -100,20 +87,69 @@ class EnhancedCropInfoService {
       return null;
     }
 
-    final cropData = _cropDatabase!['crop_diseases'][rawLabel];
-    if (cropData == null) {
-      print('⚠️ Warning: No data found for label: $rawLabel');
-      // Print available keys for debugging
+    // Debug: Print what we're looking for and what's available
+    if (kDebugMode) {
+      print('🔍 Searching for: "$rawLabel"');
       print(
-          'Available crops: ${_cropDatabase!['crop_diseases'].keys.take(5).join(', ')}...');
+          '📚 Database has ${_cropDatabase!['crop_diseases'].length} entries');
+      print('🔑 Available keys (first 10):');
+      _cropDatabase!['crop_diseases'].keys.take(10).forEach((key) {
+        print('  - "$key"');
+      });
+    }
+
+    // Try exact match first
+    var cropData = _cropDatabase!['crop_diseases'][rawLabel];
+
+    if (cropData == null) {
+      // Try different variations of the label
+      final variations = [
+        rawLabel.replaceAll(' ', '_'),
+        rawLabel.replaceAll('_', ' '),
+        rawLabel.toLowerCase(),
+        rawLabel.toUpperCase(),
+        '${rawLabel}_',
+        rawLabel.replaceAll(' ', '_('),
+        // Add more specific variations based on your JSON structure
+        'Corn_(maize)___${rawLabel.replaceAll(' ', '_')}',
+        'Tomato___${rawLabel.replaceAll(' ', '_')}',
+      ];
+
+      if (kDebugMode) {
+        print('🔄 Trying variations:');
+      }
+
+      for (String variation in variations) {
+        if (kDebugMode) {
+          print('  Trying: "$variation"');
+        }
+        cropData = _cropDatabase!['crop_diseases'][variation];
+        if (cropData != null) {
+          if (kDebugMode) {
+            print('✅ Found match with variation: "$variation"');
+          }
+          break;
+        }
+      }
+    }
+
+    if (cropData == null) {
+      if (kDebugMode) {
+        print('❌ No data found for label: "$rawLabel"');
+        print('💡 Suggestion: Check if the key exists in your JSON file');
+      }
       return null;
     }
 
     try {
+      if (kDebugMode) {
+        print('✅ Parsing crop data for: "$rawLabel"');
+      }
       return EnhancedCropInfo.fromJson(cropData);
     } catch (e) {
       if (kDebugMode) {
-        print('❌ Error parsing crop data for $rawLabel: $e');
+        print('❌ Error parsing crop data for "$rawLabel": $e');
+        print('📄 Raw data structure: ${cropData.keys}');
       }
       return null;
     }
