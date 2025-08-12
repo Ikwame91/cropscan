@@ -5,6 +5,8 @@ class CropDetection {
   final String imageUrl;
   final DateTime detectedAt;
   final String status;
+  final String? location;
+  final String? notes;
 
   CropDetection({
     required this.id,
@@ -13,6 +15,8 @@ class CropDetection {
     required this.imageUrl,
     required this.detectedAt,
     required this.status,
+    this.location,
+    this.notes,
   });
 
   // Factory constructor for creating a CropDetection from a map (e.g., from JSON/Firestore)
@@ -25,6 +29,8 @@ class CropDetection {
       detectedAt: DateTime.parse(
           map['detectedAt'] as String), // Assuming ISO 8601 string
       status: map['status'] as String,
+      location: map['location'] as String?,
+      notes: map['notes'] as String?,
     );
   }
 
@@ -37,6 +43,8 @@ class CropDetection {
       'imageUrl': imageUrl,
       'detectedAt': detectedAt.toIso8601String(),
       'status': status,
+      'location': location,
+      'notes': notes,
     };
   }
 
@@ -48,6 +56,8 @@ class CropDetection {
     String? imageUrl,
     DateTime? detectedAt,
     String? status,
+    String? location,
+    String? notes,
   }) {
     return CropDetection(
       id: id ?? this.id,
@@ -56,6 +66,8 @@ class CropDetection {
       imageUrl: imageUrl ?? this.imageUrl,
       detectedAt: detectedAt ?? this.detectedAt,
       status: status ?? this.status,
+      location: location ?? this.location,
+      notes: notes ?? this.notes,
     );
   }
 }

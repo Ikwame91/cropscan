@@ -4,13 +4,11 @@ import 'package:sizer/sizer.dart';
 import '../../../core/app_export.dart';
 
 class ActionButtonsWidget extends StatefulWidget {
-  final VoidCallback onSaveToFavorites;
   final VoidCallback onShareResults;
   final VoidCallback onScanAnother;
 
   const ActionButtonsWidget({
     super.key,
-    required this.onSaveToFavorites,
     required this.onShareResults,
     required this.onScanAnother,
   });
@@ -20,15 +18,6 @@ class ActionButtonsWidget extends StatefulWidget {
 }
 
 class _ActionButtonsWidgetState extends State<ActionButtonsWidget> {
-  bool _isFavorited = false;
-
-  void _toggleFavorite() {
-    setState(() {
-      _isFavorited = !_isFavorited;
-    });
-    widget.onSaveToFavorites();
-  }
-
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -37,42 +26,6 @@ class _ActionButtonsWidgetState extends State<ActionButtonsWidget> {
         Row(
           children: [
             // Save to Favorites Button
-            Expanded(
-              child: OutlinedButton.icon(
-                onPressed: _toggleFavorite,
-                icon: AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 300),
-                  child: CustomIconWidget(
-                    key: ValueKey(_isFavorited),
-                    iconName: _isFavorited ? 'favorite' : 'favorite_border',
-                    color: _isFavorited
-                        ? AppTheme.lightTheme.colorScheme.error
-                        : AppTheme.lightTheme.colorScheme.primary,
-                    size: 20,
-                  ),
-                ),
-                label: Text(
-                  _isFavorited ? 'Favorited' : 'Save',
-                  style: AppTheme.lightTheme.textTheme.labelLarge?.copyWith(
-                    color: _isFavorited
-                        ? AppTheme.lightTheme.colorScheme.error
-                        : AppTheme.lightTheme.colorScheme.primary,
-                  ),
-                ),
-                style: OutlinedButton.styleFrom(
-                  padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 2.h),
-                  side: BorderSide(
-                    color: _isFavorited
-                        ? AppTheme.lightTheme.colorScheme.error
-                        : AppTheme.lightTheme.colorScheme.primary,
-                    width: 1.5,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-              ),
-            ),
 
             SizedBox(width: 3.w),
 

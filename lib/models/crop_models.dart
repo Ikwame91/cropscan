@@ -1,7 +1,7 @@
 class BasicInfo {
   final String displayName;
   final String cropType;
-  final String scientificName;
+
   final String condition;
   final String diseaseType;
   final String pathogen;
@@ -11,7 +11,6 @@ class BasicInfo {
   BasicInfo({
     required this.displayName,
     required this.cropType,
-    required this.scientificName,
     required this.condition,
     required this.diseaseType,
     required this.pathogen,
@@ -23,7 +22,6 @@ class BasicInfo {
     return BasicInfo(
       displayName: json['display_name'] ?? '',
       cropType: json['crop_type'] ?? '',
-      scientificName: json['scientific_name'] ?? '',
       condition: json['condition'] ?? '',
       diseaseType: json['disease_type'] ?? '',
       pathogen: json['pathogen'] ?? '',

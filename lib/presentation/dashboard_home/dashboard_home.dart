@@ -1,7 +1,7 @@
-import 'package:cropscan_pro/models/crop_detection.dart';
 import 'package:cropscan_pro/models/crop_detection_args.dart';
 import 'package:cropscan_pro/models/crop_info.dart';
 import 'package:cropscan_pro/models/farming_alert.dart';
+import 'package:cropscan_pro/providers/detection_history_provider.dart';
 import 'package:cropscan_pro/providers/farming_alerts_provider.dart';
 import 'package:cropscan_pro/providers/naviagtion_provider.dart';
 import 'package:cropscan_pro/providers/recent_detection_providers.dart';
@@ -25,28 +25,15 @@ class DashboardHome extends StatelessWidget {
         Provider.of<RecentDetectionsProvider>(context, listen: false);
     final farmingAlertsProvider =
         Provider.of<FarmingAlertsProvider>(context, listen: false);
+    final detectionHistoryProvider =
+        Provider.of<DetectionHistoryProvider>(context, listen: false);
 
-    // Trigger data fetching for both providers
+    // Trigger data fetching for all providers
     await Future.wait([
       recentDetectionsProvider.fetchRecentDetections(),
       farmingAlertsProvider.fetchFarmingAlerts(),
+      detectionHistoryProvider.loadDetectionHistory(), // Add this line
     ]);
-  }
-
-  void _onDetectionCardTap(BuildContext context, CropDetection detection) {
-    // Create the proper arguments object
-    final args = CropDetectionResultsArgs(
-      imagePath: detection.imageUrl,
-      detectedCrop: detection.cropName,
-      confidence: detection.confidence,
-      cropInfo: CropInfoMapper.getCropInfo(detection.cropName),
-    );
-
-    Navigator.pushNamed(
-      context,
-      '/crop-detection-results',
-      arguments: args,
-    );
   }
 
   void _onAlertLongPress(BuildContext context, FarmingAlert alert) {
@@ -114,13 +101,7 @@ class DashboardHome extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final recentDetectionsProvider = context.watch<RecentDetectionsProvider>();
     final farmingAlertsProvider = context.watch<FarmingAlertsProvider>();
-
-    final List<CropDetection> recentDetections =
-        recentDetectionsProvider.recentDetections;
-    final bool detectionsLoading = recentDetectionsProvider.isLoading;
-    final String? detectionsError = recentDetectionsProvider.errorMessage;
 
     final List<FarmingAlert> farmingAlerts =
         farmingAlertsProvider.farmingAlerts;
@@ -207,87 +188,100 @@ class DashboardHome extends StatelessWidget {
                     SizedBox(height: 2.h),
 
                     // Display loading, error, or data for Detections
-                    if (detectionsLoading)
-                      Center(
-                        child: Padding(
-                          padding: EdgeInsets.symmetric(vertical: 4.h),
-                          child: CircularProgressIndicator(
-                            color: AppTheme.lightTheme.colorScheme.primary,
-                          ),
-                        ),
-                      )
-                    else if (detectionsError != null)
-                      Center(
-                        child: Padding(
-                          padding: EdgeInsets.symmetric(vertical: 4.h),
-                          child: Text(
-                            'Error: $detectionsError',
-                            style: TextStyle(
-                                color: AppTheme.lightTheme.colorScheme.error),
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
-                      )
-                    else if (recentDetections.isEmpty)
-                      // Empty state for detections
-                      Container(
-                        padding: EdgeInsets.all(6.w),
-                        decoration: BoxDecoration(
-                          color: AppTheme.lightTheme.colorScheme.surface,
-                          borderRadius: BorderRadius.circular(12.0),
-                          border: Border.all(
-                            color: AppTheme.lightTheme.dividerColor,
-                            width: 1.0,
-                          ),
-                        ),
-                        child: Column(
-                          children: [
-                            CustomIconWidget(
-                              iconName: 'camera_alt',
-                              color: AppTheme.lightTheme.colorScheme.primary,
-                              size: 48,
-                            ),
-                            SizedBox(height: 2.h),
-                            Text(
-                              'Scan Your First Crop',
-                              style: AppTheme.lightTheme.textTheme.titleMedium
-                                  ?.copyWith(
-                                fontWeight: FontWeight.bold,
+                    Consumer<DetectionHistoryProvider>(
+                      builder: (context, historyProvider, child) {
+                        final recentDetections =
+                            historyProvider.getRecentDetections(limit: 3);
+
+                        if (historyProvider.isLoading) {
+                          return Center(
+                            child: Padding(
+                              padding: EdgeInsets.symmetric(vertical: 4.h),
+                              child: CircularProgressIndicator(
+                                color: AppTheme.lightTheme.colorScheme.primary,
                               ),
                             ),
-                            SizedBox(height: 1.h),
-                            Text(
-                              'Use AI-powered detection to identify your crops and get farming insights',
-                              textAlign: TextAlign.center,
-                              style: GoogleFonts.poppins(
-                                textStyle:
-                                    AppTheme.lightTheme.textTheme.bodyMedium,
-                              ).copyWith(
-                                color: AppTheme
-                                    .lightTheme.colorScheme.onSurfaceVariant,
+                          );
+                        }
+
+                        if (recentDetections.isEmpty) {
+                          return Container(
+                            padding: EdgeInsets.all(6.w),
+                            decoration: BoxDecoration(
+                              color: AppTheme.lightTheme.colorScheme.surface,
+                              borderRadius: BorderRadius.circular(12.0),
+                              border: Border.all(
+                                color: AppTheme.lightTheme.dividerColor,
+                                width: 1.0,
                               ),
-                            )
-                          ],
-                        ),
-                      )
-                    else
-                      SizedBox(
-                        height: 31.h,
-                        child: ListView.separated(
-                          scrollDirection: Axis.horizontal,
-                          itemCount: recentDetections.length,
-                          separatorBuilder: (context, index) =>
-                              SizedBox(width: 3.w),
-                          itemBuilder: (context, index) {
-                            final detection = recentDetections[index];
-                            return RecentDetectionCardWidget(
-                              detection: detection,
-                              onTap: () =>
-                                  _onDetectionCardTap(context, detection),
-                            );
-                          },
-                        ),
-                      ),
+                            ),
+                            child: Column(
+                              children: [
+                                CustomIconWidget(
+                                  iconName: 'camera_alt',
+                                  color:
+                                      AppTheme.lightTheme.colorScheme.primary,
+                                  size: 48,
+                                ),
+                                SizedBox(height: 2.h),
+                                Text(
+                                  'Scan Your First Crop',
+                                  style: AppTheme
+                                      .lightTheme.textTheme.titleMedium
+                                      ?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                SizedBox(height: 1.h),
+                                Text(
+                                  'Use AI-powered detection to identify your crops and get farming insights',
+                                  textAlign: TextAlign.center,
+                                  style: GoogleFonts.poppins(
+                                    textStyle: AppTheme
+                                        .lightTheme.textTheme.bodyMedium,
+                                  ).copyWith(
+                                    color: AppTheme.lightTheme.colorScheme
+                                        .onSurfaceVariant,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        }
+
+                        return SizedBox(
+                          height: 31.h,
+                          child: ListView.separated(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: recentDetections.length,
+                            separatorBuilder: (context, index) =>
+                                SizedBox(width: 3.w),
+                            itemBuilder: (context, index) {
+                              final detection = recentDetections[index];
+                              return RecentDetectionCardWidget(
+                                detection: detection,
+                                onTap: () {
+                                  // Create the proper arguments object for history items
+                                  final args = CropDetectionResultsArgs(
+                                    imagePath: detection.imageUrl,
+                                    detectedCrop: detection.cropName,
+                                    confidence: detection.confidence,
+                                    cropInfo: CropInfoMapper.getCropInfo(
+                                        detection.cropName),
+                                  );
+
+                                  Navigator.pushNamed(
+                                    context,
+                                    '/crop-detection-results',
+                                    arguments: args,
+                                  );
+                                },
+                              );
+                            },
+                          ),
+                        );
+                      },
+                    ),
                     SizedBox(height: 3.h),
 
                     // Farming Alerts Section

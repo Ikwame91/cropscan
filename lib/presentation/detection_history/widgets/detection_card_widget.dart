@@ -135,172 +135,179 @@ class DetectionCardWidget extends StatelessWidget {
                   // Detection Details
                   Expanded(
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Crop Name and Type
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                detection['cropName'] as String,
-                                style: AppTheme.lightTheme.textTheme.titleMedium
-                                    ?.copyWith(
-                                  fontWeight: FontWeight.w600,
-                                ),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                            Container(
-                              padding: EdgeInsets.symmetric(
-                                horizontal: 2.w,
-                                vertical: 0.5.h,
-                              ),
-                              decoration: BoxDecoration(
-                                color: AppTheme
-                                    .lightTheme.colorScheme.primaryContainer,
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Text(
-                                detection['cropType'] as String,
-                                style: AppTheme.lightTheme.textTheme.labelSmall
-                                    ?.copyWith(
-                                  color: AppTheme.lightTheme.colorScheme
-                                      .onPrimaryContainer,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-
-                        SizedBox(height: 1.h),
-
-                        // Location and Timestamp
-                        Row(
-                          children: [
-                            CustomIconWidget(
-                              iconName: 'location_on',
-                              color: AppTheme
-                                  .lightTheme.colorScheme.onSurfaceVariant,
-                              size: 16,
-                            ),
-                            SizedBox(width: 1.w),
-                            Expanded(
-                              child: Text(
-                                detection['location'] as String,
-                                style: AppTheme.lightTheme.textTheme.bodySmall
-                                    ?.copyWith(
-                                  color: AppTheme
-                                      .lightTheme.colorScheme.onSurfaceVariant,
-                                ),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                          ],
-                        ),
-
-                        SizedBox(height: 0.5.h),
-
-                        Row(
-                          children: [
-                            CustomIconWidget(
-                              iconName: 'access_time',
-                              color: AppTheme
-                                  .lightTheme.colorScheme.onSurfaceVariant,
-                              size: 16,
-                            ),
-                            SizedBox(width: 1.w),
-                            Text(
-                              _formatTimestamp(timestamp),
-                              style: AppTheme.lightTheme.textTheme.bodySmall
-                                  ?.copyWith(
-                                color: AppTheme
-                                    .lightTheme.colorScheme.onSurfaceVariant,
-                              ),
-                            ),
-                          ],
-                        ),
-
-                        SizedBox(height: 1.h),
-
-                        // Alert Indicators
-                        if (diseaseDetected || pestDetected) ...[
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Crop Name and Type
                           Row(
                             children: [
-                              if (diseaseDetected) ...[
-                                Container(
-                                  padding: EdgeInsets.symmetric(
-                                    horizontal: 2.w,
-                                    vertical: 0.5.h,
+                              Expanded(
+                                child: Text(
+                                  detection['cropName'] as String,
+                                  style: AppTheme
+                                      .lightTheme.textTheme.titleMedium
+                                      ?.copyWith(
+                                    fontWeight: FontWeight.w600,
                                   ),
-                                  decoration: BoxDecoration(
-                                    color: AppTheme.lightTheme.colorScheme.error
-                                        .withValues(alpha: 0.1),
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      CustomIconWidget(
-                                        iconName: 'warning',
-                                        color: AppTheme
-                                            .lightTheme.colorScheme.error,
-                                        size: 12,
-                                      ),
-                                      SizedBox(width: 1.w),
-                                      Text(
-                                        'Disease',
-                                        style: AppTheme
-                                            .lightTheme.textTheme.labelSmall
-                                            ?.copyWith(
-                                          color: AppTheme
-                                              .lightTheme.colorScheme.error,
-                                          fontWeight: FontWeight.w500,
-                                        ),
-                                      ),
-                                    ],
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              Container(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: 2.w,
+                                  vertical: 0.5.h,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: AppTheme
+                                      .lightTheme.colorScheme.primaryContainer,
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Text(
+                                  detection['cropType'] as String,
+                                  style: AppTheme
+                                      .lightTheme.textTheme.labelSmall
+                                      ?.copyWith(
+                                    color: AppTheme.lightTheme.colorScheme
+                                        .onPrimaryContainer,
+                                    fontWeight: FontWeight.w500,
                                   ),
                                 ),
-                                SizedBox(width: 2.w),
-                              ],
-                              if (pestDetected) ...[
-                                Container(
-                                  padding: EdgeInsets.symmetric(
-                                    horizontal: 2.w,
-                                    vertical: 0.5.h,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: Colors.orange.withValues(alpha: 0.1),
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      CustomIconWidget(
-                                        iconName: 'bug_report',
-                                        color: Colors.orange,
-                                        size: 12,
-                                      ),
-                                      SizedBox(width: 1.w),
-                                      Text(
-                                        'Pest',
-                                        style: AppTheme
-                                            .lightTheme.textTheme.labelSmall
-                                            ?.copyWith(
-                                          color: Colors.orange,
-                                          fontWeight: FontWeight.w500,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
+                              ),
                             ],
                           ),
+
                           SizedBox(height: 1.h),
-                        ],
-                      ],
-                    ),
+
+                          // Location and Timestamp
+                          if (detection['location'] != null &&
+                              (detection['location'] as String).isNotEmpty) ...[
+                            Row(
+                              children: [
+                                CustomIconWidget(
+                                  iconName: 'location_on',
+                                  color: AppTheme
+                                      .lightTheme.colorScheme.onSurfaceVariant,
+                                  size: 16,
+                                ),
+                                SizedBox(width: 1.w),
+                                Expanded(
+                                  child: Text(
+                                    detection['location'] as String,
+                                    style: AppTheme
+                                        .lightTheme.textTheme.bodySmall
+                                        ?.copyWith(
+                                      color: AppTheme.lightTheme.colorScheme
+                                          .onSurfaceVariant,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
+
+                            SizedBox(height: 0.5.h),
+
+                            Row(
+                              children: [
+                                CustomIconWidget(
+                                  iconName: 'access_time',
+                                  color: AppTheme
+                                      .lightTheme.colorScheme.onSurfaceVariant,
+                                  size: 16,
+                                ),
+                                SizedBox(width: 1.w),
+                                Text(
+                                  _formatTimestamp(timestamp),
+                                  style: AppTheme.lightTheme.textTheme.bodySmall
+                                      ?.copyWith(
+                                    color: AppTheme.lightTheme.colorScheme
+                                        .onSurfaceVariant,
+                                  ),
+                                ),
+                              ],
+                            ),
+
+                            SizedBox(height: 1.h),
+
+                            // Alert Indicators
+                            if (diseaseDetected || pestDetected) ...[
+                              Row(
+                                children: [
+                                  if (diseaseDetected) ...[
+                                    Container(
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: 2.w,
+                                        vertical: 0.5.h,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: AppTheme
+                                            .lightTheme.colorScheme.error
+                                            .withValues(alpha: 0.1),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          CustomIconWidget(
+                                            iconName: 'warning',
+                                            color: AppTheme
+                                                .lightTheme.colorScheme.error,
+                                            size: 12,
+                                          ),
+                                          SizedBox(width: 1.w),
+                                          Text(
+                                            'Disease',
+                                            style: AppTheme
+                                                .lightTheme.textTheme.labelSmall
+                                                ?.copyWith(
+                                              color: AppTheme
+                                                  .lightTheme.colorScheme.error,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    SizedBox(width: 2.w),
+                                  ],
+                                  if (pestDetected) ...[
+                                    Container(
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: 2.w,
+                                        vertical: 0.5.h,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: Colors.orange
+                                            .withValues(alpha: 0.1),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          CustomIconWidget(
+                                            iconName: 'bug_report',
+                                            color: Colors.orange,
+                                            size: 12,
+                                          ),
+                                          SizedBox(width: 1.w),
+                                          Text(
+                                            'Pest',
+                                            style: AppTheme
+                                                .lightTheme.textTheme.labelSmall
+                                                ?.copyWith(
+                                              color: Colors.orange,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                              SizedBox(height: 1.h),
+                            ],
+                          ],
+                        ]),
                   ),
 
                   // Confidence Indicator

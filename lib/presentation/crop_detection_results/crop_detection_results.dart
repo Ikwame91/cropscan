@@ -1,7 +1,9 @@
 import 'package:cropscan_pro/models/crop_info.dart';
 import 'package:cropscan_pro/models/crop_models.dart';
 import 'package:cropscan_pro/models/enhanced_crop_info.dart';
+import 'package:cropscan_pro/providers/detection_history_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:sizer/sizer.dart';
 
 import '../../core/app_export.dart';
@@ -36,7 +38,27 @@ class _CropDetectionResultsState extends State<CropDetectionResults> {
   void initState() {
     super.initState();
     _loadEnhancedCropInfo();
+    _saveToHistory();
     // You can put any initial setup here, but the args are already available via widget.
+  }
+
+  Future<void> _saveToHistory() async {
+    try {
+      final historyProvider = context.read<DetectionHistoryProvider>();
+
+      await historyProvider.addDetection(
+        cropName: widget.cropInfo.displayName,
+        confidence: widget.confidence,
+        imagePath: widget.imagePath,
+        status: widget.cropInfo.condition,
+        location: 'Farm Location',
+        notes: 'Detected via camera scan',
+      );
+
+      debugPrint("✅ Detection saved to history");
+    } catch (e) {
+      debugPrint("❌ Failed to save detection to history: $e");
+    }
   }
 
   Future<void> _loadEnhancedCropInfo() async {
@@ -134,7 +156,6 @@ class _CropDetectionResultsState extends State<CropDetectionResults> {
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 4.w),
                 child: ActionButtonsWidget(
-                  onSaveToFavorites: () => _saveToFavorites(),
                   onShareResults: () => _shareResults(context),
                   onScanAnother: () => _scanAnother(context),
                 ),
@@ -189,8 +210,6 @@ class _CropDetectionResultsState extends State<CropDetectionResults> {
           color: AppTheme.lightTheme.colorScheme.primary,
           children: [
             _buildInfoRow('Crop Type', enhancedInfo.basicInfo.cropType),
-            _buildInfoRow(
-                'Scientific Name', enhancedInfo.basicInfo.scientificName),
             _buildInfoRow('Condition', enhancedInfo.basicInfo.condition),
             if (enhancedInfo.basicInfo.diseaseType.isNotEmpty)
               _buildInfoRow('Disease Type', enhancedInfo.basicInfo.diseaseType),
@@ -755,20 +774,6 @@ class _CropDetectionResultsState extends State<CropDetectionResults> {
 
   void _showImageContextMenu(BuildContext context) {
     _showImageOptions(context);
-  }
-
-  void _saveToFavorites() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          'Saved to favorites successfully!',
-          style: AppTheme.lightTheme.snackBarTheme.contentTextStyle,
-        ),
-        backgroundColor: AppTheme.getSuccessColor(true),
-        behavior: AppTheme.lightTheme.snackBarTheme.behavior,
-        shape: AppTheme.lightTheme.snackBarTheme.shape,
-      ),
-    );
   }
 
   void _shareResults(BuildContext context) {
