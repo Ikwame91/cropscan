@@ -11,6 +11,12 @@ class EnhancedCropInfo {
   final Treatment? treatment;
   final Prevention? prevention;
   final Maintenance? maintenance;
+  final EconomicImpact? economicImpact;
+  final FarmSizeImpact? farmSizeImpact;
+  final LaborImpact? laborImpact;
+  final CommunityImpact? communityImpact;
+  final MonitoringInfo? monitoring;
+  final String? localTipsGhana;
 
   EnhancedCropInfo({
     required this.basicInfo,
@@ -19,6 +25,12 @@ class EnhancedCropInfo {
     this.treatment,
     this.prevention,
     this.maintenance,
+    this.economicImpact,
+    this.farmSizeImpact,
+    this.laborImpact,
+    this.communityImpact,
+    this.monitoring,
+    this.localTipsGhana,
   });
 
   factory EnhancedCropInfo.fromJson(Map<String, dynamic> json) {
@@ -36,29 +48,22 @@ class EnhancedCropInfo {
       maintenance: json['maintenance'] != null
           ? Maintenance.fromJson(json['maintenance'])
           : null,
-    );
-  }
-}
-
-class EconomicImpact {
-  final String? yieldLoss;
-  final String? qualityImpact;
-  final String? treatmentCost;
-  final String? criticalPeriod;
-
-  EconomicImpact({
-    this.yieldLoss,
-    this.qualityImpact,
-    this.treatmentCost,
-    this.criticalPeriod,
-  });
-
-  factory EconomicImpact.fromJson(Map<String, dynamic> json) {
-    return EconomicImpact(
-      yieldLoss: json['yield_loss'],
-      qualityImpact: json['quality_impact'],
-      treatmentCost: json['treatment_cost'],
-      criticalPeriod: json['critical_period'],
+      economicImpact: json['economic_impact'] != null
+          ? EconomicImpact.fromJson(json['economic_impact'])
+          : null,
+      farmSizeImpact: json['farm_size_impact'] != null
+          ? FarmSizeImpact.fromJson(json['farm_size_impact'])
+          : null,
+      laborImpact: json['labor_impact'] != null
+          ? LaborImpact.fromJson(json['labor_impact'])
+          : null,
+      communityImpact: json['community_impact'] != null
+          ? CommunityImpact.fromJson(json['community_impact'])
+          : null,
+      monitoring: json['monitoring'] != null
+          ? MonitoringInfo.fromJson(json['monitoring'])
+          : null,
+      localTipsGhana: json['local_tips_ghana'],
     );
   }
 }

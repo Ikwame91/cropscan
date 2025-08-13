@@ -13,78 +13,112 @@
       },
       "symptoms": {
         "early_stage": [
-          "Small, tan-brown spots with distinct borders",
-          "Lesions are rectangular and parallel to leaf veins"
+          "Look for small, tan-brown spots on the leaves that are rectangular and run parallel to the leaf veins, like thin lines about 1-2 cm long. These spots have clear borders and may start on lower leaves.",
+          "As it spreads, the leaves might feel rough, and the spots can turn grayish in humid weather, making the plant look dusty."
         ],
         "advanced_stage": [
-          "Lesions merge to form large necrotic areas",
-          "Leaves turn yellow and die prematurely"
+          "Spots join together to create large dead areas on the leaves, causing them to turn yellow, dry up, and fall off early. This weakens the plant and reduces the size of your maize cobs.",
+          "In bad cases, husks and stalks get affected too, leading to poor grain filling and smaller harvests."
         ],
-        "affected_parts": ["Leaves", "Husks", "Stalks"],
-        "weather_conditions": "Hot and humid weather"
+        "affected_parts": [
+          "Leaves (starting from bottom)",
+          "Husks",
+          "Stalks"
+        ],
+        "weather_conditions": "This disease loves hot, humid weather common in Ghana's rainy season (May-October), with temperatures 22-30°C and wet leaves for long periods."
       },
       "causes": {
         "environmental": [
-          "High humidity (>90%)",
-          "Temperatures between 22-30°C",
-          "Prolonged periods of leaf wetness"
+          "High humidity over 90% and rain or dew keeping leaves wet for more than 12 hours allows spores to grow and spread.",
+          "In Ghana, it's worse in the forest zones like Ashanti or Volta regions where rainfall is heavy."
         ],
         "cultural": [
-          "Infected crop residue from previous seasons",
-          "Susceptible corn varieties",
-          "Dense planting leading to poor air circulation"
+          "Old maize stalks left in the field from last season carry the fungus, infecting new plants when rain splashes spores.",
+          "Planting maize too close together blocks air flow, trapping moisture. Using the same land for maize year after year builds up the disease."
         ]
       },
       "treatment": {
         "immediate_action": [
-          "Remove and destroy infected leaves and crop residue",
-          "Improve air circulation by thinning plants",
-          "Avoid overhead irrigation to reduce leaf wetness"
+          "Step 1: Walk through your field and cut off infected leaves or whole plants if badly affected. Burn them far from the farm to kill the fungus—don't compost or leave them.",
+          "Step 2: Space out plants by removing some if too dense, to let air and sun dry the leaves faster.",
+          "Step 3: Stop watering from above (overhead); use drip or furrow irrigation at the base to keep leaves dry."
         ],
         "organic_solutions": [
           {
-            "method": "Copper-based fungicides",
+            "method": "Copper-based fungicides like Copper hydroxide (e.g., Kocide, available in Ghana markets for GH¢15-25 per pack)",
             "active_ingredient": "Copper hydroxide",
-            "application": "Foliar spray",
-            "timing": "Applied preventatively or at the first sign of disease"
+            "application": "Mix according to label (usually 2-3g per liter of water) and spray on leaves every 7-10 days, starting when spots appear. Wear gloves and spray in the evening to avoid burning leaves in hot sun.",
+            "timing": "Apply before rain or at first signs; repeat 3-4 times in wet weather. In Ghana, combine with composted poultry manure to boost plant strength."
+          },
+          {
+            "method": "Home remedy: Neem leaf extract",
+            "active_ingredient": "Neem leaves (common in Ghana villages)",
+            "application": "Boil 1kg fresh neem leaves in 5 liters water for 30 minutes, cool, strain, and spray on plants weekly. It's cheap and safe for small farms."
           }
         ],
         "chemical_solutions": [
           {
-            "active_ingredient": "Propiconazole",
-            "trade_names": ["Tilt", "Banner"],
-            "application_rate": "Follow manufacturer's instructions",
-            "timing": "Applied every 7-14 days during critical growth stages"
+            "active_ingredient": "Propiconazole (e.g., Tilt or Banner, GH¢30-50 per bottle in Accra or Kumasi)",
+            "trade_names": [
+              "Tilt",
+              "Banner"
+            ],
+            "application_rate": "Mix 1ml per liter water; spray thoroughly on both sides of leaves.",
+            "timing": "Every 7-14 days from V6 stage (6 leaves) to tasseling. Don't spray near harvest to avoid residues."
           },
           {
-            "active_ingredient": "Azoxystrobin",
-            "trade_names": ["Amistar", "Quadris"],
-            "application_rate": "Follow label instructions"
+            "active_ingredient": "Azoxystrobin (e.g., Amistar, GH¢40-60)",
+            "trade_names": [
+              "Amistar",
+              "Quadris"
+            ],
+            "application_rate": "Follow label; usually 0.5-1ml per liter.",
+            "note": "Alternate with other fungicides to prevent resistance. In Ghana, buy from certified agro-shops to avoid fakes."
           }
         ],
         "cultural_practices": [
-          "Crop rotation with non-host crops (e.g., soybeans)",
-          "Deep tillage to bury crop residue"
+          "Rotate crops: After maize, plant legumes like cowpeas or groundnuts for 1-2 years to break the disease cycle—this is effective in Ghana's northern savanna zones.",
+          "Deep plow (till) the field after harvest to bury old stalks at least 15-20cm deep, so fungus can't survive."
         ]
       },
       "prevention": {
-        "resistant_varieties": ["Pioneer P1197", "Dekalb DKC60-67"],
+        "resistant_varieties": [
+          "Pioneer P1197",
+          "Dekalb DKC60-67",
+          "Local hybrids like Obatanpa or Mamaba from Ghana Seed Company—affordable and suited to humid areas."
+        ],
         "best_practices": [
-          "Plant resistant hybrids",
-          "Practice crop rotation",
-          "Monitor weather conditions for high-risk periods"
+          "Choose resistant seeds from MoFA extension officers; they yield better in Ghana's climate.",
+          "Plant in rows 75cm apart with 25cm between plants for good air flow.",
+          "Monitor weather: In rainy seasons, scout fields weekly and apply preventive sprays if humidity is high."
         ]
       },
       "economic_impact": {
-        "yield_loss": "10-60%",
-        "quality_impact": "Reduced grain quality",
-        "treatment_cost": "Varies by product and application frequency",
-        "critical_period": "V12 (12-leaf stage) to R4 (dough stage)"
+        "yield_loss": "10-60% if untreated, reducing harvest from 5 tons/ha to 2-4 tons/ha, costing GH¢500-1500 per acre depending on market prices (GH¢300/bag).",
+        "quality_impact": "Smaller grains lower market value by GH¢100-300 per 100kg bag due to poor filling.",
+        "treatment_cost": "GH¢50-100 per acre for fungicides (e.g., Mancozeb GH¢20-30, 3-4 applications) or GH¢10 for neem spray.",
+        "critical_period": "V12 (12-leaf stage) to R4 (dough stage)—mid-rainy season in Ghana."
       },
+      "farm_size_impact": {
+        "small_farm": "For 1-2 acre farms, treatment costs GH¢50-100 using Mancozeb or neem, saving losses of GH¢500-1000 per acre. Poultry manure (GH¢10/bag) boosts recovery.",
+        "medium_farm": "For 5-10 acre farms, bulk fungicide purchases (e.g., GH¢150 for 10 acres) reduce costs to GH¢15-20 per acre. Cooperatives can share sprayers."
+      },
+      "labor_impact": {
+        "hours_required": "8-10 hours per acre for scouting, leaf removal, and spraying. Family labor can handle.",
+        "skill_level": "Basic training needed—MoFA extension officers can teach spraying in 1-2 hours.",
+        "timing_constraints": "Act within 3-5 days of spotting gray lesions to prevent spread, especially before tasseling."
+      },
+      "community_impact": {
+        "spread_risk": "Spores spread by wind/rain to nearby farms in 2-3 weeks, risking 30-50% yield loss in villages.",
+        "collective_action": "Village groups sharing sprayers or neem (GH¢10-20) cut costs by 30%. MoFA can coordinate."
+      },
+      "local_tips_ghana": "In Ghana, this disease is common in Brong-Ahafo and Eastern regions. Use compost from poultry farms (GH¢10-20 per bag) to improve soil health and reduce severity. Join farmer groups for free MoFA advice on resistant seeds.",
       "monitoring": {
-        "inspection_frequency": "Weekly scouting during high-risk weather",
-        "key_indicators": ["Presence of rectangular lesions on lower leaves"],
-        "action_threshold": "First signs of disease, especially before tasseling"
+        "inspection_frequency": "Walk your field weekly, especially after rain, checking lower leaves first.",
+        "key_indicators": [
+          "Rectangular gray spots on leaves; count affected plants—if over 10%, act."
+        ],
+        "action_threshold": "Start treatment at first spots, before tasseling, to save your crop."
       }
     },
     "Corn_(maize)___Common_rust_": {
@@ -100,68 +134,103 @@
       },
       "symptoms": {
         "early_stage": [
-          "Small, circular, light-green to yellow spots on upper leaf surfaces",
-          "Spots develop into raised, cinnamon-brown pustules"
+          "Spot small, round, yellow-green bumps on upper leaves that turn into raised, rusty-brown pustules like powder—rub them and orange spores come off on your fingers.",
+          "Starts on young plants in cool weather, spreading upward."
         ],
         "advanced_stage": [
-          "Pustules darken to a reddish-brown or black color",
-          "Heavy infection can cause premature leaf death"
+          "Pustules turn dark red-black, and heavy infection makes leaves die early, reducing cob size.",
+          "In Ghana, it's noticeable in cooler highland areas like Volta during minor season."
         ],
-        "affected_parts": ["Leaves"],
-        "weather_conditions": "Cool and humid conditions (16-23°C)"
+        "affected_parts": [
+          "Leaves (upper and lower surfaces)"
+        ],
+        "weather_conditions": "Cool, humid weather (16-23°C) with dew or light rain—common in Ghana's minor rainy season (September-November)."
       },
       "causes": {
         "environmental": [
           "Cool and humid weather",
           "Moisture from rainfall or dew",
-          "Presence of fungal spores from host plants"
+          "Presence of fungal spores from host plants",
+          "In Ghana, worse in transitional zones with frequent mist."
         ],
         "cultural": [
+          "Planting non-resistant varieties; poor nutrition weakens plants.",
           "Planting susceptible hybrids",
           "Overwintering spores in the south, migrating north"
         ]
       },
       "treatment": {
         "immediate_action": [
-          "Fungicide application at first sign of disease"
+          "Step 1: Scout and remove heavily infected leaves; burn them to stop spore spread.",
+          "Step 2: Apply fungicide at first pustules if over 20% of plants affected."
         ],
         "organic_solutions": [
           {
-            "method": "Sulfur-based fungicides",
+            "method": "Sulfur-based fungicides (e.g., Wettable Sulfur, GH¢10-20 in local markets)",
             "active_ingredient": "Sulfur",
-            "application": "Foliar spray",
-            "note": "Can be phytotoxic at high temperatures"
+            "application": "Mix 2-3g per liter water; spray every 7 days. Avoid hot days (>30°C) to prevent leaf burn.",
+            "note": "Safe for small Ghanaian farms; combine with good spacing."
+          },
+          {
+            "method": "Home remedy: Garlic spray",
+            "active_ingredient": "Crushed garlic (local and free)",
+            "application": "Soak 100g garlic in 1 liter water overnight, strain, add soap, spray weekly."
           }
         ],
         "chemical_solutions": [
           {
-            "active_ingredient": "Azoxystrobin + Propiconazole",
-            "trade_names": ["Quilt Xcel"],
-            "application_rate": "Follow label instructions",
-            "timing": "Applied preventatively or at the beginning of the disease"
+            "active_ingredient": "Azoxystrobin + Propiconazole (e.g., Quilt Xcel, GH¢50-70)",
+            "trade_names": [
+              "Quilt Xcel"
+            ],
+            "application_rate": "Follow label; 1-2ml per liter.",
+            "timing": "Preventive in cool weather; 2-3 sprays max."
+          },
+          {
+            "active_ingredient": "Carbendazim + Mancozeb (common in Ghana, GH¢20-40)",
+            "note": "Effective and affordable; alternate to avoid resistance."
           }
         ],
         "cultural_practices": [
-          "Planting resistant hybrids",
-          "Proper plant spacing"
+          "Plant in rows for air flow; maintain balanced fertilizer (e.g., NPK 15-15-15).",
+          "Weed out oxalis to remove spore hosts."
         ]
       },
       "prevention": {
-        "resistant_varieties": ["Many modern hybrids have good resistance"],
+        "resistant_varieties": [
+          "Many modern hybrids like Pannar or Jubilee from Ghana seeds—check MoFA for local options."
+        ],
         "best_practices": [
-          "Choose resistant varieties",
-          "Maintain good fertility and plant health"
+          "Choose tolerant varieties; fertilize well to keep plants strong.",
+          "Plant early in major season (March-April) to avoid cool peaks."
         ]
       },
       "economic_impact": {
-        "yield_loss": "Generally low unless severe and early",
-        "quality_impact": "Negligible",
-        "treatment_cost": "Cost of fungicide application"
+        "yield_loss": "5-20% if severe, reducing harvest from 5 tons/ha to 4-4.75 tons/ha, costing GH¢100-400 per acre (GH¢300/bag).",
+        "quality_impact": "Minor; weak plants reduce grain size, lowering value by GH¢50-100 per bag.",
+        "treatment_cost": "GH¢30-60 per acre for fungicides (e.g., Quilt Xcel GH¢50) or GH¢5-10 for garlic spray.",
+        "critical_period": "Before silking (R1 stage)—minor rainy season in Ghana."
       },
+      "farm_size_impact": {
+        "small_farm": "For 1-2 acres, treatment costs GH¢30-60 with sulfur or garlic, saving GH¢100-300 losses. Use free local weeds for sprays.",
+        "medium_farm": "For 5-10 acres, bulk sulfur (GH¢100 for 10 acres) reduces costs to GH¢10 per acre. Share sprayers in cooperatives."
+      },
+      "labor_impact": {
+        "hours_required": "6-8 hours per acre for scouting and spraying. Family members can manage.",
+        "skill_level": "Simple—mix and spray as shown by MoFA or local agro-dealers.",
+        "timing_constraints": "Apply within 3 days of seeing rust pustules to protect young plants."
+      },
+      "community_impact": {
+        "spread_risk": "Spores spread to nearby fields in 2 weeks during cool, wet weather, risking 10-20% losses.",
+        "collective_action": "Village-wide spraying or weeding reduces costs by 25% via shared tools (e.g., GH¢20 sprayer rental)."
+      },
+      "local_tips_ghana": "Common in northern Ghana; use MoFA's free extension for resistant seeds. Rotate with beans to naturally reduce spores—saves money on chemicals.",
       "monitoring": {
-        "inspection_frequency": "Regular scouting, especially in cool, wet periods",
-        "key_indicators": ["Presence of raised, brown pustules on leaves"],
-        "action_threshold": "Severity of infection and timing relative to crop stage"
+        "inspection_frequency": "Weekly in cool, wet times; check for orange powder on leaves.",
+        "key_indicators": [
+          "Raised brown pustules; if on 10-20% leaves, treat."
+        ],
+        "action_threshold": "Early infection before silking stage."
       }
     },
     "Corn_(maize)___Northern_Leaf_Blight": {
@@ -177,64 +246,100 @@
       },
       "symptoms": {
         "early_stage": [
-          "Long, elliptical, gray-green lesions on leaves",
-          "Lesions are 1-6 inches in length"
+          "Long, oval gray-green spots on leaves, 2-15cm, like cigar shapes starting on lower leaves.",
+          "Spots feel dry and may have dark edges in humid air."
         ],
         "advanced_stage": [
-          "Lesions turn a gray-tan color",
-          "Infected leaves appear scorched and can die"
+          "Spots turn tan-gray, merge, and make leaves look burned; plants lose leaves, leading to empty cobs.",
+          "Worse in Ghana's wet forest-savanna transition zones."
         ],
-        "affected_parts": ["Leaves", "Husks"],
-        "weather_conditions": "Cool and humid conditions (18-27°C)"
+        "affected_parts": [
+          "Leaves",
+          "Husks"
+        ],
+        "weather_conditions": "Cool, humid (18-27°C) with rain—peaks in Ghana's major rainy season."
       },
       "causes": {
         "environmental": [
-          "Favorable cool and humid conditions",
-          "Infected crop residue from previous seasons"
+          "Wet leaves from rain or dew; spores survive in old residue.",
+          "Continuous rain in areas like Brong-Ahafo spreads it fast."
         ],
         "cultural": [
-          "Planting susceptible varieties",
-          "Continuous corn cropping"
+          "Non-resistant varieties; no rotation builds fungus in soil.",
+          "Dense planting traps moisture."
         ]
       },
       "treatment": {
         "immediate_action": [
-          "Apply fungicides at the first sign of disease"
+          "Step 1: Remove and burn infected leaves/plants.",
+          "Step 2: Improve air flow by thinning.",
+          "Step 3: Apply fungicide if spots cover 25% of leaves."
         ],
         "organic_solutions": [
           {
-            "method": "Copper fungicides",
-            "application": "Foliar spray"
+            "method": "Copper fungicides (e.g., Kocide)",
+            "application": "Spray 2g/liter every 7 days; 3-4 applications."
+          },
+          {
+            "method": "Composted manure boost",
+            "application": "Apply 5-10 tons/ha to strengthen plants—affordable in Ghana."
           }
         ],
         "chemical_solutions": [
           {
-            "active_ingredient": "Pyrimethanil",
-            "trade_names": ["Scala", "Inspire"],
-            "application_rate": "Follow label instructions",
-            "timing": "Applied every 7-14 days"
+            "active_ingredient": "Pyrimethanil (e.g., Scala)",
+            "trade_names": [
+              "Scala",
+              "Inspire"
+            ],
+            "application_rate": "Label rate; every 7-14 days.",
+            "timing": "From first spots."
+          },
+          {
+            "active_ingredient": "Mancozeb (GH¢20-30)",
+            "note": "Common and effective in Ghana."
           }
         ],
         "cultural_practices": [
-          "Plant resistant hybrids",
-          "Crop rotation"
+          "Rotate with non-maize like soybeans.",
+          "Till residue deep."
         ]
       },
       "prevention": {
-        "resistant_varieties": ["Many commercial corn hybrids"],
+        "resistant_varieties": [
+          "Commercial hybrids from Pioneer or local Obatanpa."
+        ],
         "best_practices": [
-          "Choose resistant hybrids",
-          "Practice crop rotation"
+          "Plant resistant seeds; rotate crops.",
+          "Timely planting to miss peak wet periods."
         ]
       },
       "economic_impact": {
-        "yield_loss": "Up to 50%",
-        "critical_period": "After tasseling"
+        "yield_loss": "20-50% if untreated, reducing harvest from 5 tons/ha to 2.5-4 tons/ha, costing GH¢600-1200 per acre (GH¢300/bag).",
+        "quality_impact": "Poor grain filling lowers market value by GH¢150-300 per bag.",
+        "treatment_cost": "GH¢60-120 per acre for fungicides (e.g., Scala GH¢30, 3-4 sprays) or GH¢10 for compost boost.",
+        "critical_period": "After tasseling (VT-R1 stage)—mid-rainy season."
       },
+      "farm_size_impact": {
+        "small_farm": "For 1-2 acres, treatment costs GH¢60-100, saving GH¢600-1000. Use manure (GH¢10/bag) for strength.",
+        "medium_farm": "For 5-10 acres, bulk fungicides (GH¢200 for 10 acres) cut costs to GH¢20 per acre. Cooperatives save more."
+      },
+      "labor_impact": {
+        "hours_required": "8-12 hours per acre for leaf removal and spraying. Family labor sufficient.",
+        "skill_level": "Basic—MoFA training or agro-shop demos teach proper mixing.",
+        "timing_constraints": "Treat within 3 days of gray spots to save cobs."
+      },
+      "community_impact": {
+        "spread_risk": "Spores spread to nearby farms in 2-3 weeks, risking 30% village-wide losses.",
+        "collective_action": "Group spraying or residue burning cuts costs by 30% (e.g., GH¢15 shared sprayer)."
+      },
+      "local_tips_ghana": "Prevalent in northern Ghana; use MoFA hybrids. Integrate with legumes for soil health—reduces need for expensive sprays.",
       "monitoring": {
-        "inspection_frequency": "Weekly during wet conditions",
-        "key_indicators": ["Presence of long, gray-tan lesions"],
-        "action_threshold": "At 25% of plants showing symptoms"
+        "inspection_frequency": "Weekly in wet weather.",
+        "key_indicators": [
+          "Long gray spots."
+        ],
+        "action_threshold": "25% plants affected."
       }
     },
     "Corn_(maize)___healthy": {
@@ -247,20 +352,48 @@
       },
       "maintenance": {
         "watering": {
-          "frequency": "Consistent, deep watering",
-          "amount": "25-30mm per week",
-          "critical_stages": ["Tasseling", "Silking", "Grain filling"]
+          "frequency": "Water deeply 2-3 times a week if no rain, especially in dry northern Ghana.",
+          "amount": "25-30mm per week; use furrows to avoid wet leaves.",
+          "critical_stages": [
+            "Tasseling (when male flowers appear), Silking (female threads), Grain filling (cobs swelling)—drought here cuts yield by 30%."
+          ],
+          "fertilization": {
+            "nitrogen": "150-200 kg/ha; split apply—half at planting, half at knee-high.",
+            "phosphorus": "60-80 kg/ha at planting.",
+            "potassium": "120-150 kg/ha; use NPK 15-15-15 (GH¢50/bag).",
+            "timing": [
+              "Pre-plant (base dose), V6 (6 leaves), VT (tassel stage). In Ghana, add urea top-dress during rains."
+            ]
+          },
+          "economic_impact": {
+            "yield_potential": "5-6 tons/ha with good practices, earning GH¢1500-1800 per acre (GH¢300/bag).",
+            "quality_impact": "High-quality grains fetch premium prices, adding GH¢50-100 per bag in markets like Kumasi.",
+            "maintenance_cost": "GH¢100-150 per acre for seeds (Obatanpa GH¢50) and manure (GH¢10/bag).",
+            "critical_period": "Tasseling to grain filling—March-May in Ghana."
+          },
+          "farm_size_impact": {
+            "small_farm": "For 1-2 acres, maintenance costs GH¢100-200, yielding GH¢1500-3000 profit. Use local manure for savings.",
+            "medium_farm": "For 5-10 acres, bulk seed/manure purchases (GH¢400 for 10 acres) reduce costs to GH¢40 per acre."
+          },
+          "labor_impact": {
+            "hours_required": "10-15 hours per acre for planting, weeding, and fertilizing. Family labor common.",
+            "skill_level": "Basic—MoFA guides teach planting and care in 1-2 hours.",
+            "timing_constraints": "Plant in March-April for major season; fertilize at V6 and VT stages."
+          },
+          "community_impact": {
+            "spread_risk": "Healthy fields reduce disease spread to neighbors, protecting village yields.",
+            "collective_action": "Group purchase of seeds (e.g., Obatanpa) or manure saves 20-30% (GH¢40/acre)."
+          },
+          "monitoring": {
+            "growth_stages": [
+              "VE (emergence, 7-10 days), V6 (knee-high), V12 (chest-high), VT (tassel), R1 (silk), R6 (harvest-ready)."
+            ],
+            "key_metrics": [
+              "Dark green leaves, strong stalks; check for pests weekly. Measure plant height—aim for 2-3m."
+            ]
+          }
         },
-        "fertilization": {
-          "nitrogen": "150-200 kg/ha",
-          "phosphorus": "60-80 kg/ha",
-          "potassium": "120-150 kg/ha",
-          "timing": ["Pre-plant", "V6 stage", "VT stage"]
-        },
-        "monitoring": {
-          "growth_stages": ["VE", "V6", "V12", "VT", "R1", "R6"],
-          "key_metrics": ["Plant height", "Leaf color", "Pest presence"]
-        }
+        "local_tips_ghana": "Plant in March-April for major season; use hybrids like Obatanpa. Rotate with cowpeas to fix nitrogen naturally. In dry areas, mulch with grass to save water—boosts yield by 20%."
       }
     },
     "Pepper__bell___Bacterial_spot": {
@@ -276,68 +409,114 @@
       },
       "symptoms": {
         "early_stage": [
-          "Small, water-soaked spots on leaves",
-          "Spots become necrotic with a yellow halo"
+          "Small, wet-looking spots on leaves that turn brown with yellow rings around them—like water drops that dry dark.",
+          "Starts on lower leaves after rain."
         ],
         "advanced_stage": [
-          "Spots merge, causing large dead areas",
-          "Raised, blister-like lesions on fruit"
+          "Spots grow and join, killing leaf parts; fruits get raised, rough scabs making them unmarketable.",
+          "Plants drop leaves, reducing yield."
         ],
-        "affected_parts": ["Leaves", "Stems", "Fruit"],
-        "weather_conditions": "Warm and humid conditions with rain"
+        "affected_parts": [
+          "Leaves",
+          "Stems",
+          "Fruit"
+        ],
+        "weather_conditions": "Warm, wet with rain splash (24-30°C)—common in Ghana's coastal and forest zones during rains."
       },
       "causes": {
         "environmental": [
-          "High humidity",
-          "Rainfall and splashing water",
-          "Temperatures between 24-30°C"
+          "Rain or irrigation splashing bacteria from soil to leaves; high humidity spreads it.",
+          "In Ghana, worse in high-rainfall areas like Western region."
         ],
         "cultural": [
-          "Infected seed or transplants",
-          "Planting in fields with infected residue"
+          "Infected seeds or transplants; tools carrying bacteria.",
+          "Overhead watering and poor sanitation."
         ]
       },
       "treatment": {
         "immediate_action": [
-          "Remove and destroy infected plants or plant parts",
-          "Sanitize tools and equipment"
+          "Step 1: Pull out and burn badly infected plants to stop spread.",
+          "Step 2: Clean tools with bleach (1:10 water mix) after each use.",
+          "Step 3: Apply bactericide early."
         ],
         "organic_solutions": [
           {
-            "method": "Copper-based bactericides",
-            "application": "Foliar spray"
+            "method": "Copper-based (e.g., Copper oxychloride, GH¢15-25)",
+            "application": "Spray 2g/liter every 5-7 days during wet weather; cover all parts."
+          },
+          {
+            "method": "Home remedy: Baking soda mix",
+            "application": "1 tsp baking soda + 1 tsp soap in 1 liter water; spray weekly to reduce spread."
           }
         ],
         "chemical_solutions": [
           {
-            "active_ingredient": "Copper + Mancozeb",
-            "note": "Combined products can offer better control"
+            "active_ingredient": "Copper + Mancozeb (e.g., combined products like Ridomil Gold, GH¢30-50)",
+            "note": "Spray every 7 days; better control in Ghana's humid climate."
           }
         ],
         "cultural_practices": [
-          "Use disease-free seeds or transplants",
-          "Practice crop rotation"
+          "Use clean seeds; rotate with non-pepper crops like maize for 2 years.",
+          "Stake plants for air flow."
         ]
       },
       "prevention": {
-        "resistant_varieties": ["Many commercial varieties have some resistance"],
+        "resistant_varieties": [
+          "Commercial varieties with resistance like California Wonder hybrids from Ghana agro-shops."
+        ],
         "best_practices": [
-          "Use certified disease-free seeds",
-          "Avoid overhead irrigation",
-          "Practice good field sanitation"
+          "Buy certified seeds; avoid overhead water—use drip.",
+          "Sanitize fields by burning residue."
         ]
       },
       "economic_impact": {
-        "yield_loss": "Significant reduction in fruit quality and yield",
-        "quality_impact": "Unmarketable fruit due to lesions"
+        "yield_loss": "30-70% if untreated, reducing harvest from 10 tons/ha to 3-7 tons/ha, costing GH¢1000-2000 per acre (GH¢400/ton).",
+        "quality_impact": "Scabby fruits unsellable, lowering value by GH¢200-400 per ton.",
+        "treatment_cost": "GH¢50-100 per acre for copper (GH¢15-25) or baking soda (GH¢5).",
+        "critical_period": "Flowering to fruiting—wet season in Ghana."
+      },
+      "farm_size_impact": {
+        "small_farm": "For 1-2 acres, treatment costs GH¢50-100, saving GH¢1000-1500. Use local baking soda for low cost.",
+        "medium_farm": "For 5-10 acres, bulk copper (GH¢150 for 10 acres) reduces costs to GH¢15 per acre."
+      },
+      "labor_impact": {
+        "hours_required": "8-10 hours per acre for scouting, plant removal, and spraying. Family can do.",
+        "skill_level": "Simple—mix copper as shown by agro-dealers.",
+        "timing_constraints": "Act within 2-3 days of wet spots to save fruits."
+      },
+      "community_impact": {
+        "spread_risk": "Bacteria spread by rain to nearby farms in 1-2 weeks, risking 50% losses.",
+        "collective_action": "Village spraying or seed cleaning saves 25% (e.g., GH¢10 shared sprayer)."
       },
       "monitoring": {
-        "inspection_frequency": "Weekly, especially after heavy rain",
-        "key_indicators": ["Water-soaked spots on new leaves"],
-        "action_threshold": "First signs of disease in the field"
-      }
+        "inspection_frequency": "Weekly after rain; check undersides.",
+        "key_indicators": [
+          "Wet spots on young leaves."
+        ],
+        "action_threshold": "First spots in field."
+      },
+      "local_tips_ghana": "Common in Greater Accra; use MoFA-recommended seeds. Mulch with plastic to block soil splash—cheap and effective for small farms."
     },
     "Pepper__bell___healthy": {
+      "economic_impact": {
+        "yield_potential": "10-12 tons/ha, earning GH¢4000-4800 per acre (GH¢400/ton).",
+        "quality_impact": "Firm, shiny peppers fetch GH¢50-100 extra per ton in Accra markets.",
+        "maintenance_cost": "GH¢150-200 per acre for seeds and manure (GH¢10/bag).",
+        "critical_period": "Flowering to fruiting—October-November."
+      },
+      "farm_size_impact": {
+        "small_farm": "For 1-2 acres, costs GH¢150-300, yielding GH¢4000-8000 profit. Manure saves GH¢50.",
+        "medium_farm": "For 5-10 acres, bulk inputs (GH¢500 for 10 acres) cut costs to GH¢50 per acre."
+      },
+      "labor_impact": {
+        "hours_required": "12-15 hours per acre for planting and care. Family labor works.",
+        "skill_level": "Basic—MoFA or seed packets show planting steps.",
+        "timing_constraints": "Plant in October; fertilize at fruit set."
+      },
+      "community_impact": {
+        "spread_risk": "Healthy peppers protect nearby fields from bacterial spread.",
+        "collective_action": "Group seed buying saves 20% (GH¢30/acre)."
+      },
       "basic_info": {
         "display_name": "Bell Pepper - Healthy",
         "crop_type": "Bell Pepper",
@@ -347,21 +526,30 @@
       },
       "maintenance": {
         "watering": {
-          "frequency": "Consistent watering, especially during fruiting",
-          "amount": "25mm per week",
-          "critical_stages": ["Flowering and fruiting"]
+          "frequency": "Even watering 2-3 times/week; don't let soil dry out.",
+          "amount": "25mm/week; critical during flowering/fruiting to avoid blossom drop.",
+          "critical_stages": [
+            "Flowering (buds open), Fruiting (peppers growing)—drought causes small fruits."
+          ]
         },
         "fertilization": {
-          "nitrogen": "Medium levels",
-          "phosphorus": "High levels",
-          "potassium": "High levels",
-          "timing": ["Pre-plant", "First fruit set"]
+          "nitrogen": "Medium (100kg/ha); too much makes leaves big but no fruit.",
+          "phosphorus": "High (80kg/ha for roots).",
+          "potassium": "High (120kg/ha for fruits); use NPK 10-20-20.",
+          "timing": [
+            "Pre-plant, First fruit set; side-dress in Ghana's dry harmattan."
+          ]
         },
         "monitoring": {
-          "growth_stages": ["Seedling", "Vegetative", "Flowering", "Fruiting"],
-          "key_metrics": ["Leaf color", "Pest presence", "Fruit quality"]
+          "growth_stages": [
+            "Seedling (2-4 weeks), Vegetative (leaf growth), Flowering, Fruiting (harvest 60-80 days)."
+          ],
+          "key_metrics": [
+            "Shiny green leaves; no spots; fruits firm."
+          ]
         }
-      }
+      },
+      "local_tips_ghana": "Plant in October-November for dry season harvest; space 50cm apart. Use poultry manure (GH¢10/bag) for organic boost—yields 20-30 tons/ha in good soil."
     },
     "Tomato_Bacterial_spot": {
       "basic_info": {
@@ -376,65 +564,88 @@
       },
       "symptoms": {
         "early_stage": [
-          "Small, circular, water-soaked spots on leaves",
-          "Spots become angular with dark centers and yellow borders"
+          "Tiny round wet spots on leaves that turn angular, dark with yellow halos—like pinpricks.",
+          "Spots on stems and fruits become raised scabs."
         ],
         "advanced_stage": [
-          "Lesions on fruit are raised, dark, and scabby-looking",
-          "Severe defoliation"
+          "Leaves drop; fruits scarred and unmarketable; whole plant weakens.",
+          "In Ghana, spreads fast in rainy Volta or Central regions."
         ],
-        "affected_parts": ["Leaves", "Stems", "Fruit"],
-        "weather_conditions": "Warm, humid conditions"
+        "affected_parts": [
+          "Leaves",
+          "Stems",
+          "Fruit"
+        ],
+        "weather_conditions": "Warm, humid with wind/rain (24-30°C)."
       },
       "causes": {
         "environmental": [
-          "Rain and wind spread bacteria",
-          "High temperatures (24-30°C)"
+          "Rain splashing bacteria; high temps in wet seasons.",
+          "Soil or water carrying germs."
         ],
         "cultural": [
-          "Infected seeds or transplants",
-          "Presence of bacteria in soil or on equipment"
+          "Infected seeds; dirty tools or hands.",
+          "No rotation."
         ]
       },
       "treatment": {
         "immediate_action": [
-          "Remove and destroy infected plants",
-          "Apply copper-based bactericide immediately"
+          "Step 1: Remove/burn infected parts.",
+          "Step 2: Sanitize tools with alcohol.",
+          "Step 3: Spray copper immediately."
         ],
         "organic_solutions": [
           {
-            "method": "Copper fungicides",
-            "application": "Regular foliar sprays"
+            "method": "Copper fungicides (e.g., Bordeaux mix, GH¢15).",
+            "application": "Weekly sprays in rain."
           }
         ],
         "chemical_solutions": [
           {
-            "active_ingredient": "Copper + Mancozeb",
-            "note": "Combination sprays are most effective"
+            "active_ingredient": "Copper + Mancozeb (GH¢25-40).",
+            "note": "Combine for better results."
           }
         ],
         "cultural_practices": [
-          "Use drip irrigation instead of overhead",
-          "Sanitize tools and stakes"
+          "Drip irrigation; clean stakes."
         ]
       },
       "prevention": {
-        "resistant_varieties": ["Some hybrids have resistance genes"],
+        "resistant_varieties": [
+          "Hybrids with genes like Bs2 from local suppliers."
+        ],
         "best_practices": [
-          "Use certified disease-free seed",
-          "Sanitize all equipment",
-          "Rotate crops"
+          "Clean seeds; rotate crops.",
+          "Sanitize everything."
         ]
       },
       "economic_impact": {
-        "yield_loss": "Significant reduction in marketable fruit",
-        "quality_impact": "Unmarketable fruit"
+        "yield_loss": "40-80% if untreated, reducing harvest from 30 tons/ha to 6-12 tons/ha, costing GH¢1500-3000 per acre (GH¢500/ton).",
+        "quality_impact": "Scabby fruits unsellable, losing GH¢200-400 per ton.",
+        "treatment_cost": "GH¢50-100 per acre for copper (GH¢15) or baking soda (GH¢5).",
+        "critical_period": "Flowering to fruiting—wet season."
+      },
+      "farm_size_impact": {
+        "small_farm": "For 1-2 acres, treatment costs GH¢50-100, saving GH¢1500-2500. Use local baking soda.",
+        "medium_farm": "For 5-10 acres, bulk copper (GH¢150) cuts costs to GH¢15 per acre."
+      },
+      "labor_impact": {
+        "hours_required": "8-12 hours per acre for removal and spraying. Family labor sufficient.",
+        "skill_level": "Basic—MoFA or agro-shops teach spraying.",
+        "timing_constraints": "Treat within 2 days of spots to save fruits."
+      },
+      "community_impact": {
+        "spread_risk": "Bacteria spread to neighbors in 1-2 weeks, risking 60% losses.",
+        "collective_action": "Village-wide sanitation saves 30% (e.g., GH¢10 shared sprayer)."
       },
       "monitoring": {
-        "inspection_frequency": "Daily inspection during warm, wet periods",
-        "key_indicators": ["Water-soaked lesions on leaves"],
-        "action_threshold": "First signs of disease"
-      }
+        "inspection_frequency": "Daily in wet weather.",
+        "key_indicators": [
+          "Wet lesions."
+        ],
+        "action_threshold": "First signs."
+      },
+      "local_tips_ghana": "Widespread in Central region; soak seeds in hot water (50°C for 25 min) to kill bacteria—free method. Use MoFA clean transplants."
     },
     "Tomato_Early_blight": {
       "basic_info": {
@@ -449,72 +660,95 @@
       },
       "symptoms": {
         "early_stage": [
-          "Small, dark, circular spots on lower leaves",
-          "Spots develop into characteristic 'bullseye' concentric rings"
+          "Dark spots on lower leaves with bullseye rings—like targets 1-2cm wide.",
+          "Starts after fruit set in warm weather."
         ],
         "advanced_stage": [
-          "Lesions enlarge and merge",
-          "Affected leaves turn yellow and fall off"
+          "Spots merge; leaves yellow and drop from bottom up.",
+          "Fruits get dark sunken spots at stem end."
         ],
-        "affected_parts": ["Leaves", "Stems", "Fruit"],
-        "weather_conditions": "Warm temperatures (24-29°C) and high humidity"
+        "affected_parts": [
+          "Leaves",
+          "Stems",
+          "Fruit"
+        ],
+        "weather_conditions": "Warm, humid (24-29°C) with wet-dry cycles—common in Ghana's dry season transitions."
       },
       "causes": {
         "environmental": [
-          "Presence of fungal spores in soil",
-          "Splashing rain or irrigation water"
+          "Spores in soil splashed by rain.",
+          "Poor drainage stresses plants."
         ],
         "cultural": [
-          "Poor soil drainage",
-          "Inadequate plant spacing"
+          "Close spacing; no mulch."
         ]
       },
       "treatment": {
         "immediate_action": [
-          "Remove and destroy infected leaves",
-          "Apply fungicides immediately"
+          "Step 1: Clip infected leaves; burn.",
+          "Step 2: Mulch to block splash.",
+          "Step 3: Spray fungicide."
         ],
         "organic_solutions": [
           {
-            "method": "Copper fungicides",
-            "application": "Foliar spray"
+            "method": "Copper (GH¢15); or Bacillus subtilis biofungicide if available.",
+            "application": "Every 7 days."
           },
           {
-            "method": "Bacillus subtilis-based biofungicides"
+            "method": "Neem oil (home-made).",
+            "application": "Spray weekly."
           }
         ],
         "chemical_solutions": [
           {
-            "active_ingredient": "Chlorothalonil",
-            "trade_names": ["Daconil"],
-            "application_rate": "Follow label instructions"
+            "active_ingredient": "Chlorothalonil (Daconil, GH¢30).",
+            "trade_names": [
+              "Daconil"
+            ]
           },
           {
-            "active_ingredient": "Mancozeb"
+            "active_ingredient": "Mancozeb."
           }
         ],
         "cultural_practices": [
-          "Mulching to prevent soil splash",
-          "Pruning lower leaves"
+          "Prune lower leaves; mulch with straw."
         ]
       },
       "prevention": {
-        "resistant_varieties": ["Many resistant varieties exist"],
+        "resistant_varieties": [
+          "Many like Iron Lady hybrids."
+        ],
         "best_practices": [
-          "Practice crop rotation",
-          "Use a layer of mulch",
-          "Avoid overhead watering"
+          "Rotate 3 years; mulch; no overhead water."
         ]
       },
       "economic_impact": {
-        "yield_loss": "Can be significant if left untreated",
-        "quality_impact": "Reduced fruit size and quality"
+        "yield_loss": "20-50% if untreated, reducing harvest from 30 tons/ha to 15-24 tons/ha, costing GH¢750-1500 per acre (GH¢500/ton).",
+        "quality_impact": "Smaller fruits lose GH¢100-200 per ton in markets.",
+        "treatment_cost": "GH¢50-100 per acre for fungicides (e.g., Daconil GH¢30) or neem (GH¢10).",
+        "critical_period": "After fruit set—dry season transitions."
+      },
+      "farm_size_impact": {
+        "small_farm": "For 1-2 acres, costs GH¢50-100, saving GH¢750-1200. Neem is cheapest.",
+        "medium_farm": "For 5-10 acres, bulk fungicides (GH¢200) reduce costs to GH¢20 per acre."
+      },
+      "labor_impact": {
+        "hours_required": "8-10 hours per acre for pruning and spraying. Family can handle.",
+        "skill_level": "Simple—follow label or MoFA advice.",
+        "timing_constraints": "Act within 3 days of bullseye spots."
+      },
+      "community_impact": {
+        "spread_risk": "Spores spread in 2-3 weeks, risking 30% village losses.",
+        "collective_action": "Group spraying or mulching saves 25% (GH¢15/acre)."
       },
       "monitoring": {
-        "inspection_frequency": "Weekly scouting, starting with lower leaves",
-        "key_indicators": ["Bullseye-like lesions"],
-        "action_threshold": "When first spots are seen"
-      }
+        "inspection_frequency": "Weekly on lower leaves.",
+        "key_indicators": [
+          "Bullseye spots."
+        ],
+        "action_threshold": "First spots."
+      },
+      "local_tips_ghana": "In Morogoro-like conditions, use Tall 25EC fungicide (GH¢20) or rotate with cereals. Essential oils like ginger extract tested effective in local studies."
     },
     "Tomato_Late_blight": {
       "basic_info": {
@@ -529,67 +763,93 @@
       },
       "symptoms": {
         "early_stage": [
-          "Water-soaked lesions on leaves and stems",
-          "Lesions turn brown or black"
+          "Wet, brown patches on leaves/stems that spread fast.",
+          "White fuzzy mold under leaves in morning dew."
         ],
         "advanced_stage": [
-          "White, fuzzy growth on the underside of leaves",
-          "Rapid blight and collapse of the entire plant"
+          "Whole plant blackens and collapses; fruits rot brown.",
+          "Kills crops in days in cool wet weather."
         ],
-        "affected_parts": ["Leaves", "Stems", "Fruit"],
-        "weather_conditions": "Cool and wet weather (18-22°C)"
+        "affected_parts": [
+          "Leaves",
+          "Stems",
+          "Fruit"
+        ],
+        "weather_conditions": "Cool, wet (18-22°C)—Ghana's minor season in highlands."
       },
       "causes": {
         "environmental": [
-          "Cool and wet conditions are ideal for spore germination and spread",
-          "Spores can travel long distances via wind"
+          "Cool rain; spores travel wind.",
+          "Nearby infected potatoes."
         ],
         "cultural": [
-          "Infected potato or other tomato plants nearby",
-          "Planting susceptible varieties"
+          "Susceptible varieties; wet foliage."
         ]
       },
       "treatment": {
         "immediate_action": [
-          "Remove and destroy all infected plant parts immediately",
-          "Apply fungicides immediately"
+          "Step 1: Remove/burn all infected parts.",
+          "Step 2: Spray fungicide fast.",
+          "Step 3: Improve air flow."
         ],
         "organic_solutions": [
           {
-            "method": "Copper fungicides",
-            "note": "Effective as a preventative measure, but less so as a cure"
+            "method": "Copper (preventive only).",
+            "note": "Limited cure; use early."
+          },
+          {
+            "method": "Garlic/Marigold extracts (local tests show promise).",
+            "application": "Spray bi-weekly."
           }
         ],
         "chemical_solutions": [
           {
-            "active_ingredient": "Mancozeb",
-            "note": "Protective fungicide"
+            "active_ingredient": "Mancozeb (GH¢20).",
+            "note": "Protective."
           },
           {
-            "active_ingredient": "Chlorothalonil"
+            "active_ingredient": "Chlorothalonil."
           }
         ],
         "cultural_practices": [
-          "Avoid overhead irrigation",
-          "Ensure good air circulation"
+          "No overhead water; space plants."
         ]
       },
       "prevention": {
-        "resistant_varieties": ["Many resistant varieties exist (e.g., 'Defiant', 'Mountain Magic')"],
+        "resistant_varieties": [
+          "Defiant, Mountain Magic; local like Petomech."
+        ],
         "best_practices": [
-          "Use resistant varieties",
-          "Scout fields frequently, especially after cool, wet weather"
+          "Resistant varieties; scout after cool rain."
         ]
       },
       "economic_impact": {
-        "yield_loss": "Up to 100% if untreated",
-        "quality_impact": "Fruits rot quickly"
+        "yield_loss": "50-100% if untreated, reducing harvest from 30 tons/ha to 0-15 tons/ha, costing GH¢1500-3000 per acre (GH¢500/ton).",
+        "quality_impact": "Rotten fruits unsellable, losing GH¢300-500 per ton.",
+        "treatment_cost": "GH¢60-120 per acre for Mancozeb (GH¢20) or copper (GH¢15).",
+        "critical_period": "Flowering to fruiting—cool, wet season."
+      },
+      "farm_size_impact": {
+        "small_farm": "For 1-2 acres, costs GH¢60-120, saving GH¢1500-2500. Use garlic spray for savings.",
+        "medium_farm": "For 5-10 acres, bulk Mancozeb (GH¢200) cuts costs to GH¢20 per acre."
+      },
+      "labor_impact": {
+        "hours_required": "10-12 hours per acre for removal and spraying. Family labor works.",
+        "skill_level": "Basic—MoFA training helps.",
+        "timing_constraints": "Treat within 1-2 days of wet spots to save plants."
+      },
+      "community_impact": {
+        "spread_risk": "Spreads fast in 1-2 weeks, risking 80% village losses.",
+        "collective_action": "Village spraying saves 30% (e.g., GH¢15 shared sprayer)."
       },
       "monitoring": {
-        "inspection_frequency": "Daily during cool and wet periods",
-        "key_indicators": ["Water-soaked lesions on leaves", "White mold on underside of leaves"],
-        "action_threshold": "At the first sign of symptoms"
-      }
+        "inspection_frequency": "Daily in cool wet.",
+        "key_indicators": [
+          "Wet spots, white mold."
+        ],
+        "action_threshold": "First symptoms."
+      },
+      "local_tips_ghana": "Threat in wet areas; use Ridomil MZ (GH¢30) with resistant varieties. Integrate with garlic oil for eco-friendly control per local research."
     },
     "Tomato_Leaf_Mold": {
       "basic_info": {
@@ -611,7 +871,9 @@
           "Leaves curl and die",
           "Spots may merge to form larger lesions"
         ],
-        "affected_parts": ["Leaves"],
+        "affected_parts": [
+          "Leaves"
+        ],
         "weather_conditions": "High humidity (>85%) and moderate temperatures (22-24°C)"
       },
       "causes": {
@@ -644,19 +906,38 @@
         ]
       },
       "prevention": {
-        "resistant_varieties": ["Many hybrids have resistance to Leaf Mold"],
+        "resistant_varieties": [
+          "Many hybrids have resistance to Leaf Mold"
+        ],
         "best_practices": [
           "Ensure good ventilation in greenhouses or high tunnels",
           "Avoid excessive watering"
         ]
       },
       "economic_impact": {
-        "yield_loss": "Can reduce yield by up to 30% in severe cases",
-        "quality_impact": "Minor"
+        "yield_loss": "10-30% if untreated, reducing harvest from 30 tons/ha to 21-27 tons/ha, costing GH¢450-900 per acre (GH¢500/ton).",
+        "quality_impact": "Minor; defoliation may cause sunburn, lowering value by GH¢50-100 per ton.",
+        "treatment_cost": "GH¢40-80 per acre for copper (GH¢15) or ventilation improvements (GH¢10).",
+        "critical_period": "Vegetative to flowering—humid season."
+      },
+      "farm_size_impact": {
+        "small_farm": "For 1-2 acres, costs GH¢40-80, saving GH¢450-800. Pruning is free.",
+        "medium_farm": "For 5-10 acres, bulk copper (GH¢150) reduces costs to GH¢15 per acre."
+      },
+      "labor_impact": {
+        "hours_required": "6-8 hours per acre for pruning and spraying. Family can do.",
+        "skill_level": "Simple—prune as shown by MoFA.",
+        "timing_constraints": "Act within 3 days of yellow spots."
+      },
+      "community_impact": {
+        "spread_risk": "Spreads in 2-3 weeks in humid areas, risking 20% losses.",
+        "collective_action": "Group ventilation or spraying saves 25% (GH¢10/acre)."
       },
       "monitoring": {
         "inspection_frequency": "Weekly",
-        "key_indicators": ["Yellow spots on upper leaf surfaces"],
+        "key_indicators": [
+          "Yellow spots on upper leaf surfaces"
+        ],
         "action_threshold": "First signs of disease"
       }
     },
@@ -673,14 +954,19 @@
       },
       "symptoms": {
         "early_stage": [
+          "Small round spots with dark edges, gray centers on lower leaf undersides; tiny black dots inside.",
           "Small, circular spots with dark borders and gray/white centers",
           "Spots usually appear on the undersides of older leaves first"
         ],
         "advanced_stage": [
           "Tiny black specks (fruiting bodies) appear within the spots",
-          "Severe defoliation, starting from the bottom of the plant"
+          "Severe defoliation, starting from the bottom of the plant",
+          "Common in Ghana's forest zones."
         ],
-        "affected_parts": ["Leaves", "Stems"],
+        "affected_parts": [
+          "Leaves",
+          "Stems"
+        ],
         "weather_conditions": "Warm and wet conditions"
       },
       "causes": {
@@ -705,10 +991,12 @@
         "chemical_solutions": [
           {
             "active_ingredient": "Chlorothalonil",
-            "trade_names": ["Daconil"]
+            "trade_names": [
+              "Daconil"
+            ]
           },
           {
-            "active_ingredient": "Mancozeb"
+            "active_ingredient": "Mancozeb (GH¢20)."
           }
         ],
         "cultural_practices": [
@@ -717,7 +1005,9 @@
         ]
       },
       "prevention": {
-        "resistant_varieties": ["Limited resistant varieties available"],
+        "resistant_varieties": [
+          "Limited resistant varieties available"
+        ],
         "best_practices": [
           "Crop rotation",
           "Sanitize tools and stakes",
@@ -725,12 +1015,29 @@
         ]
       },
       "economic_impact": {
-        "yield_loss": "Significant yield reduction due to defoliation",
-        "quality_impact": "Sunburned fruit on defoliated plants"
+        "yield_loss": "30-60% if untreated, reducing harvest from 30 tons/ha to 12-21 tons/ha, costing GH¢900-1800 per acre (GH¢500/ton).",
+        "quality_impact": "Sunburned fruits lose GH¢100-200 per ton due to defoliation.",
+        "treatment_cost": "GH¢50-100 per acre for Daconil (GH¢30) or neem (GH¢10).",
+        "critical_period": "Flowering to fruiting—wet season."
+      },
+      "farm_size_impact": {
+        "small_farm": "For 1-2 acres, costs GH¢50-100, saving GH¢900-1500. Mulching is cheap.",
+        "medium_farm": "For 5-10 acres, bulk fungicides (GH¢200) cut costs to GH¢20 per acre."
+      },
+      "labor_impact": {
+        "hours_required": "8-10 hours per acre for pruning and spraying. Family labor sufficient.",
+        "skill_level": "Basic—MoFA or labels guide spraying.",
+        "timing_constraints": "Treat within 3 days of spots to save yield."
+      },
+      "community_impact": {
+        "spread_risk": "Spores spread in 2-3 weeks, risking 40% village losses.",
+        "collective_action": "Group mulching or spraying saves 30% (GH¢15/acre)."
       },
       "monitoring": {
         "inspection_frequency": "Weekly scouting",
-        "key_indicators": ["Circular spots with dark borders and light centers"],
+        "key_indicators": [
+          "Circular spots with dark borders and light centers"
+        ],
         "action_threshold": "First signs of disease, especially on lower leaves"
       }
     },
@@ -751,16 +1058,21 @@
           "Leaves develop a silvery or bronze sheen"
         ],
         "advanced_stage": [
-          "Fine webbing on leaves and stems",
-          "Leaves turn yellow, dry out, and drop off"
+          "Fine webs; leaves yellow, dry, drop.",
+          "Leaves turn yellow, dry out, and drop off",
+          "Plants stunted; fruits small."
         ],
-        "affected_parts": ["Leaves", "Stems", "Fruit"],
-        "weather_conditions": "Hot, dry weather"
+        "affected_parts": [
+          "Leaves",
+          "Stems",
+          "Fruit"
+        ],
+        "weather_conditions": "Hot, dry (harmattan in Ghana)."
       },
       "causes": {
         "environmental": [
-          "Hot and dry conditions",
-          "Lack of humidity"
+          "Low humidity; dust.",
+          "Hot dry seasons."
         ],
         "cultural": [
           "Presence of weeds that host mites",
@@ -770,23 +1082,24 @@
       "treatment": {
         "immediate_action": [
           "Spray plants with a strong stream of water to dislodge mites",
-          "Prune and destroy severely infested leaves"
+          "Prune and destroy severely infested leaves",
+          " Apply control."
         ],
         "organic_solutions": [
           {
-            "method": "Neem oil",
-            "application": "Foliar spray",
+            "method": "Neem oil (GH¢10-20).",
+            "application": "Spray weekly; cover undersides.",
             "frequency": "Weekly until mites are gone"
           },
           {
-            "method": "Insecticidal soap",
-            "application": "Foliar spray"
+            "method": "Insecticidal soap (home-made with dish soap).",
+            "application": "Mix 1 tsp soap/liter; spray."
           }
         ],
         "chemical_solutions": [
           {
-            "active_ingredient": "Abamectin",
-            "note": "Requires careful application as mites can develop resistance"
+            "active_ingredient": "Abamectin (GH¢30).",
+            "note": "Use carefully; mites resist easily."
           }
         ],
         "cultural_practices": [
@@ -798,16 +1111,36 @@
         "best_practices": [
           "Monitor plants regularly",
           "Maintain humidity",
-          "Avoid pesticides that harm natural predators"
+          "Avoid pesticides that harm natural predators",
+          "Natural enemies like ladybugs."
         ]
       },
       "economic_impact": {
-        "yield_loss": "Can cause significant yield loss",
-        "quality_impact": "Reduced fruit quality due to plant stress"
+        "yield_loss": "20-50% if untreated, reducing harvest from 30 tons/ha to 15-24 tons/ha, costing GH¢750-1500 per acre (GH¢500/ton).",
+        "quality_impact": "Stressed plants produce smaller fruits, lowering value by GH¢100-200 per ton.",
+        "treatment_cost": "GH¢30-80 per acre for neem (GH¢10) or Abamectin (GH¢30).",
+        "critical_period": "Vegetative to fruiting—dry harmattan season."
       },
+      "farm_size_impact": {
+        "small_farm": "For 1-2 acres, costs GH¢30-80, saving GH¢750-1200. Neem is free if local.",
+        "medium_farm": "For 5-10 acres, bulk neem or Abamectin (GH¢150) reduces costs to GH¢15 per acre."
+      },
+      "labor_impact": {
+        "hours_required": "6-8 hours per acre for water spraying and neem application. Family can manage.",
+        "skill_level": "Simple—mix neem as shown by local agro-dealers.",
+        "timing_constraints": "Act within 2-3 days of stippling to prevent webbing."
+      },
+      "community_impact": {
+        "spread_risk": "Mites spread to nearby farms in 1-2 weeks during dry weather, risking 30% losses.",
+        "collective_action": "Village-wide water spraying or neem use saves 25% (GH¢10/acre)."
+      },
+      "local_tips_ghana": "In Greater Accra, mites resist common miticides; use Abamectin or Bifenazate. Local studies show neem effective; water spray free first line.",
       "monitoring": {
         "inspection_frequency": "Daily scouting of leaf undersides",
-        "key_indicators": ["Stippling on leaves", "Presence of webbing"],
+        "key_indicators": [
+          "Stippling on leaves",
+          "Presence of webbing"
+        ],
         "action_threshold": "First signs of stippling or webbing"
       }
     },
@@ -824,14 +1157,19 @@
       },
       "symptoms": {
         "early_stage": [
-          "Small, dark, circular spots on leaves",
+          "Dark circular spots with brown centers, dark borders on leaves.",
           "Spots have a light brown center with a dark border"
         ],
         "advanced_stage": [
-          "Lesions enlarge and develop a 'target-like' appearance with concentric rings",
+          "Spots grow with rings; defoliation.",
+          "Fruits/stems affected.",
           "Severe defoliation of the plant"
         ],
-        "affected_parts": ["Leaves", "Stems", "Fruit"],
+        "affected_parts": [
+          "Leaves",
+          "Stems",
+          "Fruit"
+        ],
         "weather_conditions": "High temperatures (25-30°C) and high humidity"
       },
       "causes": {
@@ -856,8 +1194,10 @@
         ],
         "chemical_solutions": [
           {
-            "active_ingredient": "Azoxystrobin",
-            "trade_names": ["Quadris"]
+            "active_ingredient": "Azoxystrobin (Quadris, GH¢40).",
+            "trade_names": [
+              "Quadris"
+            ]
           }
         ],
         "cultural_practices": [
@@ -866,7 +1206,9 @@
         ]
       },
       "prevention": {
-        "resistant_varieties": ["Some hybrids have moderate resistance"],
+        "resistant_varieties": [
+          "Some hybrids have moderate resistance"
+        ],
         "best_practices": [
           "Use resistant varieties",
           "Practice crop rotation",
@@ -874,12 +1216,30 @@
         ]
       },
       "economic_impact": {
-        "yield_loss": "Can be significant if severe defoliation occurs",
-        "quality_impact": "Reduced fruit quality"
+        "yield_loss": "20-40% if untreated, reducing harvest from 30 tons/ha to 18-24 tons/ha, costing GH¢600-1200 per acre (GH¢500/ton).",
+        "quality_impact": "Defoliation causes sunburned fruits, lowering value by GH¢100-200 per ton.",
+        "treatment_cost": "GH¢50-100 per acre for Quadris (GH¢40) or copper (GH¢15).",
+        "critical_period": "Flowering to fruiting—humid season."
       },
+      "farm_size_impact": {
+        "small_farm": "For 1-2 acres, costs GH¢50-100, saving GH¢600-1000. Use copper for savings.",
+        "medium_farm": "For 5-10 acres, bulk fungicides (GH¢200) cut costs to GH¢20 per acre."
+      },
+      "labor_impact": {
+        "hours_required": "8-10 hours per acre for pruning and spraying. Family labor works.",
+        "skill_level": "Basic—follow label or MoFA advice.",
+        "timing_constraints": "Treat within 3 days of target spots."
+      },
+      "community_impact": {
+        "spread_risk": "Spores spread in 2-3 weeks, risking 30% village losses.",
+        "collective_action": "Group spraying saves 25% (GH¢15/acre)."
+      },
+      "local_tips_ghana": "Use Azoxystrobin or Mancozeb (20g/10L); mulch to prevent splash. New resistant varieties being developed per UF research, check MoFA.",
       "monitoring": {
         "inspection_frequency": "Weekly scouting",
-        "key_indicators": ["Circular spots with 'target-like' rings"],
+        "key_indicators": [
+          "Circular spots with 'target-like' rings"
+        ],
         "action_threshold": "First signs of disease"
       }
     },
@@ -904,7 +1264,11 @@
           "Leaves are leathery and brittle",
           "Flowers and fruit drop off prematurely"
         ],
-        "affected_parts": ["Leaves", "Stems", "Flowers"],
+        "affected_parts": [
+          "Leaves",
+          "Stems",
+          "Flowers"
+        ],
         "weather_conditions": "Warm weather is favorable for the whitefly vector"
       },
       "causes": {
@@ -939,7 +1303,9 @@
         ]
       },
       "prevention": {
-        "resistant_varieties": ["Many TYLCV-resistant hybrids are available"],
+        "resistant_varieties": [
+          "Many TYLCV-resistant hybrids are available"
+        ],
         "best_practices": [
           "Use resistant varieties",
           "Control whiteflies",
@@ -947,12 +1313,30 @@
         ]
       },
       "economic_impact": {
-        "yield_loss": "Can be 100% if infected early",
-        "quality_impact": "No marketable fruit"
+        "yield_loss": "50-100% if infected early, reducing harvest from 30 tons/ha to 0-15 tons/ha, costing GH¢1500-3000 per acre (GH¢500/ton).",
+        "quality_impact": "No marketable fruits due to drop, losing GH¢300-500 per ton.",
+        "treatment_cost": "GH¢50-100 per acre for Imidacloprid (GH¢20) or neem (GH¢10).",
+        "critical_period": "Seedling to flowering—warm season."
       },
+      "farm_size_impact": {
+        "small_farm": "For 1-2 acres, costs GH¢50-100, saving GH¢1500-2500. Nets are effective but costly (GH¢50).",
+        "medium_farm": "For 5-10 acres, bulk Imidacloprid (GH¢150) reduces costs to GH¢15 per acre."
+      },
+      "labor_impact": {
+        "hours_required": "10-12 hours per acre for removal and whitefly control. Family can do.",
+        "skill_level": "Moderate—MoFA teaches whitefly trapping.",
+        "timing_constraints": "Act within 1-2 days of curled leaves."
+      },
+      "community_impact": {
+        "spread_risk": "Whiteflies spread virus in 1-2 weeks, risking 80% village losses.",
+        "collective_action": "Village-wide netting or spraying saves 30% (GH¢15/acre)."
+      },
+      "local_tips_ghana": "Big issue in Central region; 55% farmers use insecticides. Rogue infected; use yellow sticky traps (cheap DIY with oil on yellow cards).",
       "monitoring": {
         "inspection_frequency": "Daily inspection for whiteflies",
-        "key_indicators": ["Small, cupped leaves with yellow edges"],
+        "key_indicators": [
+          "Small, cupped leaves with yellow edges"
+        ],
         "action_threshold": "First sign of whiteflies or viral symptoms"
       }
     },
@@ -977,7 +1361,10 @@
           "Stunted plant growth",
           "Fruit may have yellow rings or blotches"
         ],
-        "affected_parts": ["Leaves", "Fruit"],
+        "affected_parts": [
+          "Leaves",
+          "Fruit"
+        ],
         "weather_conditions": "No specific weather conditions; spread by contact"
       },
       "causes": {
@@ -1002,7 +1389,9 @@
         ]
       },
       "prevention": {
-        "resistant_varieties": ["Many varieties are resistant to ToMV"],
+        "resistant_varieties": [
+          "Many varieties are resistant to ToMV"
+        ],
         "best_practices": [
           "Use resistant varieties",
           "Use certified disease-free seeds or transplants",
@@ -1010,12 +1399,30 @@
         ]
       },
       "economic_impact": {
-        "yield_loss": "Can cause significant yield reduction",
-        "quality_impact": "Reduced fruit quality and marketability"
+        "yield_loss": "20-50% if untreated, reducing harvest from 30 tons/ha to 15-24 tons/ha, costing GH¢750-1500 per acre (GH¢500/ton).",
+        "quality_impact": "Blotchy fruits lose GH¢100-200 per ton in markets.",
+        "treatment_cost": "GH¢20-50 per acre for sanitation (e.g., bleach GH¢5) and clean seeds.",
+        "critical_period": "Seedling to fruiting—any season."
       },
+      "farm_size_impact": {
+        "small_farm": "For 1-2 acres, costs GH¢20-50 for sanitation, saving GH¢750-1200. Use clean seeds.",
+        "medium_farm": "For 5-10 acres, bulk seed purchases (GH¢100) reduce costs to GH¢10 per acre."
+      },
+      "labor_impact": {
+        "hours_required": "6-8 hours per acre for removal and sanitation. Family labor sufficient.",
+        "skill_level": "Simple—wash tools with bleach as shown by MoFA.",
+        "timing_constraints": "Act within 2 days of mosaic patterns."
+      },
+      "community_impact": {
+        "spread_risk": "Virus spreads by contact in 1-2 weeks, risking 30% losses.",
+        "collective_action": "Village-wide tool cleaning saves 20% (GH¢5/acre)."
+      },
+      "local_tips_ghana": "Prevalent with CMV; use certified seeds. Sanitize with bleach; avoid smoking in fields per local advice.",
       "monitoring": {
         "inspection_frequency": "Regular scouting",
-        "key_indicators": ["Mottled mosaic pattern on leaves"],
+        "key_indicators": [
+          "Mottled mosaic pattern on leaves"
+        ],
         "action_threshold": "First sign of symptoms"
       }
     },
@@ -1029,19 +1436,47 @@
       },
       "maintenance": {
         "watering": {
-          "frequency": "Consistent deep watering",
-          "amount": "25-30mm per week",
-          "critical_stages": ["Flowering", "Fruiting"]
+          "frequency": "Deep water 2-3 times/week; consistent to prevent cracking.",
+          "amount": "25-30mm/week.",
+          "critical_stages": [
+            "Flowering, Fruiting—irregular water drops blossoms."
+          ]
         },
         "fertilization": {
-          "nitrogen": "Low to medium levels",
-          "phosphorus": "High levels",
-          "potassium": "High levels",
-          "timing": ["Pre-plant", "First flower cluster", "First fruit set"]
+          "nitrogen": "Low-medium (100kg/ha).",
+          "phosphorus": "High (80kg/ha).",
+          "potassium": "High (120kg/ha); NPK 10-20-20.",
+          "timing": [
+            "Pre-plant, First flowers, First fruits."
+          ]
         },
+        "economic_impact": {
+          "yield_potential": "30-40 tons/ha, earning GH¢15000-20000 per acre (GH¢500/ton).",
+          "quality_impact": "High-quality fruits fetch GH¢50-100 extra per ton in Kumasi markets.",
+          "maintenance_cost": "GH¢150-200 per acre for seeds and manure (GH¢10/bag).",
+          "critical_period": "Flowering to fruiting—November-February."
+        },
+        "farm_size_impact": {
+          "small_farm": "For 1-2 acres, costs GH¢150-300, yielding GH¢15000-30000 profit. Manure saves GH¢50.",
+          "medium_farm": "For 5-10 acres, bulk inputs (GH¢500) cut costs to GH¢50 per acre."
+        },
+        "labor_impact": {
+          "hours_required": "12-15 hours per acre for planting and care. Family labor works.",
+          "skill_level": "Basic—MoFA or seed packets show steps.",
+          "timing_constraints": "Plant in November; fertilize at flowering."
+        },
+        "community_impact": {
+          "spread_risk": "Healthy fields protect neighbors from disease spread.",
+          "collective_action": "Group seed/manure buying saves 20% (GH¢30/acre)."
+        },
+        "local_tips_ghana": "Plant in November for dry season; use 25t/ha poultry manure. Stake for air; rotate with maize—yields 30-40t/ha with good practices per MoFA.",
         "monitoring": {
-          "growth_stages": ["Seedling", "Vegetative", "Flowering", "Fruiting"],
-          "key_metrics": ["Leaf color", "Pest presence", "Fruit quality"]
+          "growth_stages": [
+            "Seedling, Vegetative, Flowering, Fruiting (harvest 60-90 days)."
+          ],
+          "key_metrics": [
+            "Green leaves; no wilts; good fruits."
+          ]
         }
       }
     }

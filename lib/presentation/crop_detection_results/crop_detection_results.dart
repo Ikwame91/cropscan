@@ -308,6 +308,93 @@ class _CropDetectionResultsState extends State<CropDetectionResults> {
                     enhancedInfo.maintenance!.monitoring!.keyMetrics ?? []),
             ],
           ),
+        SizedBox(height: 1.5.h),
+        // Economic Impact (if available)
+        if (enhancedInfo.economicImpact != null)
+          _buildExpandableInfoCard(
+            title: 'Economic Impact',
+            icon: 'attach_money',
+            color: Colors.green,
+            children: [
+              if (enhancedInfo.economicImpact!.yieldLoss != null)
+                _buildInfoRow(
+                    'Yield Loss', enhancedInfo.economicImpact!.yieldLoss!),
+              if (enhancedInfo.economicImpact!.qualityImpact != null)
+                _buildInfoRow('Quality Impact',
+                    enhancedInfo.economicImpact!.qualityImpact!),
+              if (enhancedInfo.economicImpact!.treatmentCost != null)
+                _buildInfoRow('Treatment Cost',
+                    enhancedInfo.economicImpact!.treatmentCost!),
+              if (enhancedInfo.economicImpact!.criticalPeriod != null)
+                _buildInfoRow('Critical Period',
+                    enhancedInfo.economicImpact!.criticalPeriod!),
+            ],
+          ),
+
+        SizedBox(height: 1.5.h),
+        if (enhancedInfo.laborImpact != null)
+          _buildExpandableInfoCard(
+            title: 'Labor Requirements',
+            icon: 'people',
+            color: Colors.purple,
+            children: [
+              if (enhancedInfo.laborImpact!.hoursRequired != null)
+                _buildInfoRow(
+                    'Hours Required', enhancedInfo.laborImpact!.hoursRequired!),
+              if (enhancedInfo.laborImpact!.skillLevel != null)
+                _buildInfoRow(
+                    'Skill Level', enhancedInfo.laborImpact!.skillLevel!),
+              if (enhancedInfo.laborImpact!.timingConstraints != null)
+                _buildInfoRow('Timing Constraints',
+                    enhancedInfo.laborImpact!.timingConstraints!),
+            ],
+          ),
+        SizedBox(height: 1.5.h),
+        if (enhancedInfo.communityImpact != null)
+          _buildExpandableInfoCard(
+            title: 'Community Considerations',
+            icon: 'group',
+            color: Colors.indigo,
+            children: [
+              if (enhancedInfo.communityImpact!.spreadRisk != null)
+                _buildInfoRow(
+                    'Spread Risk', enhancedInfo.communityImpact!.spreadRisk!),
+              if (enhancedInfo.communityImpact!.collectiveAction != null)
+                _buildInfoRow('Collective Action',
+                    enhancedInfo.communityImpact!.collectiveAction!),
+            ],
+          ),
+
+        SizedBox(height: 1.5.h),
+
+        if (enhancedInfo.localTipsGhana != null &&
+            enhancedInfo.localTipsGhana!.isNotEmpty)
+          _buildExpandableInfoCard(
+            title: 'Local Tips for Ghana',
+            icon: 'lightbulb',
+            color: Colors.amber,
+            children: [
+              Padding(
+                padding: EdgeInsets.all(2.w),
+                child: Container(
+                  padding: EdgeInsets.all(3.w),
+                  decoration: BoxDecoration(
+                    color: Colors.amber.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.amber.withOpacity(0.3)),
+                  ),
+                  child: Text(
+                    enhancedInfo.localTipsGhana!,
+                    style: AppTheme.lightTheme.textTheme.bodyMedium?.copyWith(
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+
+        SizedBox(height: 1.5.h),
       ],
     );
   }

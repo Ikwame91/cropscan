@@ -195,37 +195,6 @@ class Prevention {
       resistantVarieties?.join(', ') ?? 'Use resistant varieties';
 }
 
-class Maintenance {
-  final WateringInfo? watering;
-  final FertilizationInfo? fertilization;
-  final MonitoringInfo? monitoring;
-
-  Maintenance({
-    this.watering,
-    this.fertilization,
-    this.monitoring,
-  });
-
-  factory Maintenance.fromJson(Map<String, dynamic> json) {
-    return Maintenance(
-      watering: json['watering'] != null
-          ? WateringInfo.fromJson(json['watering'])
-          : null,
-      fertilization: json['fertilization'] != null
-          ? FertilizationInfo.fromJson(json['fertilization'])
-          : null,
-      monitoring: json['monitoring'] != null
-          ? MonitoringInfo.fromJson(json['monitoring'])
-          : null,
-    );
-  }
-
-  // Helper methods for backward compatibility
-  String get irrigation => watering != null
-      ? '${watering!.frequency} - ${watering!.amount}'
-      : 'Regular watering as needed';
-}
-
 class WateringInfo {
   final String frequency;
   final String amount;
@@ -269,6 +238,141 @@ class FertilizationInfo {
       timing: json['timing'] != null ? List<String>.from(json['timing']) : null,
     );
   }
+}
+// Add these classes to your existing file:
+
+class EconomicImpact {
+  final String? yieldLoss;
+  final String? qualityImpact;
+  final String? treatmentCost;
+  final String? criticalPeriod;
+
+  EconomicImpact({
+    this.yieldLoss,
+    this.qualityImpact,
+    this.treatmentCost,
+    this.criticalPeriod,
+  });
+
+  factory EconomicImpact.fromJson(Map<String, dynamic> json) {
+    return EconomicImpact(
+      yieldLoss: json['yield_loss'],
+      qualityImpact: json['quality_impact'],
+      treatmentCost: json['treatment_cost'],
+      criticalPeriod: json['critical_period'],
+    );
+  }
+}
+
+class FarmSizeImpact {
+  final String? smallFarm;
+  final String? mediumFarm;
+
+  FarmSizeImpact({
+    this.smallFarm,
+    this.mediumFarm,
+  });
+
+  factory FarmSizeImpact.fromJson(Map<String, dynamic> json) {
+    return FarmSizeImpact(
+      smallFarm: json['small_farm'],
+      mediumFarm: json['medium_farm'],
+    );
+  }
+}
+
+class LaborImpact {
+  final String? hoursRequired;
+  final String? skillLevel;
+  final String? timingConstraints;
+
+  LaborImpact({
+    this.hoursRequired,
+    this.skillLevel,
+    this.timingConstraints,
+  });
+
+  factory LaborImpact.fromJson(Map<String, dynamic> json) {
+    return LaborImpact(
+      hoursRequired: json['hours_required'],
+      skillLevel: json['skill_level'],
+      timingConstraints: json['timing_constraints'],
+    );
+  }
+}
+
+class CommunityImpact {
+  final String? spreadRisk;
+  final String? collectiveAction;
+
+  CommunityImpact({
+    this.spreadRisk,
+    this.collectiveAction,
+  });
+
+  factory CommunityImpact.fromJson(Map<String, dynamic> json) {
+    return CommunityImpact(
+      spreadRisk: json['spread_risk'],
+      collectiveAction: json['collective_action'],
+    );
+  }
+}
+
+class LocalResourcesGhana {
+  final String? extensionServices;
+  final String? farmerGroups;
+  final String? phoneSupport;
+
+  LocalResourcesGhana({
+    this.extensionServices,
+    this.farmerGroups,
+    this.phoneSupport,
+  });
+
+  factory LocalResourcesGhana.fromJson(Map<String, dynamic> json) {
+    return LocalResourcesGhana(
+      extensionServices: json['extension_services'],
+      farmerGroups: json['farmer_groups'],
+      phoneSupport: json['phone_support'],
+    );
+  }
+}
+
+// Update your existing Maintenance class to include missing fertilization property
+class Maintenance {
+  final WateringInfo? watering;
+  final FertilizationInfo? fertilization;
+  final MonitoringInfo? monitoring;
+
+  Maintenance({
+    this.watering,
+    this.fertilization,
+    this.monitoring,
+  });
+
+  factory Maintenance.fromJson(Map<String, dynamic> json) {
+    return Maintenance(
+      watering: json['watering'] != null
+          ? WateringInfo.fromJson(json['watering'])
+          : null,
+      fertilization: json['fertilization'] != null
+          ? FertilizationInfo.fromJson(json['fertilization'])
+          : null,
+      monitoring: json['monitoring'] != null
+          ? MonitoringInfo.fromJson(json['monitoring'])
+          : null,
+    );
+  }
+
+  // Helper methods for backward compatibility
+  String get irrigation => watering != null
+      ? '${watering!.frequency} - ${watering!.amount}'
+      : 'Regular watering as needed';
+
+  // Add this missing property that your UI tries to access
+  String get fertilizationString => fertilization != null
+      ? 'N: ${fertilization!.nitrogen}, P: ${fertilization!.phosphorus}, K: ${fertilization!.potassium}'
+      : 'Standard fertilization as needed';
 }
 
 class MonitoringInfo {
