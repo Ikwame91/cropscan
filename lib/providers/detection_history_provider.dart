@@ -140,16 +140,33 @@ class DetectionHistoryProvider extends ChangeNotifier {
       }
 
       final originalFile = File(tempImagePath);
+
+      // Check if the original file exists
+      if (!await originalFile.exists()) {
+        throw Exception('Source image file does not exist: $tempImagePath');
+      }
+
       final fileName = '${DateTime.now().millisecondsSinceEpoch}.jpg';
       final newPath = '${imagesDir.path}/$fileName';
 
       await originalFile.copy(newPath);
 
+      final copiedFile = File(newPath);
+      if (!await copiedFile.exists()) {
+        throw Exception('Failed to copy image to permanent location');
+      }
+
       debugPrint("✅ Image saved permanently: $newPath");
+      debugPrint("✅ Image file size: ${await copiedFile.length()} bytes");
+
+      debugPrint("✅ Image saved permanently: $newPath");
+
       return newPath;
     } catch (e) {
       debugPrint("❌ Error saving image permanently: $e");
-      throw Exception('Failed to save image');
+      debugPrint("❌ Source path: $tempImagePath");
+
+      return tempImagePath;
     }
   }
 
@@ -285,6 +302,7 @@ class DetectionHistoryProvider extends ChangeNotifier {
           detection.location ?? 'Unknown Location', // Handle null location
       'diseaseDetected': detection.status.toLowerCase().contains('disease'),
       'pestDetected': detection.status.toLowerCase().contains('pest'),
+      'imageExists': File(detection.imageUrl).existsSync(),
     };
   }
 

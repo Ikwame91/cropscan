@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:cropscan_pro/models/crop_detection.dart';
 import 'package:flutter/material.dart';
 import 'package:sizer/sizer.dart';
@@ -16,11 +18,6 @@ class RecentDetectionCardWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final String cropName = detection.cropName;
-    final double confidence = detection.confidence;
-    final String imageUrl = detection.imageUrl;
-    final DateTime detectedAt = detection.detectedAt;
-    final String status = detection.status;
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -46,11 +43,10 @@ class RecentDetectionCardWidget extends StatelessWidget {
               child: SizedBox(
                 width: double.infinity,
                 height: 10.h,
-                child: CustomImageWidget(
-                  imageUrl: imageUrl,
-                  width: double.infinity,
-                  height: 12.h,
-                  fit: BoxFit.cover,
+                child: ClipRRect(
+                  borderRadius:
+                      const BorderRadius.vertical(top: Radius.circular(15)),
+                  child: _buildImage(),
                 ),
               ),
             ),
@@ -65,7 +61,7 @@ class RecentDetectionCardWidget extends StatelessWidget {
                   children: [
                     // Crop name and confidence
                     Text(
-                      cropName,
+                      detection.cropName,
                       style:
                           AppTheme.lightTheme.textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.bold,
@@ -77,21 +73,35 @@ class RecentDetectionCardWidget extends StatelessWidget {
 
                     // Confidence score
                     Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        CustomIconWidget(
-                          iconName: 'verified',
-                          color: _getConfidenceColor(confidence),
-                          size: 16,
-                        ),
-                        SizedBox(width: 1.3.w),
-                        Flexible(
+                        // Confidence
+                        Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 2.w,
+                            vertical: 0.5.h,
+                          ),
+                          decoration: BoxDecoration(
+                            color: _getConfidenceColor().withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
                           child: Text(
-                            '${detection.confidence.toStringAsFixed(1)}%',
-                            style: AppTheme.lightTheme.textTheme.bodySmall
+                            '${(detection.confidence * 100).toStringAsFixed(0)}%',
+                            style: AppTheme.lightTheme.textTheme.labelSmall
                                 ?.copyWith(
-                              color: _getConfidenceColor(confidence),
-                              fontWeight: FontWeight.w600,
+                              color: _getConfidenceColor(),
+                              fontWeight: FontWeight.bold,
                             ),
+                          ),
+                        ),
+
+                        // Status Indicator
+                        Container(
+                          width: 8,
+                          height: 8,
+                          decoration: BoxDecoration(
+                            color: _getStatusColor(),
+                            shape: BoxShape.circle,
                           ),
                         ),
                       ],
@@ -103,14 +113,14 @@ class RecentDetectionCardWidget extends StatelessWidget {
                       padding: EdgeInsets.symmetric(
                           horizontal: 2.w, vertical: 0.5.h),
                       decoration: BoxDecoration(
-                        color: _getStatusColor(status).withValues(alpha: 0.1),
+                        color: _getStatusColor().withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(8.0),
                       ),
                       child: Text(
-                        status,
+                        detection.status,
                         style:
                             AppTheme.lightTheme.textTheme.bodySmall?.copyWith(
-                          color: _getStatusColor(status),
+                          color: _getStatusColor(),
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -119,7 +129,7 @@ class RecentDetectionCardWidget extends StatelessWidget {
 
                     // Time ago
                     Text(
-                      _getTimeAgo(detectedAt),
+                      _formatTimestamp(detection.detectedAt),
                       style: AppTheme.lightTheme.textTheme.bodySmall?.copyWith(
                           color:
                               AppTheme.lightTheme.colorScheme.onSurfaceVariant,
@@ -137,32 +147,26 @@ class RecentDetectionCardWidget extends StatelessWidget {
     );
   }
 
-  Color _getConfidenceColor(double confidence) {
-    if (confidence >= 90) {
-      return AppTheme.lightTheme.colorScheme.primary;
-    } else if (confidence >= 70) {
+  Color _getConfidenceColor() {
+    if (detection.confidence >= 0.8) return Colors.green;
+    if (detection.confidence >= 0.6) return Colors.orange;
+    return Colors.red;
+  }
+
+  Color _getStatusColor() {
+    if (detection.status.toLowerCase().contains('healthy')) {
+      return Colors.green;
+    } else if (detection.status.toLowerCase().contains('disease')) {
+      return Colors.red;
+    } else if (detection.status.toLowerCase().contains('pest')) {
       return Colors.orange;
-    } else {
-      return AppTheme.lightTheme.colorScheme.error;
     }
+    return Colors.grey;
   }
 
-  Color _getStatusColor(String status) {
-    switch (status.toLowerCase()) {
-      case 'healthy':
-        return AppTheme.lightTheme.colorScheme.primary;
-      case 'disease detected':
-        return AppTheme.lightTheme.colorScheme.error;
-      case 'pest detected':
-        return Colors.orange;
-      default:
-        return AppTheme.lightTheme.colorScheme.onSurfaceVariant;
-    }
-  }
-
-  String _getTimeAgo(DateTime dateTime) {
+  String _formatTimestamp(DateTime timestamp) {
     final now = DateTime.now();
-    final difference = now.difference(dateTime);
+    final difference = now.difference(timestamp);
 
     if (difference.inDays > 0) {
       return '${difference.inDays}d ago';
@@ -173,5 +177,64 @@ class RecentDetectionCardWidget extends StatelessWidget {
     } else {
       return 'Just now';
     }
+  }
+
+  Widget _buildImage() {
+    return SizedBox(
+      width: double.infinity,
+      height: double.infinity,
+      child: _buildImageWidget(),
+    );
+  }
+
+  Widget _buildImageWidget() {
+    try {
+      // Check if the image file exists
+      final imageFile = File(detection.imageUrl);
+
+      if (imageFile.existsSync()) {
+        return Image.file(
+          imageFile,
+          fit: BoxFit.cover,
+          width: double.infinity,
+          height: double.infinity,
+          errorBuilder: (context, error, stackTrace) {
+            debugPrint("Error loading image from file: $error");
+            return _buildPlaceholderImage();
+          },
+        );
+      } else {
+        debugPrint("Image file does not exist: ${detection.imageUrl}");
+        return _buildPlaceholderImage();
+      }
+    } catch (e) {
+      debugPrint("Exception loading image: $e");
+      return _buildPlaceholderImage();
+    }
+  }
+
+  Widget _buildPlaceholderImage() {
+    return Container(
+      width: double.infinity,
+      height: double.infinity,
+      color: AppTheme.lightTheme.colorScheme.surfaceVariant,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          CustomIconWidget(
+            iconName: 'image',
+            color: AppTheme.lightTheme.colorScheme.onSurfaceVariant,
+            size: 32,
+          ),
+          SizedBox(height: 1.h),
+          Text(
+            'Image unavailable',
+            style: AppTheme.lightTheme.textTheme.bodySmall?.copyWith(
+              color: AppTheme.lightTheme.colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

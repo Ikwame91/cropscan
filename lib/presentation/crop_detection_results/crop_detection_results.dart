@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:cropscan_pro/models/crop_info.dart';
 import 'package:cropscan_pro/models/crop_models.dart';
 import 'package:cropscan_pro/models/enhanced_crop_info.dart';
@@ -46,6 +48,13 @@ class _CropDetectionResultsState extends State<CropDetectionResults> {
     try {
       final historyProvider = context.read<DetectionHistoryProvider>();
 
+      final imageFile = File(widget.imagePath);
+      if (!await imageFile.exists()) {
+        debugPrint(
+            "⚠️ Warning: Image file does not exist when saving to history: ${widget.imagePath}");
+        // Still save the detection but with a note about missing image
+      }
+
       await historyProvider.addDetection(
         cropName: widget.cropInfo.displayName,
         confidence: widget.confidence,
@@ -58,6 +67,15 @@ class _CropDetectionResultsState extends State<CropDetectionResults> {
       debugPrint("✅ Detection saved to history");
     } catch (e) {
       debugPrint("❌ Failed to save detection to history: $e");
+      // Show user a subtle notification about the issue
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+              'Detection saved, but image may not be available in history'),
+          backgroundColor: Colors.orange,
+          duration: Duration(seconds: 2),
+        ),
+      );
     }
   }
 

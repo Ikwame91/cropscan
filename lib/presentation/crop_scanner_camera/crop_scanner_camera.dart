@@ -704,6 +704,15 @@ class CropScannerCameraState extends State<CropScannerCamera>
       final imageFile = await _cameraController!.takePicture();
       debugPrint("Image captured: ${imageFile.path}");
 
+      //validate image file
+      final file = File(imageFile.path);
+      if (await file.exists()) {
+        final fileSize = await file.length();
+        debugPrint("✅ Image file validated - Size: $fileSize bytes");
+      } else {
+        debugPrint("❌ Error: Captured image file does not exist!");
+      }
+
       await _performDetection(imageFile);
     } catch (e) {
       debugPrint("Error taking picture: $e");
