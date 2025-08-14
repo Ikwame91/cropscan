@@ -66,6 +66,57 @@ class EnhancedCropInfo {
       localTipsGhana: json['local_tips_ghana'],
     );
   }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'basic_info': basicInfo.toMap(),
+      'symptoms': symptoms?.toMap(),
+      'causes': causes?.toMap(),
+      'treatment': treatment?.toMap(),
+      'prevention': prevention?.toMap(),
+      'maintenance': maintenance?.toMap(),
+      'economic_impact': economicImpact?.toMap(),
+      'farm_size_impact': farmSizeImpact?.toMap(),
+      'labor_impact': laborImpact?.toMap(),
+      'community_impact': communityImpact?.toMap(),
+      'monitoring': monitoring?.toMap(),
+      'local_tips_ghana': localTipsGhana,
+    };
+  }
+
+  factory EnhancedCropInfo.fromMap(Map<String, dynamic> json) {
+    return EnhancedCropInfo(
+      basicInfo: BasicInfo.fromMap(json['basic_info']),
+      symptoms:
+          json['symptoms'] != null ? Symptoms.fromMap(json['symptoms']) : null,
+      causes: json['causes'] != null ? Causes.fromMap(json['causes']) : null,
+      treatment: json['treatment'] != null
+          ? Treatment.fromMap(json['treatment'])
+          : null,
+      prevention: json['prevention'] != null
+          ? Prevention.fromMap(json['prevention'])
+          : null,
+      maintenance: json['maintenance'] != null
+          ? Maintenance.fromMap(json['maintenance'])
+          : null,
+      economicImpact: json['economic_impact'] != null
+          ? EconomicImpact.fromMap(json['economic_impact'])
+          : null,
+      farmSizeImpact: json['farm_size_impact'] != null
+          ? FarmSizeImpact.fromMap(json['farm_size_impact'])
+          : null,
+      laborImpact: json['labor_impact'] != null
+          ? LaborImpact.fromMap(json['labor_impact'])
+          : null,
+      communityImpact: json['community_impact'] != null
+          ? CommunityImpact.fromMap(json['community_impact'])
+          : null,
+      monitoring: json['monitoring'] != null
+          ? MonitoringInfo.fromMap(json['monitoring'])
+          : null,
+      localTipsGhana: json['local_tips_ghana'],
+    );
+  }
 }
 
 class EnhancedCropInfoService {

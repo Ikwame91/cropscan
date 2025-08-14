@@ -19,12 +19,14 @@ class CropDetectionResults extends StatefulWidget {
   final String detectedCrop;
   final double confidence;
   final CropInfo cropInfo;
+  final EnhancedCropInfo? enhancedCropInfo;
 
   const CropDetectionResults(
       {super.key,
       required this.imagePath,
       required this.detectedCrop,
       required this.cropInfo,
+      this.enhancedCropInfo,
       required this.confidence});
 
   @override
@@ -39,9 +41,50 @@ class _CropDetectionResultsState extends State<CropDetectionResults> {
   @override
   void initState() {
     super.initState();
-    _loadEnhancedCropInfo();
-    _saveToHistory();
-    // You can put any initial setup here, but the args are already available via widget.
+    if (widget.enhancedCropInfo != null) {
+      debugPrint("Using passed enhancedCropInfo from history");
+      _enhancedCropInfo = widget.enhancedCropInfo;
+      _isLoadingEnhancedInfo = false;
+      _saveToHistory();
+    } else {
+      debugPrint("Loading enhanced info for new scan");
+      _loadAndSaveDetection();
+    }
+  }
+
+  Future<void> _loadAndSaveDetection() async {
+    try {
+      // First, load the enhanced crop info.
+      await _loadEnhancedCropInfo();
+
+      if (_enhancedCropInfo != null) {
+        await _saveToHistory();
+      } else {
+        // Handle the case where loading failed.
+        debugPrint(
+            "⚠️ Warning: Enhanced crop info could not be loaded, not saving to history.");
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Failed to load crop details, history not updated.'),
+            backgroundColor: Colors.red,
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint("❌ An error occurred during loading or saving: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('An unexpected error occurred.'),
+          backgroundColor: Colors.red,
+          duration: Duration(seconds: 2),
+        ),
+      );
+    } finally {
+      setState(() {
+        _isLoadingEnhancedInfo = false;
+      });
+    }
   }
 
   Future<void> _saveToHistory() async {
@@ -56,6 +99,8 @@ class _CropDetectionResultsState extends State<CropDetectionResults> {
       }
 
       await historyProvider.addDetection(
+        enhancedCropInfo: _enhancedCropInfo!,
+        rawDetectedCrop: widget.detectedCrop,
         cropName: widget.cropInfo.displayName,
         confidence: widget.confidence,
         imagePath: widget.imagePath,
@@ -83,8 +128,7 @@ class _CropDetectionResultsState extends State<CropDetectionResults> {
     try {
       // Initialize the enhanced crop database
       await EnhancedCropInfoService.loadDatabase();
-
-      // Try to get enhanced info for the detected crop
+      debugPrint("Looking for enhanced info with key: ${widget.detectedCrop}");
       _enhancedCropInfo =
           EnhancedCropInfoService.getCropInfo(widget.detectedCrop);
 

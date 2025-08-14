@@ -197,6 +197,21 @@ class CropInfoMapper {
     );
   }
 
+  static String getRawLabel(String displayName) {
+    String raw =
+        displayName.replaceAll(' - ', '_').replaceAll(' ', '_').toLowerCase();
+    if (raw.contains('corn')) {
+      raw = raw.replaceAll('corn', 'corn_(maize)');
+    }
+    if (!raw.contains('___') && !raw.contains('healthy')) {
+      final parts = raw.split('_');
+      if (parts.length > 2) {
+        raw = '${parts[0]}_${parts[1]}___${parts.sublist(2).join('_')}';
+      }
+    }
+    return raw; // e.g., "tomato_healthy" for "Tomato - Healthy"
+  }
+
   static String _cleanDisplayName(String rawLabel) {
     return rawLabel
         .replaceAll('_', ' ')

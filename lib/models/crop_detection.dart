@@ -1,3 +1,9 @@
+import 'dart:convert';
+
+import 'package:flutter/widgets.dart';
+
+import 'package:cropscan_pro/models/enhanced_crop_info.dart';
+
 class CropDetection {
   final String id;
   final String cropName;
@@ -7,7 +13,8 @@ class CropDetection {
   final String status;
   final String? location;
   final String? notes;
-
+  final String? rawDetectedCrop;
+  final EnhancedCropInfo? enhancedCropInfo;
   CropDetection({
     required this.id,
     required this.cropName,
@@ -17,20 +24,25 @@ class CropDetection {
     required this.status,
     this.location,
     this.notes,
+    this.enhancedCropInfo,
+    this.rawDetectedCrop,
   });
 
   // Factory constructor for creating a CropDetection from a map (e.g., from JSON/Firestore)
   factory CropDetection.fromMap(Map<String, dynamic> map) {
     return CropDetection(
-      id: map['id'] as String,
-      cropName: map['cropName'] as String,
-      confidence: (map['confidence'] as num).toDouble(),
-      imageUrl: map['imageUrl'] as String,
-      detectedAt: DateTime.parse(
-          map['detectedAt'] as String), // Assuming ISO 8601 string
-      status: map['status'] as String,
-      location: map['location'] as String?,
-      notes: map['notes'] as String?,
+      id: map['id'] ?? '',
+      cropName: map['cropName'] ?? '',
+      confidence: map['confidence']?.toDouble() ?? 0.0,
+      imageUrl: map['imageUrl'] ?? '',
+      detectedAt: DateTime.fromMillisecondsSinceEpoch(map['detectedAt']),
+      status: map['status'] ?? '',
+      location: map['location'],
+      notes: map['notes'],
+      rawDetectedCrop: map['rawDetectedCrop'],
+      enhancedCropInfo: map['enhancedCropInfo'] != null
+          ? EnhancedCropInfo.fromMap(map['enhancedCropInfo'])
+          : null,
     );
   }
 
@@ -41,10 +53,11 @@ class CropDetection {
       'cropName': cropName,
       'confidence': confidence,
       'imageUrl': imageUrl,
-      'detectedAt': detectedAt.toIso8601String(),
+      'detectedAt': detectedAt.millisecondsSinceEpoch,
       'status': status,
       'location': location,
       'notes': notes,
+      'enhancedCropInfo': enhancedCropInfo?.toMap(),
     };
   }
 
@@ -56,8 +69,9 @@ class CropDetection {
     String? imageUrl,
     DateTime? detectedAt,
     String? status,
-    String? location,
-    String? notes,
+    ValueGetter<String?>? location,
+    ValueGetter<String?>? notes,
+    ValueGetter<EnhancedCropInfo?>? enhancedCropInfo,
   }) {
     return CropDetection(
       id: id ?? this.id,
@@ -66,8 +80,20 @@ class CropDetection {
       imageUrl: imageUrl ?? this.imageUrl,
       detectedAt: detectedAt ?? this.detectedAt,
       status: status ?? this.status,
-      location: location ?? this.location,
-      notes: notes ?? this.notes,
+      location: location != null ? location() : this.location,
+      notes: notes != null ? notes() : this.notes,
+      enhancedCropInfo:
+          enhancedCropInfo != null ? enhancedCropInfo() : this.enhancedCropInfo,
     );
+  }
+
+  String toJson() => json.encode(toMap());
+
+  factory CropDetection.fromJson(String source) =>
+      CropDetection.fromMap(json.decode(source));
+
+  @override
+  String toString() {
+    return 'CropDetection(id: $id, cropName: $cropName, confidence: $confidence, imageUrl: $imageUrl, detectedAt: $detectedAt, status: $status, location: $location, notes: $notes, enhancedCropInfo: $enhancedCropInfo)';
   }
 }

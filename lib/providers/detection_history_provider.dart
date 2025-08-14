@@ -1,3 +1,4 @@
+import 'package:cropscan_pro/models/enhanced_crop_info.dart';
 import 'package:flutter/material.dart';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
@@ -46,6 +47,8 @@ class DetectionHistoryProvider extends ChangeNotifier {
     required double confidence,
     required String imagePath,
     required String status,
+    required EnhancedCropInfo enhancedCropInfo,
+    String? rawDetectedCrop,
     String? location,
     String? notes,
   }) async {
@@ -60,6 +63,8 @@ class DetectionHistoryProvider extends ChangeNotifier {
         imageUrl: savedImagePath,
         detectedAt: DateTime.now(),
         status: status,
+        enhancedCropInfo: enhancedCropInfo,
+        rawDetectedCrop: rawDetectedCrop,
         location: location ?? "Uknown Location",
         notes: notes,
       );

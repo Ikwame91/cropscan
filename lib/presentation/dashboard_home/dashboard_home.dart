@@ -261,15 +261,19 @@ class DashboardHome extends StatelessWidget {
                               return RecentDetectionCardWidget(
                                 detection: detection,
                                 onTap: () {
-                                  // Create the proper arguments object for history items
+                                  debugPrint(
+                                      "Dashboard tap: cropName=${detection.cropName}, rawDetectedCrop=${detection.rawDetectedCrop}, hasEnhancedInfo=${detection.enhancedCropInfo != null}");
                                   final args = CropDetectionResultsArgs(
                                     imagePath: detection.imageUrl,
-                                    detectedCrop: detection.cropName,
+                                    detectedCrop: detection.rawDetectedCrop ??
+                                        CropInfoMapper.getRawLabel(detection
+                                            .cropName), // Use raw or fallback
                                     confidence: detection.confidence,
                                     cropInfo: CropInfoMapper.getCropInfo(
                                         detection.cropName),
+                                    enhancedCropInfo:
+                                        detection.enhancedCropInfo,
                                   );
-
                                   Navigator.pushNamed(
                                     context,
                                     '/crop-detection-results',
