@@ -211,11 +211,11 @@ class CropScannerCameraState extends State<CropScannerCamera>
     final navigationResult =
         await Navigator.pushNamed(context, AppRoutes.cropDetectionResults,
             arguments: CropDetectionResultsArgs(
-              imagePath: imagePath,
-              detectedCrop: detectedCrop, // Keep raw label for reference
-              confidence: confidence,
-              cropInfo: cropInfo,
-            ));
+                imagePath: imagePath,
+                detectedCrop: detectedCrop, // Keep raw label for reference
+                confidence: confidence,
+                cropInfo: cropInfo,
+                isFromHistory: false));
 
     debugPrint("✅ Returned from results screen");
     // Reset detection state after navigation

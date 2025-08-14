@@ -4,7 +4,6 @@ import 'package:cropscan_pro/models/farming_alert.dart';
 import 'package:cropscan_pro/providers/detection_history_provider.dart';
 import 'package:cropscan_pro/providers/farming_alerts_provider.dart';
 import 'package:cropscan_pro/providers/naviagtion_provider.dart';
-import 'package:cropscan_pro/providers/recent_detection_providers.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -21,8 +20,7 @@ class DashboardHome extends StatelessWidget {
 
   Future<void> _handleRefresh(BuildContext context) async {
     // Access providers and call their fetch methods
-    final recentDetectionsProvider =
-        Provider.of<RecentDetectionsProvider>(context, listen: false);
+
     final farmingAlertsProvider =
         Provider.of<FarmingAlertsProvider>(context, listen: false);
     final detectionHistoryProvider =
@@ -30,7 +28,6 @@ class DashboardHome extends StatelessWidget {
 
     // Trigger data fetching for all providers
     await Future.wait([
-      recentDetectionsProvider.fetchRecentDetections(),
       farmingAlertsProvider.fetchFarmingAlerts(),
       detectionHistoryProvider.loadDetectionHistory(), // Add this line
     ]);
@@ -273,6 +270,7 @@ class DashboardHome extends StatelessWidget {
                                         detection.cropName),
                                     enhancedCropInfo:
                                         detection.enhancedCropInfo,
+                                    isFromHistory: true,
                                   );
                                   Navigator.pushNamed(
                                     context,

@@ -81,6 +81,26 @@ class DetectionHistoryProvider extends ChangeNotifier {
     }
   }
 
+  Future<void> updateDetection(CropDetection updatedDetection) async {
+    try {
+      final index =
+          _detectionHistory.indexWhere((d) => d.id == updatedDetection.id);
+      if (index != -1) {
+        _detectionHistory[index] = updatedDetection;
+        await _saveDetectionHistory();
+        debugPrint("✅ Detection updated: ${updatedDetection.cropName}");
+        notifyListeners();
+      } else {
+        debugPrint(
+            "⚠️ Warning: Could not find detection to update with id: ${updatedDetection.id}");
+      }
+    } catch (e) {
+      debugPrint("❌ Error updating detection in history: $e");
+      _errorMessage = 'Failed to update detection: $e';
+      notifyListeners();
+    }
+  }
+
   // Load detection history from storage
   Future<void> loadDetectionHistory() async {
     _isLoading = true;
@@ -122,15 +142,16 @@ class DetectionHistoryProvider extends ChangeNotifier {
     try {
       final directory = await getApplicationDocumentsDirectory();
       final file = File('${directory.path}/detection_history.json');
-
       final jsonList =
           _detectionHistory.map((detection) => detection.toMap()).toList();
-      await file.writeAsString(json.encode(jsonList));
-
+      final jsonString = json.encode(jsonList);
+      debugPrint("Saving JSON: $jsonString"); // Debug content
+      await file.writeAsString(jsonString);
       debugPrint("✅ Detection history saved successfully");
     } catch (e) {
       debugPrint("❌ Error saving detection history: $e");
-      throw Exception('Failed to save detection history');
+      _errorMessage = 'Failed to save detection history: $e';
+      notifyListeners();
     }
   }
 

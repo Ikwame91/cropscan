@@ -19,6 +19,7 @@ class CropDetectionResults extends StatefulWidget {
   final String detectedCrop;
   final double confidence;
   final CropInfo cropInfo;
+  final bool isFromHistory;
   final EnhancedCropInfo? enhancedCropInfo;
 
   const CropDetectionResults(
@@ -27,6 +28,7 @@ class CropDetectionResults extends StatefulWidget {
       required this.detectedCrop,
       required this.cropInfo,
       this.enhancedCropInfo,
+      this.isFromHistory = false,
       required this.confidence});
 
   @override
@@ -37,18 +39,52 @@ class _CropDetectionResultsState extends State<CropDetectionResults> {
   bool _isImageZoomed = false;
   EnhancedCropInfo? _enhancedCropInfo;
   bool _isLoadingEnhancedInfo = true;
-
   @override
   void initState() {
     super.initState();
-    if (widget.enhancedCropInfo != null) {
-      debugPrint("Using passed enhancedCropInfo from history");
+
+    // ✅ PROPER LOGIC TO PREVENT DUPLICATES
+    if (widget.isFromHistory) {
+      debugPrint("📖 Viewing historical detection - not saving to history");
       _enhancedCropInfo = widget.enhancedCropInfo;
       _isLoadingEnhancedInfo = false;
-      _saveToHistory();
+
+      // If enhanced info is missing from history, try to load it
+      if (_enhancedCropInfo == null) {
+        _loadEnhancedInfoOnly();
+      }
     } else {
-      debugPrint("Loading enhanced info for new scan");
-      _loadAndSaveDetection();
+      debugPrint("📸 New scan detected - loading and saving to history");
+      _loadAndSaveDetection(); // Load and save for new scans
+    }
+  }
+
+  Future<void> _loadEnhancedInfoOnly() async {
+    setState(() {
+      _isLoadingEnhancedInfo = true;
+    });
+
+    try {
+      await EnhancedCropInfoService.loadDatabase();
+      debugPrint(
+          "🔍 Loading enhanced info for history item: ${widget.detectedCrop}");
+
+      _enhancedCropInfo =
+          EnhancedCropInfoService.getCropInfo(widget.detectedCrop);
+
+      if (_enhancedCropInfo != null) {
+        debugPrint("✅ Enhanced info loaded for history item");
+      } else {
+        debugPrint("⚠️ No enhanced info found for history item");
+      }
+    } catch (e) {
+      debugPrint("❌ Error loading enhanced info for history item: $e");
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoadingEnhancedInfo = false;
+        });
+      }
     }
   }
 
@@ -57,10 +93,12 @@ class _CropDetectionResultsState extends State<CropDetectionResults> {
       // First, load the enhanced crop info.
       await _loadEnhancedCropInfo();
 
-      if (_enhancedCropInfo != null) {
+      if (_enhancedCropInfo != null && !widget.isFromHistory) {
         await _saveToHistory();
+        debugPrint("✅ New detection saved to history");
+      } else if (widget.isFromHistory) {
+        debugPrint("📖 Skipped saving - this is a history item");
       } else {
-        // Handle the case where loading failed.
         debugPrint(
             "⚠️ Warning: Enhanced crop info could not be loaded, not saving to history.");
         ScaffoldMessenger.of(context).showSnackBar(

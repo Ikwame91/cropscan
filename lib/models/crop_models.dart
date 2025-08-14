@@ -57,28 +57,27 @@ class BasicInfo {
 
   Map<String, dynamic> toMap() {
     return {
-      'displayName': displayName,
-      'cropType': cropType,
+      'display_name': displayName,
+      'crop_type': cropType,
       'condition': condition,
-      'diseaseType': diseaseType,
+      'disease_type': diseaseType,
       'pathogen': pathogen,
       'severity': severity,
-      'statusColor': statusColor,
+      'status_color': statusColor,
     };
   }
 
   factory BasicInfo.fromMap(Map<String, dynamic> map) {
     return BasicInfo(
-      displayName: map['displayName'] ?? '',
-      cropType: map['cropType'] ?? '',
+      displayName: map['display_name'] ?? '',
+      cropType: map['crop_type'] ?? '',
       condition: map['condition'] ?? '',
-      diseaseType: map['diseaseType'] ?? '',
+      diseaseType: map['disease_type'] ?? '',
       pathogen: map['pathogen'] ?? '',
       severity: map['severity'] ?? '',
-      statusColor: map['statusColor'] ?? '',
+      statusColor: map['status_color'] ?? '#4CAF50',
     );
   }
-
   String toJson() => json.encode(toMap());
 
   factory BasicInfo.fromJsonString(String source) =>
@@ -131,19 +130,25 @@ class Symptoms {
 
   Map<String, dynamic> toMap() {
     return {
-      'earlyStage': earlyStage,
-      'advancedStage': advancedStage,
-      'affectedParts': affectedParts,
-      'weatherConditions': weatherConditions,
+      'early_stage': earlyStage,
+      'advanced_stage': advancedStage,
+      'affected_parts': affectedParts,
+      'weather_conditions': weatherConditions,
     };
   }
 
   factory Symptoms.fromMap(Map<String, dynamic> map) {
     return Symptoms(
-      earlyStage: List<String>.from(map['earlyStage']),
-      advancedStage: List<String>.from(map['advancedStage']),
-      affectedParts: List<String>.from(map['affectedParts']),
-      weatherConditions: map['weatherConditions'] ?? '',
+      earlyStage: map['early_stage'] != null
+          ? List<String>.from(map['early_stage'])
+          : [],
+      advancedStage: map['advanced_stage'] != null
+          ? List<String>.from(map['advanced_stage'])
+          : [],
+      affectedParts: map['affected_parts'] != null
+          ? List<String>.from(map['affected_parts'])
+          : [],
+      weatherConditions: map['weather_conditions'] ?? '',
     );
   }
 
@@ -194,11 +199,13 @@ class Causes {
 
   factory Causes.fromMap(Map<String, dynamic> map) {
     return Causes(
-      environmental: List<String>.from(map['environmental']),
-      cultural: List<String>.from(map['cultural']),
+      environmental: map['environmental'] != null
+          ? List<String>.from(map['environmental'])
+          : [],
+      cultural:
+          map['cultural'] != null ? List<String>.from(map['cultural']) : [],
     );
   }
-
   String toJson() => json.encode(toMap());
 }
 
@@ -255,21 +262,29 @@ class Treatment {
 
   Map<String, dynamic> toMap() {
     return {
-      'immediateAction': immediateAction,
-      'organicSolutions': organicSolutions.map((x) => x.toMap()).toList(),
-      'chemicalSolutions': chemicalSolutions.map((x) => x.toMap()).toList(),
-      'culturalPractices': culturalPractices,
+      'immediate_action': immediateAction,
+      'organic_solutions': organicSolutions.map((x) => x.toMap()).toList(),
+      'chemical_solutions': chemicalSolutions.map((x) => x.toMap()).toList(),
+      'cultural_practices': culturalPractices,
     };
   }
 
   factory Treatment.fromMap(Map<String, dynamic> map) {
     return Treatment(
-      immediateAction: List<String>.from(map['immediateAction']),
-      organicSolutions: List<OrganicSolution>.from(
-          map['organicSolutions']?.map((x) => OrganicSolution.fromMap(x))),
-      chemicalSolutions: List<ChemicalSolution>.from(
-          map['chemicalSolutions']?.map((x) => ChemicalSolution.fromMap(x))),
-      culturalPractices: List<String>.from(map['culturalPractices']),
+      immediateAction: map['immediate_action'] != null
+          ? List<String>.from(map['immediate_action'])
+          : [],
+      organicSolutions: map['organic_solutions'] != null
+          ? List<OrganicSolution>.from(
+              map['organic_solutions'].map((x) => OrganicSolution.fromMap(x)))
+          : [],
+      chemicalSolutions: map['chemical_solutions'] != null
+          ? List<ChemicalSolution>.from(
+              map['chemical_solutions'].map((x) => ChemicalSolution.fromMap(x)))
+          : [],
+      culturalPractices: map['cultural_practices'] != null
+          ? List<String>.from(map['cultural_practices'])
+          : [],
     );
   }
 
@@ -321,7 +336,7 @@ class OrganicSolution {
   Map<String, dynamic> toMap() {
     return {
       'method': method,
-      'activeIngredient': activeIngredient,
+      'active_ingredient': activeIngredient,
       'application': application,
       'timing': timing,
       'note': note,
@@ -331,13 +346,12 @@ class OrganicSolution {
   factory OrganicSolution.fromMap(Map<String, dynamic> map) {
     return OrganicSolution(
       method: map['method'] ?? '',
-      activeIngredient: map['activeIngredient'],
+      activeIngredient: map['active_ingredient'],
       application: map['application'],
       timing: map['timing'],
       note: map['note'],
     );
   }
-
   String toJson() => json.encode(toMap());
 }
 
@@ -387,9 +401,9 @@ class ChemicalSolution {
 
   Map<String, dynamic> toMap() {
     return {
-      'activeIngredient': activeIngredient,
-      'tradeNames': tradeNames,
-      'applicationRate': applicationRate,
+      'active_ingredient': activeIngredient,
+      'trade_names': tradeNames,
+      'application_rate': applicationRate,
       'timing': timing,
       'note': note,
     };
@@ -397,14 +411,15 @@ class ChemicalSolution {
 
   factory ChemicalSolution.fromMap(Map<String, dynamic> map) {
     return ChemicalSolution(
-      activeIngredient: map['activeIngredient'] ?? '',
-      tradeNames: List<String>.from(map['tradeNames']),
-      applicationRate: map['applicationRate'],
+      activeIngredient: map['active_ingredient'] ?? '',
+      tradeNames: map['trade_names'] != null
+          ? List<String>.from(map['trade_names'])
+          : null,
+      applicationRate: map['application_rate'],
       timing: map['timing'],
       note: map['note'],
     );
   }
-
   String toJson() => json.encode(toMap());
 }
 
@@ -445,15 +460,19 @@ class Prevention {
 
   Map<String, dynamic> toMap() {
     return {
-      'resistantVarieties': resistantVarieties,
-      'bestPractices': bestPractices,
+      'resistant_varieties': resistantVarieties,
+      'best_practices': bestPractices,
     };
   }
 
   factory Prevention.fromMap(Map<String, dynamic> map) {
     return Prevention(
-      resistantVarieties: List<String>.from(map['resistantVarieties']),
-      bestPractices: List<String>.from(map['bestPractices']),
+      resistantVarieties: map['resistant_varieties'] != null
+          ? List<String>.from(map['resistant_varieties'])
+          : null,
+      bestPractices: map['best_practices'] != null
+          ? List<String>.from(map['best_practices'])
+          : [],
     );
   }
 
@@ -498,7 +517,7 @@ class WateringInfo {
     return {
       'frequency': frequency,
       'amount': amount,
-      'criticalStages': criticalStages,
+      'critical_stages': criticalStages,
     };
   }
 
@@ -506,10 +525,11 @@ class WateringInfo {
     return WateringInfo(
       frequency: map['frequency'] ?? '',
       amount: map['amount'] ?? '',
-      criticalStages: List<String>.from(map['criticalStages']),
+      criticalStages: map['critical_stages'] != null
+          ? List<String>.from(map['critical_stages'])
+          : null,
     );
   }
-
   String toJson() => json.encode(toMap());
 }
 
@@ -563,10 +583,9 @@ class FertilizationInfo {
       nitrogen: map['nitrogen'] ?? '',
       phosphorus: map['phosphorus'] ?? '',
       potassium: map['potassium'] ?? '',
-      timing: List<String>.from(map['timing']),
+      timing: map['timing'] != null ? List<String>.from(map['timing']) : null,
     );
   }
-
   String toJson() => json.encode(toMap());
 }
 
@@ -611,22 +630,21 @@ class EconomicImpact {
 
   Map<String, dynamic> toMap() {
     return {
-      'yieldLoss': yieldLoss,
-      'qualityImpact': qualityImpact,
-      'treatmentCost': treatmentCost,
-      'criticalPeriod': criticalPeriod,
+      'yield_loss': yieldLoss,
+      'quality_impact': qualityImpact,
+      'treatment_cost': treatmentCost,
+      'critical_period': criticalPeriod,
     };
   }
 
   factory EconomicImpact.fromMap(Map<String, dynamic> map) {
     return EconomicImpact(
-      yieldLoss: map['yieldLoss'],
-      qualityImpact: map['qualityImpact'],
-      treatmentCost: map['treatmentCost'],
-      criticalPeriod: map['criticalPeriod'],
+      yieldLoss: map['yield_loss'],
+      qualityImpact: map['quality_impact'],
+      treatmentCost: map['treatment_cost'],
+      criticalPeriod: map['critical_period'],
     );
   }
-
   String toJson() => json.encode(toMap());
 }
 
@@ -658,15 +676,15 @@ class FarmSizeImpact {
 
   Map<String, dynamic> toMap() {
     return {
-      'smallFarm': smallFarm,
-      'mediumFarm': mediumFarm,
+      'small_farm': smallFarm,
+      'medium_farm': mediumFarm,
     };
   }
 
   factory FarmSizeImpact.fromMap(Map<String, dynamic> map) {
     return FarmSizeImpact(
-      smallFarm: map['smallFarm'],
-      mediumFarm: map['mediumFarm'],
+      smallFarm: map['small_farm'],
+      mediumFarm: map['medium_farm'],
     );
   }
 
@@ -709,17 +727,17 @@ class LaborImpact {
 
   Map<String, dynamic> toMap() {
     return {
-      'hoursRequired': hoursRequired,
-      'skillLevel': skillLevel,
-      'timingConstraints': timingConstraints,
+      'hours_required': hoursRequired,
+      'skill_level': skillLevel,
+      'timing_constraints': timingConstraints,
     };
   }
 
   factory LaborImpact.fromMap(Map<String, dynamic> map) {
     return LaborImpact(
-      hoursRequired: map['hoursRequired'],
-      skillLevel: map['skillLevel'],
-      timingConstraints: map['timingConstraints'],
+      hoursRequired: map['hours_required'],
+      skillLevel: map['skill_level'],
+      timingConstraints: map['timing_constraints'],
     );
   }
 
@@ -755,15 +773,15 @@ class CommunityImpact {
 
   Map<String, dynamic> toMap() {
     return {
-      'spreadRisk': spreadRisk,
-      'collectiveAction': collectiveAction,
+      'spread_risk': spreadRisk,
+      'collective_action': collectiveAction,
     };
   }
 
   factory CommunityImpact.fromMap(Map<String, dynamic> map) {
     return CommunityImpact(
-      spreadRisk: map['spreadRisk'],
-      collectiveAction: map['collectiveAction'],
+      spreadRisk: map['spread_risk'],
+      collectiveAction: map['collective_action'],
     );
   }
 
@@ -805,20 +823,19 @@ class LocalResourcesGhana {
 
   Map<String, dynamic> toMap() {
     return {
-      'extensionServices': extensionServices,
-      'farmerGroups': farmerGroups,
-      'phoneSupport': phoneSupport,
+      'extension_services': extensionServices,
+      'farmer_groups': farmerGroups,
+      'phone_support': phoneSupport,
     };
   }
 
   factory LocalResourcesGhana.fromMap(Map<String, dynamic> map) {
     return LocalResourcesGhana(
-      extensionServices: map['extensionServices'],
-      farmerGroups: map['farmerGroups'],
-      phoneSupport: map['phoneSupport'],
+      extensionServices: map['extension_services'],
+      farmerGroups: map['farmer_groups'],
+      phoneSupport: map['phone_support'],
     );
   }
-
   String toJson() => json.encode(toMap());
 }
 
@@ -928,15 +945,19 @@ class MonitoringInfo {
 
   Map<String, dynamic> toMap() {
     return {
-      'growthStages': growthStages,
-      'keyMetrics': keyMetrics,
+      'growth_stages': growthStages,
+      'key_metrics': keyMetrics,
     };
   }
 
   factory MonitoringInfo.fromMap(Map<String, dynamic> map) {
     return MonitoringInfo(
-      growthStages: List<String>.from(map['growthStages']),
-      keyMetrics: List<String>.from(map['keyMetrics']),
+      growthStages: map['growth_stages'] != null
+          ? List<String>.from(map['growth_stages'])
+          : null,
+      keyMetrics: map['key_metrics'] != null
+          ? List<String>.from(map['key_metrics'])
+          : null,
     );
   }
 }

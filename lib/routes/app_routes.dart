@@ -38,6 +38,7 @@ class AppRoutes {
           detectedCrop: args.detectedCrop,
           confidence: args.confidence,
           cropInfo: args.cropInfo,
+          isFromHistory: args.isFromHistory,
         );
       }
 

@@ -6,6 +6,7 @@ class CropDetectionResultsArgs {
   final String detectedCrop;
   final double confidence;
   final CropInfo cropInfo;
+  final bool isFromHistory;
   final EnhancedCropInfo? enhancedCropInfo;
 
   CropDetectionResultsArgs({
@@ -14,5 +15,6 @@ class CropDetectionResultsArgs {
     required this.confidence,
     required this.cropInfo,
     this.enhancedCropInfo,
+    this.isFromHistory = false,
   });
 }
