@@ -1,245 +1,205 @@
 import 'package:flutter/material.dart';
 import 'package:sizer/sizer.dart';
-
+import 'package:google_fonts/google_fonts.dart';
 import '../../../core/app_export.dart';
 
-class FilterOptionsWidget extends StatelessWidget {
-  final DateTimeRange? selectedDateRange;
-  final String? selectedCropFilter;
-  final double confidenceThreshold;
-  final Function(DateTimeRange?) onDateRangeChanged;
-  final Function(String?) onCropFilterChanged;
-  final Function(double) onConfidenceChanged;
+class ModernFilterWidget extends StatelessWidget {
+  final String currentSortBy;
+  final String currentFilterBy;
+  final Function(String) onSortChanged;
+  final Function(String) onFilterChanged;
 
-  static const List<String> cropTypes = [
-    'All Types',
-    'Vegetable',
-    'Fruit',
-    'Grain',
-    'Herb',
-  ];
-
-  const FilterOptionsWidget({
+  const ModernFilterWidget({
     super.key,
-    required this.selectedDateRange,
-    required this.selectedCropFilter,
-    required this.confidenceThreshold,
-    required this.onDateRangeChanged,
-    required this.onCropFilterChanged,
-    required this.onConfidenceChanged,
+    required this.currentSortBy,
+    required this.currentFilterBy,
+    required this.onSortChanged,
+    required this.onFilterChanged,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return Row(
       children: [
-        // Filter Header
-        Row(
-          children: [
-            CustomIconWidget(
-              iconName: 'filter_list',
-              color: AppTheme.lightTheme.colorScheme.primary,
-              size: 20,
-            ),
-            SizedBox(width: 2.w),
-            Text(
-              'Filters',
-              style: AppTheme.lightTheme.textTheme.titleSmall?.copyWith(
-                fontWeight: FontWeight.w600,
-                color: AppTheme.lightTheme.colorScheme.primary,
-              ),
-            ),
-            Spacer(),
-            if (selectedDateRange != null ||
-                (selectedCropFilter != null &&
-                    selectedCropFilter != 'All Types') ||
-                confidenceThreshold > 0) ...[
-              TextButton(
-                onPressed: () {
-                  onDateRangeChanged(null);
-                  onCropFilterChanged('All Types');
-                  onConfidenceChanged(0.0);
-                },
-                child: Text(
-                  'Clear All',
-                  style: AppTheme.lightTheme.textTheme.labelMedium?.copyWith(
-                    color: AppTheme.lightTheme.colorScheme.primary,
-                  ),
+        // Filter Chips
+        Expanded(
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                _buildFilterChip(
+                  context,
+                  'All',
+                  'all',
+                  currentFilterBy,
+                  onFilterChanged,
+                  Icons.grid_view,
                 ),
-              ),
-            ],
-          ],
+                SizedBox(width: 2.w),
+                _buildFilterChip(
+                  context,
+                  'Healthy',
+                  'healthy',
+                  currentFilterBy,
+                  onFilterChanged,
+                  Icons.check_circle,
+                  color: Colors.green,
+                ),
+                SizedBox(width: 2.w),
+                _buildFilterChip(
+                  context,
+                  'Issues',
+                  'diseased',
+                  currentFilterBy,
+                  onFilterChanged,
+                  Icons.warning,
+                  color: Colors.red,
+                ),
+                SizedBox(width: 2.w),
+                _buildFilterChip(
+                  context,
+                  'This Week',
+                  'this_week',
+                  currentFilterBy,
+                  onFilterChanged,
+                  Icons.calendar_today,
+                ),
+                SizedBox(width: 2.w),
+                _buildFilterChip(
+                  context,
+                  'This Month',
+                  'this_month',
+                  currentFilterBy,
+                  onFilterChanged,
+                  Icons.date_range,
+                ),
+              ],
+            ),
+          ),
         ),
 
-        SizedBox(height: 2.h),
+        SizedBox(width: 3.w),
 
-        // Filter Options Row
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Row(
-            children: [
-              // Date Range Filter
-              _buildFilterChip(
-                label: selectedDateRange != null
-                    ? '${_formatDate(selectedDateRange!.start)} - ${_formatDate(selectedDateRange!.end)}'
-                    : 'Date Range',
-                icon: 'date_range',
-                isActive: selectedDateRange != null,
-                onTap: () => _showDateRangePicker(context),
+        // Sort Button
+        GestureDetector(
+          onTap: () => _showSortOptions(context),
+          child: Container(
+            padding: EdgeInsets.symmetric(horizontal: 3.w, vertical: 1.h),
+            decoration: BoxDecoration(
+              color: AppTheme.lightTheme.colorScheme.surface,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: AppTheme.lightTheme.dividerColor,
               ),
-
-              SizedBox(width: 3.w),
-
-              // Crop Type Filter
-              _buildFilterChip(
-                label: selectedCropFilter ?? 'All Types',
-                icon: 'category',
-                isActive: selectedCropFilter != null &&
-                    selectedCropFilter != 'All Types',
-                onTap: () => _showCropTypeFilter(context),
-              ),
-
-              SizedBox(width: 3.w),
-
-              // Confidence Filter
-              _buildFilterChip(
-                label: confidenceThreshold > 0
-                    ? 'Confidence ≥ ${(confidenceThreshold * 100).toInt()}%'
-                    : 'Confidence',
-                icon: 'trending_up',
-                isActive: confidenceThreshold > 0,
-                onTap: () => _showConfidenceFilter(context),
-              ),
-            ],
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.sort,
+                  color: AppTheme.lightTheme.colorScheme.onSurfaceVariant,
+                  size: 16,
+                ),
+                SizedBox(width: 1.w),
+                Text(
+                  _getSortLabel(currentSortBy),
+                  style: GoogleFonts.poppins(
+                    fontSize: 9.sp,
+                    color: AppTheme.lightTheme.colorScheme.onSurfaceVariant,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ],
     );
   }
 
-  Widget _buildFilterChip({
-    required String label,
-    required String icon,
-    required bool isActive,
-    required VoidCallback onTap,
+  Widget _buildFilterChip(
+    BuildContext context,
+    String label,
+    String value,
+    String currentValue,
+    Function(String) onChanged,
+    IconData icon, {
+    Color? color,
   }) {
+    final isSelected = currentValue == value;
+    final chipColor = color ?? AppTheme.lightTheme.colorScheme.primary;
+
     return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: EdgeInsets.symmetric(
-          horizontal: 4.w,
-          vertical: 1.h,
-        ),
+      onTap: () => onChanged(value),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: EdgeInsets.symmetric(horizontal: 3.w, vertical: 1.h),
         decoration: BoxDecoration(
-          color: isActive
-              ? AppTheme.lightTheme.colorScheme.primary.withValues(alpha: 0.1)
+          color: isSelected
+              ? chipColor.withOpacity(0.1)
               : AppTheme.lightTheme.colorScheme.surface,
+          borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isActive
-                ? AppTheme.lightTheme.colorScheme.primary
-                : AppTheme.lightTheme.colorScheme.outline,
-            width: isActive ? 2 : 1,
+            color: isSelected ? chipColor : AppTheme.lightTheme.dividerColor,
+            width: isSelected ? 1.5 : 1,
           ),
-          borderRadius: BorderRadius.circular(20),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            CustomIconWidget(
-              iconName: icon,
-              color: isActive
-                  ? AppTheme.lightTheme.colorScheme.primary
+            Icon(
+              icon,
+              color: isSelected
+                  ? chipColor
                   : AppTheme.lightTheme.colorScheme.onSurfaceVariant,
-              size: 16,
+              size: 14,
             ),
-            SizedBox(width: 2.w),
+            SizedBox(width: 1.w),
             Text(
               label,
-              style: AppTheme.lightTheme.textTheme.labelMedium?.copyWith(
-                color: isActive
-                    ? AppTheme.lightTheme.colorScheme.primary
+              style: GoogleFonts.poppins(
+                fontSize: 9.sp,
+                color: isSelected
+                    ? chipColor
                     : AppTheme.lightTheme.colorScheme.onSurfaceVariant,
-                fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
               ),
             ),
-            if (isActive) ...[
-              SizedBox(width: 2.w),
-              CustomIconWidget(
-                iconName: 'close',
-                color: AppTheme.lightTheme.colorScheme.primary,
-                size: 14,
-              ),
-            ],
           ],
         ),
       ),
     );
   }
 
-  String _formatDate(DateTime date) {
-    return '${date.day}/${date.month}/${date.year}';
-  }
-
-  void _showDateRangePicker(BuildContext context) async {
-    final DateTimeRange? picked = await showDateRangePicker(
-      context: context,
-      firstDate: DateTime.now().subtract(Duration(days: 365)),
-      lastDate: DateTime.now(),
-      initialDateRange: selectedDateRange,
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: AppTheme.lightTheme.colorScheme,
-          ),
-          child: child!,
-        );
-      },
-    );
-
-    if (picked != null) {
-      onDateRangeChanged(picked);
-    }
-  }
-
-  void _showCropTypeFilter(BuildContext context) {
+  void _showSortOptions(BuildContext context) {
     showModalBottomSheet(
       context: context,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (context) => Container(
-        padding: EdgeInsets.all(4.w),
+        padding: EdgeInsets.all(6.w),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Select Crop Type',
-              style: AppTheme.lightTheme.textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w600,
+              'Sort by',
+              style: GoogleFonts.poppins(
+                fontSize: 16.sp,
+                fontWeight: FontWeight.bold,
+                color: AppTheme.lightTheme.colorScheme.onSurface,
               ),
             ),
-            SizedBox(height: 2.h),
-            ...cropTypes
-                .map((type) => ListTile(
-                      title: Text(type),
-                      leading: Radio<String>(
-                        value: type,
-                        groupValue: selectedCropFilter ?? 'All Types',
-                        onChanged: (value) {
-                          onCropFilterChanged(
-                              value == 'All Types' ? null : value);
-                          Navigator.pop(context);
-                        },
-                        activeColor: AppTheme.lightTheme.colorScheme.primary,
-                      ),
-                      onTap: () {
-                        onCropFilterChanged(type == 'All Types' ? null : type);
-                        Navigator.pop(context);
-                      },
-                    ))
-                ,
+            SizedBox(height: 3.h),
+            _buildSortOption(
+                context, 'Newest First', 'newest', Icons.arrow_downward),
+            _buildSortOption(
+                context, 'Oldest First', 'oldest', Icons.arrow_upward),
+            _buildSortOption(
+                context, 'Highest Confidence', 'confidence', Icons.trending_up),
+            _buildSortOption(
+                context, 'Alphabetical', 'alphabetical', Icons.sort_by_alpha),
             SizedBox(height: 2.h),
           ],
         ),
@@ -247,76 +207,52 @@ class FilterOptionsWidget extends StatelessWidget {
     );
   }
 
-  void _showConfidenceFilter(BuildContext context) {
-    double tempThreshold = confidenceThreshold;
+  Widget _buildSortOption(
+      BuildContext context, String label, String value, IconData icon) {
+    final isSelected = currentSortBy == value;
 
-    showModalBottomSheet(
-      context: context,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+    return ListTile(
+      contentPadding: EdgeInsets.zero,
+      leading: Icon(
+        icon,
+        color: isSelected
+            ? AppTheme.lightTheme.colorScheme.primary
+            : AppTheme.lightTheme.colorScheme.onSurfaceVariant,
       ),
-      builder: (context) => StatefulBuilder(
-        builder: (context, setState) => Container(
-          padding: EdgeInsets.all(4.w),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Minimum Confidence Level',
-                style: AppTheme.lightTheme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              SizedBox(height: 2.h),
-              Text(
-                'Show detections with confidence ≥ ${(tempThreshold * 100).toInt()}%',
-                style: AppTheme.lightTheme.textTheme.bodyMedium?.copyWith(
-                  color: AppTheme.lightTheme.colorScheme.onSurfaceVariant,
-                ),
-              ),
-              SizedBox(height: 2.h),
-              Slider(
-                value: tempThreshold,
-                min: 0.0,
-                max: 1.0,
-                divisions: 10,
-                label: '${(tempThreshold * 100).toInt()}%',
-                onChanged: (value) {
-                  setState(() {
-                    tempThreshold = value;
-                  });
-                },
-                activeColor: AppTheme.lightTheme.colorScheme.primary,
-              ),
-              SizedBox(height: 2.h),
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
-                      child: Text('Cancel'),
-                    ),
-                  ),
-                  SizedBox(width: 4.w),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () {
-                        onConfidenceChanged(tempThreshold);
-                        Navigator.pop(context);
-                      },
-                      child: Text('Apply'),
-                    ),
-                  ),
-                ],
-              ),
-              SizedBox(height: 2.h),
-            ],
-          ),
+      title: Text(
+        label,
+        style: GoogleFonts.poppins(
+          color: isSelected
+              ? AppTheme.lightTheme.colorScheme.primary
+              : AppTheme.lightTheme.colorScheme.onSurface,
+          fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
         ),
       ),
+      trailing: isSelected
+          ? Icon(
+              Icons.check,
+              color: AppTheme.lightTheme.colorScheme.primary,
+            )
+          : null,
+      onTap: () {
+        onSortChanged(value);
+        Navigator.pop(context);
+      },
     );
+  }
+
+  String _getSortLabel(String sortBy) {
+    switch (sortBy) {
+      case 'newest':
+        return 'Newest';
+      case 'oldest':
+        return 'Oldest';
+      case 'confidence':
+        return 'Confidence';
+      case 'alphabetical':
+        return 'A-Z';
+      default:
+        return 'Sort';
+    }
   }
 }

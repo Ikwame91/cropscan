@@ -34,86 +34,86 @@ class FarmingAlertsProvider extends ChangeNotifier {
       // Mock data for demonstration. In a real app, this would come from an API.
       _farmingAlerts = [
         // Disease detection alerts
-        FarmingAlert(
-          id: "alert_001",
-          title: "🍅 Tomato Disease Alert",
-          message:
-              "Early blight detected in tomato field. Apply fungicide treatment and remove affected leaves immediately.",
-          priority: "critical",
-          type: "disease",
-          timestamp: DateTime.now().subtract(const Duration(minutes: 15)),
-          isRead: false,
-        ),
-        FarmingAlert(
-          id: "alert_002",
-          title: "🌽 Corn Rust Warning",
-          message:
-              "Common rust spotted on corn plants in Field B. Consider applying rust-resistant varieties.",
-          priority: "high",
-          type: "disease",
-          timestamp: DateTime.now().subtract(const Duration(hours: 2)),
-          isRead: false,
-        ),
-        FarmingAlert(
-          id: "alert_003",
-          title: "🫑 Pepper Bacterial Spot",
-          message:
-              "Bacterial spot detected on bell peppers. Remove affected plants and apply copper-based bactericide.",
-          priority: "critical",
-          type: "disease",
-          timestamp: DateTime.now().subtract(const Duration(hours: 4)),
-          isRead: false,
-        ),
-        FarmingAlert(
-          id: "alert_004",
-          title: "🕷️ Spider Mite Infestation",
-          message:
-              "Two-spotted spider mites found on tomato plants. Apply miticide and increase humidity levels.",
-          priority: "high",
-          type: "pest",
-          timestamp: DateTime.now().subtract(const Duration(hours: 6)),
-          isRead: true,
-        ),
-        FarmingAlert(
-          id: "alert_005",
-          title: "🍃 Corn Leaf Blight Alert",
-          message:
-              "Northern leaf blight detected in corn section. Use resistant varieties and fungicide treatment.",
-          priority: "high",
-          type: "disease",
-          timestamp: DateTime.now().subtract(const Duration(hours: 8)),
-          isRead: false,
-        ),
-        FarmingAlert(
-          id: "alert_006",
-          title: "🦠 Tomato Virus Warning",
-          message:
-              "Yellow leaf curl virus detected. Remove infected plants and control whitefly vectors immediately.",
-          priority: "critical",
-          type: "virus",
-          timestamp: DateTime.now().subtract(const Duration(hours: 12)),
-          isRead: false,
-        ),
-        FarmingAlert(
-          id: "alert_007",
-          title: "✅ Healthy Crop Update",
-          message:
-              "Great news! Your recent scans show healthy tomato and pepper plants in Field A.",
-          priority: "low",
-          type: "health",
-          timestamp: DateTime.now().subtract(const Duration(days: 1)),
-          isRead: true,
-        ),
-        FarmingAlert(
-          id: "alert_008",
-          title: "💧 Irrigation Reminder",
-          message:
-              "Based on recent disease detections, ensure proper drainage to prevent fungal growth.",
-          priority: "medium",
-          type: "irrigation",
-          timestamp: DateTime.now().subtract(const Duration(days: 1, hours: 3)),
-          isRead: false,
-        ),
+        // FarmingAlert(
+        //   id: "alert_001",
+        //   title: "🍅 Tomato Disease Alert",
+        //   message:
+        //       "Early blight detected in tomato field. Apply fungicide treatment and remove affected leaves immediately.",
+        //   priority: "critical",
+        //   type: "disease",
+        //   timestamp: DateTime.now().subtract(const Duration(minutes: 15)),
+        //   isRead: false,
+        // ),
+        // FarmingAlert(
+        //   id: "alert_002",
+        //   title: "🌽 Corn Rust Warning",
+        //   message:
+        //       "Common rust spotted on corn plants in Field B. Consider applying rust-resistant varieties.",
+        //   priority: "high",
+        //   type: "disease",
+        //   timestamp: DateTime.now().subtract(const Duration(hours: 2)),
+        //   isRead: false,
+        // ),
+        // FarmingAlert(
+        //   id: "alert_003",
+        //   title: "🫑 Pepper Bacterial Spot",
+        //   message:
+        //       "Bacterial spot detected on bell peppers. Remove affected plants and apply copper-based bactericide.",
+        //   priority: "critical",
+        //   type: "disease",
+        //   timestamp: DateTime.now().subtract(const Duration(hours: 4)),
+        //   isRead: false,
+        // ),
+        // FarmingAlert(
+        //   id: "alert_004",
+        //   title: "🕷️ Spider Mite Infestation",
+        //   message:
+        //       "Two-spotted spider mites found on tomato plants. Apply miticide and increase humidity levels.",
+        //   priority: "high",
+        //   type: "pest",
+        //   timestamp: DateTime.now().subtract(const Duration(hours: 6)),
+        //   isRead: true,
+        // ),
+        // FarmingAlert(
+        //   id: "alert_005",
+        //   title: "🍃 Corn Leaf Blight Alert",
+        //   message:
+        //       "Northern leaf blight detected in corn section. Use resistant varieties and fungicide treatment.",
+        //   priority: "high",
+        //   type: "disease",
+        //   timestamp: DateTime.now().subtract(const Duration(hours: 8)),
+        //   isRead: false,
+        // ),
+        // FarmingAlert(
+        //   id: "alert_006",
+        //   title: "🦠 Tomato Virus Warning",
+        //   message:
+        //       "Yellow leaf curl virus detected. Remove infected plants and control whitefly vectors immediately.",
+        //   priority: "critical",
+        //   type: "virus",
+        //   timestamp: DateTime.now().subtract(const Duration(hours: 12)),
+        //   isRead: false,
+        // ),
+        // FarmingAlert(
+        //   id: "alert_007",
+        //   title: "✅ Healthy Crop Update",
+        //   message:
+        //       "Great news! Your recent scans show healthy tomato and pepper plants in Field A.",
+        //   priority: "low",
+        //   type: "health",
+        //   timestamp: DateTime.now().subtract(const Duration(days: 1)),
+        //   isRead: true,
+        // ),
+        // FarmingAlert(
+        //   id: "alert_008",
+        //   title: "💧 Irrigation Reminder",
+        //   message:
+        //       "Based on recent disease detections, ensure proper drainage to prevent fungal growth.",
+        //   priority: "medium",
+        //   type: "irrigation",
+        //   timestamp: DateTime.now().subtract(const Duration(days: 1, hours: 3)),
+        //   isRead: false,
+        // ),
       ];
       _errorMessage = null; // Clear any previous errors
     } catch (e) {

@@ -215,7 +215,7 @@ class DashboardHome extends StatelessWidget {
                             child: Column(
                               children: [
                                 CustomIconWidget(
-                                  iconName: 'camera_alt',
+                                  iconName: 'eco',
                                   color:
                                       AppTheme.lightTheme.colorScheme.primary,
                                   size: 48,
