@@ -623,22 +623,98 @@ class CropScannerCameraState extends State<CropScannerCamera>
   void _showNonCropDialog() {
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           title: Row(
             children: [
-              Icon(Icons.info_outline, color: Colors.orange),
-              SizedBox(width: 8),
-              Text("Not a Crop"),
+              Container(
+                padding: EdgeInsets.all(2.w),
+                decoration: BoxDecoration(
+                  color: Colors.orange.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.search_off,
+                  color: Colors.orange,
+                  size: 24,
+                ),
+              ),
+              SizedBox(width: 3.w),
+              Expanded(
+                child: Text(
+                  "Object Not Recognized",
+                  style: AppTheme.lightTheme.textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
             ],
           ),
-          content: Text(
-            "The image doesn't appear to contain a recognizable crop. Please take a clear photo of a crop leaf or plant.",
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "I couldn't identify this as a crop plant. This could be because:",
+                style: AppTheme.lightTheme.textTheme.bodyLarge?.copyWith(
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              SizedBox(height: 2.h),
+              _buildTipItem("📱", "The object isn't a fveaf or plant"),
+              _buildTipItem("🌿", "The crop type isn't in my database yet"),
+              _buildTipItem("📸", "The image quality needs improvement"),
+              _buildTipItem("💡", "Try focusing on individual leaves"),
+              SizedBox(height: 2.h),
+              Container(
+                padding: EdgeInsets.all(3.w),
+                decoration: BoxDecoration(
+                  color: Colors.blue.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.lightbulb, color: Colors.blue, size: 20),
+                    SizedBox(width: 2.w),
+                    Expanded(
+                      child: Text(
+                        "For best results, capture clear images of crop leaves with good lighting",
+                        style:
+                            AppTheme.lightTheme.textTheme.bodySmall?.copyWith(
+                          color: Colors.blue.shade700,
+                          fontStyle: FontStyle.italic,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: Text("OK"),
+              child: Text(
+                "Try Again",
+                style: TextStyle(
+                  color: AppTheme.lightTheme.colorScheme.primary,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            ElevatedButton.icon(
+              onPressed: () {
+                Navigator.of(context).pop();
+                _showCropGuidance();
+              },
+              icon: Icon(Icons.help_outline, size: 16),
+              label: Text("View Tips"),
+              style: ElevatedButton.styleFrom(
+                padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 1.h),
+              ),
             ),
           ],
         );
@@ -646,30 +722,246 @@ class CropScannerCameraState extends State<CropScannerCamera>
     );
   }
 
-  void _showLowConfidenceDialog(String detectedLabel, double confidence) {
+  Widget _buildTipItem(String emoji, String text) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: 1.h),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            emoji,
+            style: TextStyle(fontSize: 14.sp),
+          ),
+          SizedBox(width: 3.w),
+          Expanded(
+            child: Text(
+              text,
+              style: AppTheme.lightTheme.textTheme.bodyMedium,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showCropGuidance() {
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           title: Row(
             children: [
-              Icon(Icons.warning_amber, color: Colors.orange),
-              SizedBox(width: 8),
-              Text("Low Confidence"),
+              Icon(Icons.school,
+                  color: AppTheme.lightTheme.colorScheme.primary),
+              SizedBox(width: 2.w),
+              Text("Scanning Tips"),
             ],
           ),
-          content: Text(
-            "Detected: $detectedLabel (${(confidence * 100).toStringAsFixed(1)}%)\n\n"
-            "The confidence is low. Try taking a clearer photo with better lighting and focus on the crop leaves.",
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _buildGuidanceCard(
+                  "📋 Supported Crops",
+                  "Corn/Maize, Tomato, Bell Pepper",
+                  Icons.eco,
+                  Colors.green,
+                ),
+                SizedBox(height: 2.h),
+                _buildGuidanceCard(
+                  "📸 Best Practices",
+                  "• Focus on individual leaves\n• Ensure good lighting\n• Keep camera steady\n• Fill the frame with the leaf",
+                  Icons.camera_alt,
+                  Colors.blue,
+                ),
+                SizedBox(height: 2.h),
+                _buildGuidanceCard(
+                  "⚡ Quick Tips",
+                  "• Natural lighting works best\n• Avoid shadows\n• Clean the camera lens\n• Try different angles",
+                  Icons.tips_and_updates,
+                  Colors.orange,
+                ),
+              ],
+            ),
           ),
           actions: [
-            TextButton(
+            ElevatedButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: Text("OK"),
+              child: Text("Got it!"),
             ),
           ],
         );
       },
+    );
+  }
+
+  Widget _buildGuidanceCard(
+      String title, String content, IconData icon, Color color) {
+    return Container(
+      padding: EdgeInsets.all(3.w),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withOpacity(0.3)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, color: color, size: 20),
+              SizedBox(width: 2.w),
+              Text(
+                title,
+                style: AppTheme.lightTheme.textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: color,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 1.h),
+          Text(
+            content,
+            style: AppTheme.lightTheme.textTheme.bodySmall?.copyWith(
+              color: AppTheme.lightTheme.colorScheme.onSurface,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showLowConfidenceDialog(String detectedLabel, double confidence) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Row(
+            children: [
+              Container(
+                padding: EdgeInsets.all(2.w),
+                decoration: BoxDecoration(
+                  color: Colors.amber.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.warning_amber,
+                  color: Colors.amber,
+                  size: 24,
+                ),
+              ),
+              SizedBox(width: 3.w),
+              Expanded(
+                child: Text(
+                  "Uncertain Detection",
+                  style: AppTheme.lightTheme.textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: EdgeInsets.all(3.w),
+                decoration: BoxDecoration(
+                  color: Colors.grey.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.analytics,
+                        color: Colors.grey.shade600, size: 20),
+                    SizedBox(width: 2.w),
+                    Expanded(
+                      child: Text(
+                        "Detected: $detectedLabel\nConfidence: ${(confidence * 100).toStringAsFixed(1)}%",
+                        style:
+                            AppTheme.lightTheme.textTheme.bodyMedium?.copyWith(
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(height: 2.h),
+              Text(
+                "The detection confidence is lower than usual. For more accurate results:",
+                style: AppTheme.lightTheme.textTheme.bodyLarge,
+              ),
+              SizedBox(height: 1.5.h),
+              _buildImprovementTip("🔍", "Move closer to the crop leaf"),
+              _buildImprovementTip("💡", "Improve lighting conditions"),
+              _buildImprovementTip("📱", "Keep the camera steady"),
+              _buildImprovementTip("🎯", "Focus on a single, clear leaf"),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text(
+                "Try Again",
+                style: TextStyle(
+                  color: AppTheme.lightTheme.colorScheme.primary,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                // Optionally proceed with the uncertain result
+                _proceedWithUncertainResult(detectedLabel, confidence);
+              },
+              child: Text("Proceed Anyway"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildImprovementTip(String emoji, String text) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: 0.8.h),
+      child: Row(
+        children: [
+          Text(emoji, style: TextStyle(fontSize: 12.sp)),
+          SizedBox(width: 2.w),
+          Expanded(
+            child: Text(
+              text,
+              style: AppTheme.lightTheme.textTheme.bodySmall,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _proceedWithUncertainResult(String detectedLabel, double confidence) {
+    // Navigate to results even with low confidence, but mark it as uncertain
+    final CropInfo cropInfo = CropInfoMapper.getCropInfo(detectedLabel);
+
+    Navigator.pushNamed(
+      context,
+      AppRoutes.cropDetectionResults,
+      arguments: CropDetectionResultsArgs(
+        imagePath: _cameraController!.value.previewSize?.toString() ?? '',
+        detectedCrop: detectedLabel,
+        confidence: confidence,
+        cropInfo: cropInfo,
+        isFromHistory: false,
+      ),
     );
   }
 
