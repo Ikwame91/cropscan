@@ -1,4 +1,5 @@
 import 'package:cropscan_pro/core/services/tf_lite_model_services.dart';
+import 'package:cropscan_pro/providers/crop_care_provider.dart';
 import 'package:cropscan_pro/providers/detection_history_provider.dart';
 import 'package:cropscan_pro/providers/farming_alerts_provider.dart';
 import 'package:cropscan_pro/providers/naviagtion_provider.dart';
@@ -36,6 +37,10 @@ void main() async {
       ),
       ChangeNotifierProvider(
         create: (_) => FarmingAlertsProvider(),
+        lazy: true,
+      ),
+      ChangeNotifierProvider(
+        create: (_) => CropCareProvider(),
         lazy: true,
       ),
       ChangeNotifierProvider(

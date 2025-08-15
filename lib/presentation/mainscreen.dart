@@ -5,7 +5,7 @@ import 'package:cropscan_pro/providers/naviagtion_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:cropscan_pro/presentation/dashboard_home/dashboard_home.dart';
 import 'package:cropscan_pro/presentation/crop_scanner_camera/crop_scanner_camera.dart';
-import 'package:cropscan_pro/presentation/weather_dashboard/weather_dashboard.dart';
+import 'package:cropscan_pro/presentation/cropcare_dashboard/cropcare.dart';
 import 'package:cropscan_pro/presentation/alert_screen/cropscreen.dart';
 import 'package:cropscan_pro/presentation/user_profile_settings/user_profile_settings.dart';
 import 'package:provider/provider.dart';
@@ -47,7 +47,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     _screens = [
       const DashboardHome(),
       CropScannerCamera(key: _cameraScreenKey),
-      const WeatherDashboard(),
+      const CropCareDashboard(),
       const CropScreen(),
       const UserProfileSettings(),
     ];

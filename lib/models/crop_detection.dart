@@ -87,6 +87,9 @@ class CropDetection {
     );
   }
 
+  bool get isDiseaseDetected => status.toLowerCase().contains('disease');
+  bool get isPestDetected => status.toLowerCase().contains('pest');
+  bool get isHealthy => !isDiseaseDetected && !isPestDetected;
   String toJson() => json.encode(toMap());
 
   factory CropDetection.fromJson(String source) =>

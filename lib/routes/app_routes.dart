@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 import '../presentation/dashboard_home/dashboard_home.dart';
 import '../presentation/crop_scanner_camera/crop_scanner_camera.dart';
 import '../presentation/user_profile_settings/user_profile_settings.dart';
-import '../presentation/weather_dashboard/weather_dashboard.dart';
+import '../presentation/cropcare_dashboard/cropcare.dart';
 import '../presentation/detection_history/detection_history.dart';
 
 class AppRoutes {
@@ -18,6 +18,7 @@ class AppRoutes {
   static const String cropDetectionResults = '/crop-detection-results';
   static const String weatherDashboard = '/weather-dashboard';
   static const String detectionHistory = '/detection-history';
+  static const String cropcareDashboard = '/cropcare-dashboard';
   static const String userProfileSettings = '/user-profile-settings';
   static const String cropscreen = '/cropscreen';
 
@@ -25,7 +26,7 @@ class AppRoutes {
     initial: (context) => MainScreen(),
     dashboardHome: (context) => const DashboardHome(),
     cropScannerCamera: (context) => const CropScannerCamera(),
-    weatherDashboard: (context) => const WeatherDashboard(),
+    cropcareDashboard: (context) => const CropCareDashboard(),
     detectionHistory: (context) => const DetectionHistory(),
     cropscreen: (context) => const CropScreen(),
     userProfileSettings: (context) => const UserProfileSettings(),
