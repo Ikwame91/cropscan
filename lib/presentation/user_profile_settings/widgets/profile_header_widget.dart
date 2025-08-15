@@ -1,260 +1,230 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:sizer/sizer.dart';
-
 import '../../../core/app_export.dart';
+import '../../../models/user_profile.dart';
 
 class ProfileHeaderWidget extends StatelessWidget {
-  final Map<String, dynamic> userData;
-  final VoidCallback onEditProfile;
+  final UserProfile? userProfile;
+  final int totalScans;
+  final List<String> cropsDetected;
+  final String lastScanDate;
+  final VoidCallback? onEditName;
+  final VoidCallback? onEditRegion;
+  final VoidCallback? onUpdateProfilePicture;
 
   const ProfileHeaderWidget({
-    super.key,
-    required this.userData,
-    required this.onEditProfile,
-  });
+    Key? key,
+    this.userProfile,
+    required this.totalScans,
+    required this.cropsDetected,
+    required this.lastScanDate,
+    this.onEditName,
+    this.onEditRegion,
+    this.onUpdateProfilePicture,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(
+    final userName = userProfile?.name ?? 'Local Farmer';
+    final userRegion = userProfile?.region ?? 'Ghana';
+    final profileImagePath = userProfile?.profileImagePath;
+
+    return Container(
+      padding: EdgeInsets.all(4.w),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            AppTheme.lightTheme.colorScheme.primary,
+            AppTheme.lightTheme.colorScheme.primary.withOpacity(0.8),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
         borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: AppTheme.lightTheme.colorScheme.primary.withOpacity(0.3),
+            blurRadius: 12,
+            offset: Offset(0, 4),
+          ),
+        ],
       ),
-      child: Padding(
-        padding: EdgeInsets.all(4.w),
-        child: Column(
-          children: [
-            Row(
-              children: [
-                // Profile Avatar
-                GestureDetector(
-                  onTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                          content:
-                              Text('Change profile picture functionality')),
-                    );
-                  },
-                  child: Stack(
-                    children: [
-                      Container(
-                        width: 20.w,
-                        height: 20.w,
+      child: Column(
+        children: [
+          Row(
+            children: [
+              // Profile Avatar with Update Option
+              GestureDetector(
+                onTap: onUpdateProfilePicture,
+                child: Stack(
+                  children: [
+                    Container(
+                      width: 20.w,
+                      height: 20.w,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white,
+                        border: Border.all(color: Colors.white, width: 3),
+                      ),
+                      child: ClipOval(
+                        child: profileImagePath != null &&
+                                File(profileImagePath).existsSync()
+                            ? Image.file(
+                                File(profileImagePath),
+                                fit: BoxFit.cover,
+                              )
+                            : Icon(
+                                Icons.person,
+                                size: 10.w,
+                                color: AppTheme.lightTheme.colorScheme.primary,
+                              ),
+                      ),
+                    ),
+                    Positioned(
+                      bottom: 0,
+                      right: 0,
+                      child: Container(
+                        padding: EdgeInsets.all(1.w),
                         decoration: BoxDecoration(
+                          color: Colors.white,
                           shape: BoxShape.circle,
-                          border: Border.all(
-                            color: AppTheme.lightTheme.colorScheme.primary,
-                            width: 2,
-                          ),
+                          border: Border.all(color: Colors.white, width: 2),
                         ),
-                        child: ClipOval(
-                          child: CustomImageWidget(
-                            imageUrl: userData["avatar"] as String,
-                            width: 20.w,
-                            height: 20.w,
-                            fit: BoxFit.cover,
-                          ),
+                        child: Icon(
+                          Icons.camera_alt,
+                          size: 4.w,
+                          color: AppTheme.lightTheme.colorScheme.primary,
                         ),
                       ),
-                      Positioned(
-                        bottom: 0,
-                        right: 0,
-                        child: Container(
-                          width: 6.w,
-                          height: 6.w,
-                          decoration: BoxDecoration(
-                            color: AppTheme.lightTheme.colorScheme.primary,
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: AppTheme.lightTheme.colorScheme.surface,
-                              width: 2,
-                            ),
-                          ),
-                          child: CustomIconWidget(
-                            iconName: 'camera_alt',
-                            color: AppTheme.lightTheme.colorScheme.onPrimary,
-                            size: 12,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
+              ),
 
-                SizedBox(width: 4.w),
+              SizedBox(width: 4.w),
 
-                // User Information
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              userData["name"] as String,
-                              style: GoogleFonts.poppins(
-                                textStyle: AppTheme
-                                    .lightTheme.textTheme.titleLarge
-                                    ?.copyWith(
-                                  fontWeight: FontWeight.w600,
-                                  color:
-                                      AppTheme.lightTheme.colorScheme.onSurface,
-                                ),
-                              ),
-                              overflow: TextOverflow.ellipsis,
+              // Farmer Info
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            userName,
+                            style: AppTheme.lightTheme.textTheme.titleLarge
+                                ?.copyWith(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
+                        ),
+                        if (onEditName != null)
                           IconButton(
-                            onPressed: onEditProfile,
-                            icon: CustomIconWidget(
-                              iconName: 'edit',
-                              color: AppTheme.lightTheme.colorScheme.primary,
-                              size: 20,
-                            ),
-                            constraints: BoxConstraints(
-                              minWidth: 8.w,
-                              minHeight: 8.w,
-                            ),
+                            onPressed: onEditName,
+                            icon:
+                                Icon(Icons.edit, color: Colors.white, size: 20),
+                            padding: EdgeInsets.zero,
+                            constraints: BoxConstraints(),
                           ),
-                        ],
-                      ),
-                      SizedBox(height: 0.5.h),
-                      Row(
+                      ],
+                    ),
+                    SizedBox(height: 0.5.h),
+                    GestureDetector(
+                      onTap: onEditRegion,
+                      child: Row(
                         children: [
-                          CustomIconWidget(
-                            iconName: 'location_on',
-                            color: AppTheme.lightTheme.colorScheme.secondary,
-                            size: 16,
-                          ),
-                          SizedBox(width: 1.w),
-                          Expanded(
-                            child: Text(
-                              userData["location"] as String,
-                              style: GoogleFonts.poppins(
-                                textStyle: AppTheme
-                                    .lightTheme.textTheme.bodyMedium
-                                    ?.copyWith(
-                                  color: AppTheme
-                                      .lightTheme.colorScheme.onSurface
-                                      .withValues(alpha: 0.7),
-                                ),
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 0.5.h),
-                      Row(
-                        children: [
-                          CustomIconWidget(
-                            iconName: 'landscape',
-                            color: AppTheme.lightTheme.colorScheme.secondary,
-                            size: 16,
-                          ),
+                          Icon(Icons.location_on,
+                              color: Colors.white70, size: 16),
                           SizedBox(width: 1.w),
                           Text(
-                            'Farm Size: ${userData["farmSize"]}',
-                            style: GoogleFonts.poppins(
-                              textStyle: AppTheme
-                                  .lightTheme.textTheme.bodyMedium
-                                  ?.copyWith(
-                                color: AppTheme.lightTheme.colorScheme.onSurface
-                                    .withValues(alpha: 0.7),
-                              ),
+                            userRegion,
+                            style: AppTheme.lightTheme.textTheme.bodyMedium
+                                ?.copyWith(
+                              color: Colors.white70,
                             ),
                           ),
+                          if (onEditRegion != null) ...[
+                            SizedBox(width: 1.w),
+                            Icon(Icons.edit, color: Colors.white70, size: 14),
+                          ],
                         ],
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-
-            SizedBox(height: 2.h),
-
-            // Quick Stats Row
-            Container(
-              padding: EdgeInsets.symmetric(vertical: 1.h, horizontal: 2.w),
-              decoration: BoxDecoration(
-                color: AppTheme.lightTheme.colorScheme.primary
-                    .withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(12),
               ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  _buildStatItem(
-                    icon: 'eco',
-                    label: 'Crops',
-                    value: '${(userData["cropInterests"] as List).length}',
-                  ),
-                  Container(
-                    width: 1,
-                    height: 4.h,
-                    color: AppTheme.lightTheme.colorScheme.primary
-                        .withValues(alpha: 0.3),
-                  ),
-                  _buildStatItem(
-                    icon: 'trending_up',
-                    label: 'Experience',
-                    value: userData["experienceLevel"] as String,
-                  ),
-                  Container(
-                    width: 1,
-                    height: 4.h,
-                    color: AppTheme.lightTheme.colorScheme.primary
-                        .withValues(alpha: 0.3),
-                  ),
-                  _buildStatItem(
-                    icon: 'agriculture',
-                    label: 'Farm Type',
-                    value: userData["farmType"] as String,
-                  ),
-                ],
+            ],
+          ),
+
+          SizedBox(height: 3.h),
+
+          // Stats Row (Real Data)
+          Row(
+            children: [
+              _buildStatItem(
+                icon: Icons.scanner,
+                label: "Total Scans",
+                value: "$totalScans",
               ),
-            ),
-          ],
-        ),
+              SizedBox(width: 4.w),
+              _buildStatItem(
+                icon: Icons.eco,
+                label: "Crops Found",
+                value: "${cropsDetected.length}",
+              ),
+              SizedBox(width: 4.w),
+              _buildStatItem(
+                icon: Icons.calendar_today,
+                label: "Last Scan",
+                value: lastScanDate,
+                isSmallText: true,
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildStatItem({
-    required String icon,
+    required IconData icon,
     required String label,
     required String value,
+    bool isSmallText = false,
   }) {
-    return Column(
-      children: [
-        CustomIconWidget(
-          iconName: icon,
-          color: AppTheme.lightTheme.colorScheme.primary,
-          size: 20,
+    return Expanded(
+      child: Container(
+        padding: EdgeInsets.symmetric(vertical: 2.h),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.15),
+          borderRadius: BorderRadius.circular(12),
         ),
-        SizedBox(height: 0.5.h),
-        Text(
-          label,
-          style: GoogleFonts.poppins(
-            textStyle: AppTheme.lightTheme.textTheme.labelSmall?.copyWith(
-              color: AppTheme.lightTheme.colorScheme.onSurfaceVariant,
+        child: Column(
+          children: [
+            Icon(icon, color: Colors.white, size: 24),
+            SizedBox(height: 0.5.h),
+            Text(
+              value,
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: isSmallText ? 10.sp : 14.sp,
+                fontWeight: FontWeight.bold,
+              ),
             ),
-          ),
-        ),
-        Text(
-          value,
-          style: GoogleFonts.poppins(
-            textStyle: AppTheme.lightTheme.textTheme.labelMedium?.copyWith(
-              fontWeight: FontWeight.w600,
-              color: AppTheme.lightTheme.colorScheme.primary,
+            Text(
+              label,
+              style: TextStyle(
+                color: Colors.white70,
+                fontSize: 8.sp,
+              ),
+              textAlign: TextAlign.center,
             ),
-          ),
-          overflow: TextOverflow.ellipsis,
+          ],
         ),
-      ],
+      ),
     );
   }
 }
