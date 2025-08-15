@@ -140,8 +140,9 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                 label: 'Scan',
               ),
               BottomNavigationBarItem(
-                icon: Icon(Icons.cloud),
-                label: 'Weather',
+                icon: Icon(Icons.eco_outlined),
+                activeIcon: Icon(Icons.eco),
+                label: 'Crop Guide',
               ),
               BottomNavigationBarItem(
                 icon: Icon(Icons.grass),

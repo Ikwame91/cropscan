@@ -94,7 +94,7 @@ class QuickActionsWidget extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: AppTheme.lightTheme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(15),
         border: Border.all(
           color: action.color.withOpacity(0.3),
         ),

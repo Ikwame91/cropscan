@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:sizer/sizer.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/app_export.dart';
 import '../../../../providers/crop_care_provider.dart';
 import '../../../../models/crop_care_tip.dart';
@@ -30,48 +31,51 @@ class DiseaseLibraryWidget extends StatelessWidget {
 
   Widget _buildSectionHeader(BuildContext context) {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Row(
-          children: [
-            Container(
-              padding: EdgeInsets.all(2.w),
-              decoration: BoxDecoration(
-                color: Colors.red.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Icon(
-                Icons.menu_book,
-                color: Colors.red,
-                size: 20,
-              ),
-            ),
-            SizedBox(width: 3.w),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  "Disease Library",
-                  style: AppTheme.lightTheme.textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+        Container(
+          padding: EdgeInsets.all(2.w),
+          decoration: BoxDecoration(
+            color: Colors.red.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(
+            Icons.menu_book,
+            color: Colors.red,
+            size: 20,
+          ),
+        ),
+        SizedBox(width: 3.w),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "Disease Library",
+                style: GoogleFonts.poppins(
+                  fontSize: 15.sp,
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.lightTheme.colorScheme.onSurface,
                 ),
-                SizedBox(height: 0.5.h),
-                Text(
-                  "Learn about common crop diseases",
-                  style: AppTheme.lightTheme.textTheme.bodyMedium?.copyWith(
-                    color: AppTheme.lightTheme.colorScheme.onSurface
-                        .withOpacity(0.7),
-                  ),
+              ),
+              SizedBox(height: 0.5.h),
+              Text(
+                "Learn about common crop diseases",
+                style: GoogleFonts.inter(
+                  fontSize: 11.sp,
+                  color: AppTheme.lightTheme.colorScheme.onSurface
+                      .withValues(alpha: 0.7),
                 ),
-              ],
-            ),
-          ],
+              ),
+            ],
+          ),
         ),
         TextButton.icon(
           onPressed: () => _showFullLibrary(context),
           icon: Icon(Icons.library_books, size: 16),
-          label: Text("View All"),
+          label: Text(
+            "View All",
+            style: GoogleFonts.inter(fontSize: 10.sp),
+          ),
           style: TextButton.styleFrom(
             padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 1.h),
           ),
@@ -95,9 +99,9 @@ class DiseaseLibraryWidget extends StatelessWidget {
           physics: NeverScrollableScrollPhysics(),
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 2,
-            childAspectRatio: 0.8,
-            crossAxisSpacing: 3.w,
-            mainAxisSpacing: 2.h,
+            childAspectRatio: 0.53,
+            crossAxisSpacing: 4.w,
+            mainAxisSpacing: 3.h,
           ),
           itemCount: relevantDiseases.length.clamp(0, 4), // Show max 4 in grid
           itemBuilder: (context, index) =>
@@ -580,35 +584,370 @@ class _DiseaseDetailsBottomSheet extends StatelessWidget {
   }
 }
 
-class _FullDiseaseLibraryScreen extends StatelessWidget {
+// Replace the _FullDiseaseLibraryScreen class with this improved version:
+class _FullDiseaseLibraryScreen extends StatefulWidget {
   final List<String> userCrops;
 
   const _FullDiseaseLibraryScreen({required this.userCrops});
 
   @override
+  State<_FullDiseaseLibraryScreen> createState() =>
+      _FullDiseaseLibraryScreenState();
+}
+
+class _FullDiseaseLibraryScreenState extends State<_FullDiseaseLibraryScreen> {
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Disease Library"),
+        title: Text(
+          "Disease Library",
+          style: GoogleFonts.poppins(
+            fontWeight: FontWeight.w600,
+          ),
+        ),
         backgroundColor: AppTheme.lightTheme.colorScheme.surface,
+        elevation: 0,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
       ),
-      body: Consumer<CropCareProvider>(
-        builder: (context, cropCareProvider, child) {
-          final allDiseases = cropCareProvider.getTipsByCategory('disease');
+      body: Column(
+        children: [
+          // Search Bar
+          Container(
+            margin: EdgeInsets.all(4.w),
+            decoration: BoxDecoration(
+              color: AppTheme.lightTheme.colorScheme.surface,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: AppTheme.lightTheme.colorScheme.outline.withOpacity(0.2),
+              ),
+            ),
+            child: TextField(
+              controller: _searchController,
+              onChanged: (value) {
+                setState(() {
+                  _searchQuery = value.toLowerCase();
+                });
+              },
+              decoration: InputDecoration(
+                hintText: 'Search diseases, symptoms, or crops...',
+                hintStyle: GoogleFonts.inter(
+                  fontSize: 12.sp,
+                  color: Colors.grey[500],
+                ),
+                prefixIcon: Icon(Icons.search, color: Colors.grey[500]),
+                suffixIcon: _searchQuery.isNotEmpty
+                    ? IconButton(
+                        icon: Icon(Icons.clear, color: Colors.grey[500]),
+                        onPressed: () {
+                          _searchController.clear();
+                          setState(() {
+                            _searchQuery = '';
+                          });
+                        },
+                      )
+                    : null,
+                border: InputBorder.none,
+                contentPadding:
+                    EdgeInsets.symmetric(horizontal: 4.w, vertical: 2.h),
+              ),
+            ),
+          ),
 
-          return ListView.builder(
-            padding: EdgeInsets.all(4.w),
-            itemCount: allDiseases.length,
-            itemBuilder: (context, index) {
-              return Container(
-                margin: EdgeInsets.only(bottom: 2.h),
-                child: DiseaseLibraryWidget(
-                    userCrops: [allDiseases[index].cropTypes.first]),
-              );
-            },
-          );
-        },
+          // Disease List
+          Expanded(
+            child: Consumer<CropCareProvider>(
+              builder: (context, cropCareProvider, child) {
+                final allDiseases =
+                    cropCareProvider.getTipsByCategory('disease');
+
+                // Filter diseases based on search query
+                final filteredDiseases = _searchQuery.isEmpty
+                    ? allDiseases
+                    : allDiseases.where((disease) {
+                        return disease.title
+                                .toLowerCase()
+                                .contains(_searchQuery) ||
+                            disease.description
+                                .toLowerCase()
+                                .contains(_searchQuery) ||
+                            disease.cropTypes.any((crop) =>
+                                crop.toLowerCase().contains(_searchQuery)) ||
+                            disease.symptoms.any((symptom) =>
+                                symptom.toLowerCase().contains(_searchQuery));
+                      }).toList();
+
+                if (filteredDiseases.isEmpty) {
+                  return _buildNoResultsState();
+                }
+
+                return ListView.separated(
+                  padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 2.h),
+                  itemCount: filteredDiseases.length,
+                  separatorBuilder: (context, index) => SizedBox(height: 2.h),
+                  itemBuilder: (context, index) {
+                    final disease = filteredDiseases[index];
+                    return _buildFullDiseaseCard(context, disease);
+                  },
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
+  }
+
+  Widget _buildNoResultsState() {
+    return Center(
+      child: Padding(
+        padding: EdgeInsets.all(6.w),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.search_off,
+              size: 15.w,
+              color: Colors.grey.withOpacity(0.5),
+            ),
+            SizedBox(height: 2.h),
+            Text(
+              _searchQuery.isEmpty
+                  ? "No diseases available"
+                  : "No results found",
+              style: GoogleFonts.poppins(
+                fontSize: 14.sp,
+                fontWeight: FontWeight.w600,
+                color: Colors.grey[600],
+              ),
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(height: 1.h),
+            Text(
+              _searchQuery.isEmpty
+                  ? "Disease library is currently being loaded."
+                  : "Try searching for different keywords or check your spelling.",
+              style: GoogleFonts.inter(
+                fontSize: 11.sp,
+                color: Colors.grey[500],
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFullDiseaseCard(BuildContext context, CropCareTip disease) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppTheme.lightTheme.colorScheme.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: _getDiseaseColor(disease.severity).withOpacity(0.2),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 12,
+            offset: Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => _showDiseaseDetails(context, disease),
+          borderRadius: BorderRadius.circular(16),
+          child: Padding(
+            padding: EdgeInsets.all(5.w),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Header Row
+                Row(
+                  children: [
+                    Container(
+                      padding: EdgeInsets.all(3.w),
+                      decoration: BoxDecoration(
+                        color:
+                            _getDiseaseColor(disease.severity).withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        _getCropEmoji(disease.cropTypes.isNotEmpty
+                            ? disease.cropTypes.first
+                            : ''),
+                        style: TextStyle(fontSize: 20.sp),
+                      ),
+                    ),
+                    SizedBox(width: 4.w),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            disease.title,
+                            style: GoogleFonts.poppins(
+                              fontSize: 14.sp,
+                              fontWeight: FontWeight.w600,
+                              color: AppTheme.lightTheme.colorScheme.onSurface,
+                            ),
+                          ),
+                          if (disease.cropTypes.isNotEmpty) ...[
+                            SizedBox(height: 0.5.h),
+                            Text(
+                              "Affects: ${disease.cropTypes.join(', ')}",
+                              style: GoogleFonts.inter(
+                                fontSize: 11.sp,
+                                color: AppTheme.lightTheme.colorScheme.primary,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                    Container(
+                      padding: EdgeInsets.symmetric(
+                          horizontal: 2.w, vertical: 0.8.h),
+                      decoration: BoxDecoration(
+                        color:
+                            _getDiseaseColor(disease.severity).withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: _getDiseaseColor(disease.severity)
+                              .withOpacity(0.3),
+                        ),
+                      ),
+                      child: Text(
+                        disease.severity.toUpperCase(),
+                        style: GoogleFonts.inter(
+                          color: _getDiseaseColor(disease.severity),
+                          fontSize: 8.sp,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+
+                SizedBox(height: 2.h),
+
+                // Description
+                Text(
+                  disease.description,
+                  style: GoogleFonts.inter(
+                    fontSize: 12.sp,
+                    color: AppTheme.lightTheme.colorScheme.onSurface
+                        .withOpacity(0.8),
+                    height: 1.4,
+                  ),
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                ),
+
+                if (disease.symptoms.isNotEmpty) ...[
+                  SizedBox(height: 2.h),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(
+                        Icons.visibility_outlined,
+                        size: 16,
+                        color: Colors.orange,
+                      ),
+                      SizedBox(width: 2.w),
+                      Expanded(
+                        child: Text(
+                          "Key symptoms: ${disease.symptoms.take(2).join(', ')}${disease.symptoms.length > 2 ? '...' : ''}",
+                          style: GoogleFonts.inter(
+                            fontSize: 11.sp,
+                            color: Colors.orange[700],
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+
+                SizedBox(height: 2.h),
+
+                // Action Row
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      "Tap for detailed information",
+                      style: GoogleFonts.inter(
+                        fontSize: 11.sp,
+                        color: AppTheme.lightTheme.colorScheme.primary,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    Icon(
+                      Icons.arrow_forward_ios,
+                      size: 14,
+                      color: AppTheme.lightTheme.colorScheme.primary,
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showDiseaseDetails(BuildContext context, CropCareTip diseaseTip) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => _DiseaseDetailsBottomSheet(diseaseTip: diseaseTip),
+    );
+  }
+
+  Color _getDiseaseColor(String severity) {
+    switch (severity.toLowerCase()) {
+      case 'high':
+        return Colors.red;
+      case 'medium':
+        return Colors.orange;
+      case 'low':
+        return Colors.yellow[700] ?? Colors.yellow;
+      default:
+        return Colors.grey;
+    }
+  }
+
+  String _getCropEmoji(String cropType) {
+    switch (cropType.toLowerCase()) {
+      case 'tomato':
+        return '🍅';
+      case 'maize':
+      case 'corn':
+        return '🌽';
+      case 'pepper':
+      case 'bell pepper':
+        return '🌶️';
+      default:
+        return '🌿';
+    }
   }
 }
