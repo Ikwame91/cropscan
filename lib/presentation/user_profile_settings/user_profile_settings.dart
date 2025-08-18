@@ -44,7 +44,6 @@ class _UserProfileSettingsState extends State<UserProfileSettings> {
             return Center(child: CircularProgressIndicator());
           }
 
-          // Calculate stats from real data
           final totalScans = historyProvider.totalScans;
           final cropsDetected =
               _getUniqueCropsDetected(historyProvider.detectionHistory);
@@ -56,7 +55,6 @@ class _UserProfileSettingsState extends State<UserProfileSettings> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Farmer Profile Header (with real data)
                 ProfileHeaderWidget(
                   userProfile: userProvider.userProfile,
                   totalScans: totalScans,
@@ -67,9 +65,7 @@ class _UserProfileSettingsState extends State<UserProfileSettings> {
                   onUpdateProfilePicture: () =>
                       userProvider.updateProfilePicture(),
                 ),
-
                 SizedBox(height: 3.h),
-                // Scanner Settings (Essential Only)
                 _buildSettingsSection(
                   title: "Scanner Settings",
                   icon: Icons.camera_alt,
@@ -94,10 +90,7 @@ class _UserProfileSettingsState extends State<UserProfileSettings> {
                     ),
                   ],
                 ),
-
                 SizedBox(height: 2.h),
-
-                // Language & Display
                 _buildSettingsSection(
                   title: "Language & Display",
                   icon: Icons.language,
@@ -118,10 +111,7 @@ class _UserProfileSettingsState extends State<UserProfileSettings> {
                     ),
                   ],
                 ),
-
                 SizedBox(height: 2.h),
-
-                // Storage & Data
                 _buildSettingsSection(
                   title: "Storage & Data",
                   icon: Icons.storage,
@@ -151,16 +141,12 @@ class _UserProfileSettingsState extends State<UserProfileSettings> {
                     ),
                   ],
                 ),
-
                 SizedBox(height: 3.h),
-
-                // App Information
                 AppInfoWidget(
                   onAbout: () => _showAboutDialog(),
                   onTutorial: () => _showTutorialDialog(),
                   onFeedback: () => _showFeedbackDialog(),
                 ),
-
                 SizedBox(height: 4.h),
               ],
             ),
@@ -223,7 +209,6 @@ class _UserProfileSettingsState extends State<UserProfileSettings> {
     );
   }
 
-  // Helper methods to get real data
   List<String> _getUniqueCropsDetected(detectionHistory) {
     final Set<String> uniqueCrops = {};
     for (var detection in detectionHistory) {
@@ -245,7 +230,6 @@ class _UserProfileSettingsState extends State<UserProfileSettings> {
     return "${lastScan.day}/${lastScan.month}/${lastScan.year}";
   }
 
-  // Edit handlers
   void _handleEditName(UserProfileProvider userProvider) {
     String newName = userProvider.userName;
     showDialog(
@@ -399,14 +383,12 @@ class _UserProfileSettingsState extends State<UserProfileSettings> {
           ),
           ElevatedButton(
             onPressed: () async {
-              // ✅ FIX: Safe context handling
               final navigator = Navigator.of(context);
               final scaffoldMessenger = ScaffoldMessenger.of(context);
 
-              navigator.pop(); // Close dialog first
+              navigator.pop();
 
               try {
-                // Show loading
                 showDialog(
                   context: context,
                   barrierDismissible: false,
@@ -425,7 +407,7 @@ class _UserProfileSettingsState extends State<UserProfileSettings> {
                 await historyProvider.clearAllHistory();
 
                 if (mounted) {
-                  Navigator.of(context).pop(); // Close loading
+                  Navigator.of(context).pop();
                   scaffoldMessenger.showSnackBar(
                     SnackBar(
                       content: Text("Scan history cleared!"),
@@ -435,7 +417,7 @@ class _UserProfileSettingsState extends State<UserProfileSettings> {
                 }
               } catch (e) {
                 if (mounted) {
-                  Navigator.of(context).pop(); // Close loading
+                  Navigator.of(context).pop();
                   scaffoldMessenger.showSnackBar(
                     SnackBar(
                       content: Text("Error clearing history: $e"),
@@ -468,15 +450,12 @@ class _UserProfileSettingsState extends State<UserProfileSettings> {
           ),
           ElevatedButton(
             onPressed: () async {
-              // ✅ FIX: Save context before async operations
               final navigator = Navigator.of(context);
               final scaffoldMessenger = ScaffoldMessenger.of(context);
 
-              // Close dialog first
               navigator.pop();
 
               try {
-                // Show loading indicator
                 showDialog(
                   context: context,
                   barrierDismissible: false,
@@ -492,13 +471,11 @@ class _UserProfileSettingsState extends State<UserProfileSettings> {
                   ),
                 );
 
-                // Perform async operations
                 await userProvider.clearAllData();
                 await historyProvider.clearAllHistory();
 
-                // ✅ Check if widget is still mounted before showing snackbar
                 if (mounted) {
-                  Navigator.of(context).pop(); // Close loading dialog
+                  Navigator.of(context).pop();
                   scaffoldMessenger.showSnackBar(
                     SnackBar(
                       content: Text("All data has been reset!"),
@@ -507,9 +484,8 @@ class _UserProfileSettingsState extends State<UserProfileSettings> {
                   );
                 }
               } catch (e) {
-                // Handle errors safely
                 if (mounted) {
-                  Navigator.of(context).pop(); // Close loading dialog
+                  Navigator.of(context).pop();
                   scaffoldMessenger.showSnackBar(
                     SnackBar(
                       content: Text("Error resetting data: $e"),
@@ -645,7 +621,6 @@ class _UserProfileSettingsState extends State<UserProfileSettings> {
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
-              // Navigate to tutorial or show inline tutorial
             },
             child: Text("Show Tutorial"),
           ),

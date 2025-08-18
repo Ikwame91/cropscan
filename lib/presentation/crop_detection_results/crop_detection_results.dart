@@ -242,10 +242,6 @@ class _CropDetectionResultsState extends State<CropDetectionResults> {
               ),
               SizedBox(height: 3.h),
 
-              // Crop Information Section
-              // CropInfoSectionWidget(
-              //   cropInfo: cropInfo,
-              // ),
               SizedBox(height: 3.h),
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 4.w),

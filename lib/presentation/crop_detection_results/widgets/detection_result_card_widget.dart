@@ -178,39 +178,39 @@ class DetectionResultCardWidget extends StatelessWidget {
               ],
             ),
 
-            if (confidence < 60) ...[
-              SizedBox(height: 2.h),
-              Container(
-                padding: EdgeInsets.all(3.w),
-                decoration: BoxDecoration(
-                  color: AppTheme.getWarningColor(true).withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(
-                    color:
-                        AppTheme.getWarningColor(true).withValues(alpha: 0.3),
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    CustomIconWidget(
-                      iconName: 'info',
-                      color: AppTheme.getWarningColor(true),
-                      size: 20,
-                    ),
-                    SizedBox(width: 3.w),
-                    Expanded(
-                      child: Text(
-                        'Low confidence detection. Consider retaking the photo for better results.',
-                        style:
-                            AppTheme.lightTheme.textTheme.bodySmall?.copyWith(
-                          color: AppTheme.getWarningColor(true),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+            // if (confidence < 60) ...[
+            //   SizedBox(height: 2.h),
+            //   Container(
+            //     padding: EdgeInsets.all(3.w),
+            //     decoration: BoxDecoration(
+            //       color: AppTheme.getWarningColor(true).withValues(alpha: 0.1),
+            //       borderRadius: BorderRadius.circular(8),
+            //       border: Border.all(
+            //         color:
+            //             AppTheme.getWarningColor(true).withValues(alpha: 0.3),
+            //       ),
+            //     ),
+            //     child: Row(
+            //       children: [
+            //         CustomIconWidget(
+            //           iconName: 'info',
+            //           color: AppTheme.getWarningColor(true),
+            //           size: 20,
+            //         ),
+            //         SizedBox(width: 3.w),
+            //         Expanded(
+            //           child: Text(
+            //             'Low confidence detection. Consider retaking the photo for better results.',
+            //             style:
+            //                 AppTheme.lightTheme.textTheme.bodySmall?.copyWith(
+            //               color: AppTheme.getWarningColor(true),
+            //             ),
+            //           ),
+            //         ),
+            //       ],
+            //     ),
+            //   ),
+            // ],
           ],
         ),
       ),
