@@ -186,7 +186,7 @@ class DetectionResultCardWidget extends StatelessWidget {
             //       color: AppTheme.getWarningColor(true).withValues(alpha: 0.1),
             //       borderRadius: BorderRadius.circular(8),
             //       border: Border.all(
-            //         color:
+            //         color:go
             //             AppTheme.getWarningColor(true).withValues(alpha: 0.3),
             //       ),
             //     ),
