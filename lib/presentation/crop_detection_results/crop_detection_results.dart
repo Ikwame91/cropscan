@@ -43,19 +43,20 @@ class _CropDetectionResultsState extends State<CropDetectionResults> {
   void initState() {
     super.initState();
 
-    // ✅ PROPER LOGIC TO PREVENT DUPLICATES
     if (widget.isFromHistory) {
-      debugPrint("📖 Viewing historical detection - not saving to history");
-      _enhancedCropInfo = widget.enhancedCropInfo;
-      _isLoadingEnhancedInfo = false;
+      debugPrint("📖 Viewing historical detection - checking enhanced info");
 
-      // If enhanced info is missing from history, try to load it
-      if (_enhancedCropInfo == null) {
+      if (widget.enhancedCropInfo != null) {
+        _enhancedCropInfo = widget.enhancedCropInfo;
+        _isLoadingEnhancedInfo = false;
+        debugPrint("✅ Using enhanced info from history");
+      } else {
+        debugPrint("⚠️ Enhanced info missing from history, loading...");
         _loadEnhancedInfoOnly();
       }
     } else {
       debugPrint("📸 New scan detected - loading and saving to history");
-      _loadAndSaveDetection(); // Load and save for new scans
+      _loadAndSaveDetection();
     }
   }
 
@@ -66,19 +67,31 @@ class _CropDetectionResultsState extends State<CropDetectionResults> {
 
     try {
       await EnhancedCropInfoService.loadDatabase();
-      debugPrint(
-          "🔍 Loading enhanced info for history item: ${widget.detectedCrop}");
 
-      _enhancedCropInfo =
-          EnhancedCropInfoService.getCropInfo(widget.detectedCrop);
+      String searchKey = widget.detectedCrop;
+      debugPrint("🔍 Searching for enhanced info with key: '$searchKey'");
+
+      _enhancedCropInfo = EnhancedCropInfoService.getCropInfo(searchKey);
+
+      if (_enhancedCropInfo == null && widget.detectedCrop.contains('_')) {
+        String altKey = widget.detectedCrop.replaceAll('_', ' ');
+        debugPrint("🔍 Trying alternative key: '$altKey'");
+        _enhancedCropInfo = EnhancedCropInfoService.getCropInfo(altKey);
+      }
+
+      if (_enhancedCropInfo == null) {
+        String fallbackKey = widget.cropInfo.displayName.toLowerCase();
+        debugPrint("🔍 Trying fallback key: '$fallbackKey'");
+        _enhancedCropInfo = EnhancedCropInfoService.getCropInfo(fallbackKey);
+      }
 
       if (_enhancedCropInfo != null) {
-        debugPrint("✅ Enhanced info loaded for history item");
+        debugPrint("✅ Enhanced info loaded successfully");
       } else {
-        debugPrint("⚠️ No enhanced info found for history item");
+        debugPrint("❌ No enhanced info found for any key variation");
       }
     } catch (e) {
-      debugPrint("❌ Error loading enhanced info for history item: $e");
+      debugPrint("❌ Error loading enhanced info: $e");
     } finally {
       if (mounted) {
         setState(() {
@@ -90,7 +103,6 @@ class _CropDetectionResultsState extends State<CropDetectionResults> {
 
   Future<void> _loadAndSaveDetection() async {
     try {
-      // First, load the enhanced crop info.
       await _loadEnhancedCropInfo();
 
       if (_enhancedCropInfo != null && !widget.isFromHistory) {
@@ -133,7 +145,6 @@ class _CropDetectionResultsState extends State<CropDetectionResults> {
       if (!await imageFile.exists()) {
         debugPrint(
             "⚠️ Warning: Image file does not exist when saving to history: ${widget.imagePath}");
-        // Still save the detection but with a note about missing image
       }
 
       await historyProvider.addDetection(
@@ -150,7 +161,7 @@ class _CropDetectionResultsState extends State<CropDetectionResults> {
       debugPrint("✅ Detection saved to history");
     } catch (e) {
       debugPrint("❌ Failed to save detection to history: $e");
-      // Show user a subtle notification about the issue
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
@@ -164,7 +175,6 @@ class _CropDetectionResultsState extends State<CropDetectionResults> {
 
   Future<void> _loadEnhancedCropInfo() async {
     try {
-      // Initialize the enhanced crop database
       await EnhancedCropInfoService.loadDatabase();
       debugPrint("Looking for enhanced info with key: ${widget.detectedCrop}");
       _enhancedCropInfo =
@@ -198,7 +208,7 @@ class _CropDetectionResultsState extends State<CropDetectionResults> {
           ),
         ),
         title: Text(
-          widget.cropInfo.displayName, // ← USE CLEAN DISPLAY NAME
+          widget.cropInfo.displayName,
           style: AppTheme.lightTheme.appBarTheme.titleTextStyle,
         ),
         actions: [
@@ -218,37 +228,30 @@ class _CropDetectionResultsState extends State<CropDetectionResults> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Crop Image Section
               CropImageWidget(
                 imageUrl: widget.imagePath,
                 isFromFile: true,
                 onImageTap: () => _toggleImageZoom(),
                 onLongPress: () => _showImageContextMenu(context),
               ),
-
               SizedBox(height: 2.h),
-
-              // Detection Result Card
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 4.w),
                 child: DetectionResultCardWidget(
-                  cropName: widget.cropInfo.displayName, // ← USE PROCESSED NAME
+                  cropName: widget.cropInfo.displayName,
                   confidence: widget.confidence,
                   timestamp: DateTime.now(),
-                  statusColor:
-                      widget.cropInfo.statusColor, // ← ADD STATUS COLOR
-                  condition: widget.cropInfo.condition, // ← ADD CONDITION
+                  statusColor: widget.cropInfo.statusColor,
+                  condition: widget.cropInfo.condition,
                 ),
               ),
               SizedBox(height: 3.h),
-
               SizedBox(height: 3.h),
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 4.w),
                 child: _buildEnhancedCropInfoSection(),
               ),
               SizedBox(height: 3.h),
-              // Action Buttons
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 4.w),
                 child: ActionButtonsWidget(
@@ -256,7 +259,6 @@ class _CropDetectionResultsState extends State<CropDetectionResults> {
                   onScanAnother: () => _scanAnother(context),
                 ),
               ),
-
               SizedBox(height: 4.h),
             ],
           ),
@@ -276,12 +278,10 @@ class _CropDetectionResultsState extends State<CropDetectionResults> {
         ),
       );
     }
-    // If enhanced info is available, show detailed information
+
     if (_enhancedCropInfo != null) {
       return _buildDetailedCropInfo(_enhancedCropInfo!);
     }
-
-    // Fallback to basic info
 
     return _buildCropInfoSection();
   }
@@ -290,7 +290,6 @@ class _CropDetectionResultsState extends State<CropDetectionResults> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Section Title
         Text(
           'Detailed Crop Analysis',
           style: AppTheme.lightTheme.textTheme.titleLarge?.copyWith(
@@ -298,8 +297,6 @@ class _CropDetectionResultsState extends State<CropDetectionResults> {
           ),
         ),
         SizedBox(height: 2.h),
-
-        // Basic Information Card
         _buildExpandableInfoCard(
           title: 'Basic Information',
           icon: 'info',
@@ -316,8 +313,6 @@ class _CropDetectionResultsState extends State<CropDetectionResults> {
           ],
         ),
         SizedBox(height: 1.5.h),
-
-        // Symptoms (if available)
         if (enhancedInfo.symptoms != null)
           _buildExpandableInfoCard(
             title: 'Symptoms',
@@ -350,10 +345,7 @@ class _CropDetectionResultsState extends State<CropDetectionResults> {
                     enhancedInfo.treatment!.chemicalSolutions),
             ],
           ),
-
         SizedBox(height: 1.5.h),
-
-        // Treatment (if available)
         if (enhancedInfo.treatment != null)
           _buildExpandableInfoCard(
             title: 'Treatment Options',
@@ -366,10 +358,7 @@ class _CropDetectionResultsState extends State<CropDetectionResults> {
                   'Organic Treatment', enhancedInfo.treatment!.organic),
             ],
           ),
-
         SizedBox(height: 1.5.h),
-
-        // Prevention (if available)
         if (enhancedInfo.prevention != null)
           _buildExpandableInfoCard(
             title: 'Prevention Methods',
@@ -382,10 +371,7 @@ class _CropDetectionResultsState extends State<CropDetectionResults> {
                   'Chemical Control', enhancedInfo.prevention!.chemicalControl),
             ],
           ),
-
         SizedBox(height: 1.5.h),
-
-        // Maintenance (if available)
         if (enhancedInfo.maintenance != null)
           _buildExpandableInfoCard(
             title: 'Crop Maintenance',
@@ -405,7 +391,6 @@ class _CropDetectionResultsState extends State<CropDetectionResults> {
             ],
           ),
         SizedBox(height: 1.5.h),
-        // Economic Impact (if available)
         if (enhancedInfo.economicImpact != null)
           _buildExpandableInfoCard(
             title: 'Economic Impact',
@@ -426,7 +411,6 @@ class _CropDetectionResultsState extends State<CropDetectionResults> {
                     enhancedInfo.economicImpact!.criticalPeriod!),
             ],
           ),
-
         SizedBox(height: 1.5.h),
         if (enhancedInfo.laborImpact != null)
           _buildExpandableInfoCard(
@@ -460,9 +444,7 @@ class _CropDetectionResultsState extends State<CropDetectionResults> {
                     enhancedInfo.communityImpact!.collectiveAction!),
             ],
           ),
-
         SizedBox(height: 1.5.h),
-
         if (enhancedInfo.localTipsGhana != null &&
             enhancedInfo.localTipsGhana!.isNotEmpty)
           _buildExpandableInfoCard(
@@ -489,7 +471,6 @@ class _CropDetectionResultsState extends State<CropDetectionResults> {
               ),
             ],
           ),
-
         SizedBox(height: 1.5.h),
       ],
     );
@@ -687,7 +668,6 @@ class _CropDetectionResultsState extends State<CropDetectionResults> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Section Title
         Text(
           'Crop Analysis',
           style: AppTheme.lightTheme.textTheme.titleLarge?.copyWith(
@@ -695,38 +675,27 @@ class _CropDetectionResultsState extends State<CropDetectionResults> {
           ),
         ),
         SizedBox(height: 2.h),
-
-        // Crop Type Card
         _buildInfoCard(
           title: 'Crop Type',
           content: widget.cropInfo.cropType,
           icon: 'eco',
           color: AppTheme.lightTheme.colorScheme.primary,
         ),
-
         SizedBox(height: 1.5.h),
-
-        // Health Status Card
         _buildInfoCard(
           title: 'Health Status',
           content: widget.cropInfo.condition,
           icon: _getConditionIcon(widget.cropInfo.condition),
           color: widget.cropInfo.statusColor,
         ),
-
         SizedBox(height: 1.5.h),
-
-        // Confidence Card
         _buildInfoCard(
           title: 'Detection Confidence',
           content: '${(widget.confidence * 100).toStringAsFixed(1)}%',
           icon: 'analytics',
           color: _getConfidenceColor(widget.confidence),
         ),
-
         SizedBox(height: 2.h),
-
-        // Description Section
         Container(
           width: double.infinity,
           padding: EdgeInsets.all(4.w),
@@ -765,10 +734,7 @@ class _CropDetectionResultsState extends State<CropDetectionResults> {
             ],
           ),
         ),
-
         SizedBox(height: 2.h),
-
-        // Recommended Action Section
         Container(
           width: double.infinity,
           padding: EdgeInsets.all(4.w),
@@ -960,7 +926,6 @@ class _CropDetectionResultsState extends State<CropDetectionResults> {
   }
 
   void _shareResults(BuildContext context) {
-    // Mock share functionality
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(

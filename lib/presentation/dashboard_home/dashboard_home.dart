@@ -1,17 +1,13 @@
 import 'package:cropscan_pro/models/crop_detection_args.dart';
 import 'package:cropscan_pro/models/crop_info.dart';
-import 'package:cropscan_pro/models/farming_alert.dart';
 import 'package:cropscan_pro/providers/detection_history_provider.dart';
-import 'package:cropscan_pro/providers/farming_alerts_provider.dart';
 import 'package:cropscan_pro/providers/naviagtion_provider.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:sizer/sizer.dart';
 
 import '../../core/app_export.dart';
-import './widgets/farming_alert_card_widget.dart';
 import './widgets/recent_detection_card_widget.dart';
 import './widgets/scan_crop_card_widget.dart';
 
@@ -19,76 +15,10 @@ class DashboardHome extends StatelessWidget {
   const DashboardHome({super.key});
 
   Future<void> _handleRefresh(BuildContext context) async {
-    // Access providers and call their fetch methods
-
-    final farmingAlertsProvider =
-        Provider.of<FarmingAlertsProvider>(context, listen: false);
     final detectionHistoryProvider =
         Provider.of<DetectionHistoryProvider>(context, listen: false);
 
-    // Trigger data fetching for all providers
-    await Future.wait([
-      farmingAlertsProvider.fetchFarmingAlerts(),
-      detectionHistoryProvider.loadDetectionHistory(), // Add this line
-    ]);
-  }
-
-  void _onAlertLongPress(BuildContext context, FarmingAlert alert) {
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16.0)),
-      ),
-      builder: (context) {
-        // We get the provider here within the builder, so it's scoped correctly
-        final alertsProvider =
-            Provider.of<FarmingAlertsProvider>(context, listen: false);
-        return Container(
-          padding: EdgeInsets.all(4.w),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ListTile(
-                leading: CustomIconWidget(
-                  iconName: 'check_circle',
-                  color: AppTheme.lightTheme.colorScheme.primary,
-                  size: 24,
-                ),
-                title: const Text('Mark as Read'),
-                onTap: () {
-                  Navigator.pop(context);
-                  alertsProvider.markAlertAsRead(alert.id); // Dispatch action
-                },
-              ),
-              ListTile(
-                leading: CustomIconWidget(
-                  iconName: 'snooze',
-                  color: AppTheme.lightTheme.colorScheme.secondary,
-                  size: 24,
-                ),
-                title: const Text('Snooze'),
-                onTap: () {
-                  Navigator.pop(context);
-                  alertsProvider.snoozeAlert(alert.id); // Dispatch action
-                },
-              ),
-              ListTile(
-                leading: CustomIconWidget(
-                  iconName: 'share',
-                  color: AppTheme.lightTheme.colorScheme.tertiary,
-                  size: 24,
-                ),
-                title: const Text('Share'),
-                onTap: () {
-                  Navigator.pop(context);
-                  // Handle share logic (might not involve a provider directly)
-                },
-              ),
-            ],
-          ),
-        );
-      },
-    );
+    await detectionHistoryProvider.loadDetectionHistory();
   }
 
   void _navigateToCamera(BuildContext context) {
@@ -98,20 +28,11 @@ class DashboardHome extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final farmingAlertsProvider = context.watch<FarmingAlertsProvider>();
-
-    final List<FarmingAlert> farmingAlerts =
-        farmingAlertsProvider.farmingAlerts;
-    final bool alertsLoading = farmingAlertsProvider.isLoading;
-    final String? alertsError = farmingAlertsProvider.errorMessage;
-    // final int unreadAlertsCount = farmingAlertsProvider.unreadAlertsCount;
-
     return Scaffold(
       backgroundColor: AppTheme.lightTheme.scaffoldBackgroundColor,
       body: SafeArea(
         child: RefreshIndicator(
-          onRefresh: () =>
-              _handleRefresh(context), // Pass context to refresh handler
+          onRefresh: () => _handleRefresh(context),
           color: AppTheme.lightTheme.colorScheme.primary,
           child: CustomScrollView(
             slivers: [
@@ -119,7 +40,7 @@ class DashboardHome extends StatelessWidget {
                 floating: true,
                 backgroundColor: AppTheme.lightTheme.colorScheme.primary,
                 title: Text(
-                  'CropCare Vision',
+                  'CropVision',
                   style: GoogleFonts.playfairDisplay(
                     textStyle:
                         AppTheme.lightTheme.textTheme.titleLarge?.copyWith(
@@ -154,6 +75,10 @@ class DashboardHome extends StatelessWidget {
                     ),
                     SizedBox(height: 3.h),
 
+                    // ✅ NEW: Quick Stats Card
+                    _buildQuickStatsCard(context),
+                    SizedBox(height: 3.h),
+
                     // Recent Detections Section
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -184,11 +109,11 @@ class DashboardHome extends StatelessWidget {
                     ),
                     SizedBox(height: 2.h),
 
-                    // Display loading, error, or data for Detections
+                    // Recent Detections List
                     Consumer<DetectionHistoryProvider>(
                       builder: (context, historyProvider, child) {
                         final recentDetections =
-                            historyProvider.getRecentDetections(limit: 3);
+                            historyProvider.getRecentDetections(limit: 7);
 
                         if (historyProvider.isLoading) {
                           return Center(
@@ -231,7 +156,7 @@ class DashboardHome extends StatelessWidget {
                                 ),
                                 SizedBox(height: 1.h),
                                 Text(
-                                  'Use AI-powered detection to identify your crops and get farming insights',
+                                  'Use AI-powered detection to identify your crops and get instant health analysis',
                                   textAlign: TextAlign.center,
                                   style: GoogleFonts.poppins(
                                     textStyle: AppTheme
@@ -263,9 +188,10 @@ class DashboardHome extends StatelessWidget {
                                   final args = CropDetectionResultsArgs(
                                     imagePath: detection.imageUrl,
                                     detectedCrop: detection.rawDetectedCrop ??
-                                        CropInfoMapper.getRawLabel(detection
-                                            .cropName), // Use raw or fallback
-                                    confidence: detection.confidence,
+                                        CropInfoMapper.getRawLabel(
+                                            detection.cropName),
+                                    confidence: detection
+                                        .confidence, // ✅ Real confidence
                                     cropInfo: CropInfoMapper.getCropInfo(
                                         detection.cropName),
                                     enhancedCropInfo:
@@ -286,124 +212,9 @@ class DashboardHome extends StatelessWidget {
                     ),
                     SizedBox(height: 3.h),
 
-                    // Farming Alerts Section
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Farming Alerts',
-                          style: GoogleFonts.poppins(
-                            textStyle: AppTheme.lightTheme.textTheme.titleLarge
-                                ?.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                        if (farmingAlerts.length > 3)
-                          GestureDetector(
-                            onTap: () {
-                              if (kDebugMode) {
-                                print('View All Alerts pressed');
-                              }
-                            },
-                            child: Container(
-                              padding: EdgeInsets.symmetric(
-                                  horizontal: 2.w, vertical: 0.6.h),
-                              decoration: BoxDecoration(
-                                color: AppTheme.lightTheme.colorScheme.primary,
-                                borderRadius: BorderRadius.circular(6.0),
-                              ),
-                              child: Text(
-                                'View All (${farmingAlerts.length}) Alerts ',
-                                style: AppTheme.lightTheme.textTheme.labelSmall
-                                    ?.copyWith(
-                                  color:
-                                      AppTheme.lightTheme.colorScheme.onPrimary,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ),
-                      ],
-                    ),
-                    SizedBox(height: 2.h),
-
-                    // Display loading, error, or data for Alerts
-                    if (alertsLoading)
-                      Center(
-                        child: Padding(
-                          padding: EdgeInsets.symmetric(vertical: 4.h),
-                          child: CircularProgressIndicator(
-                            color: AppTheme.lightTheme.colorScheme.primary,
-                          ),
-                        ),
-                      )
-                    else if (alertsError != null)
-                      Center(
-                        child: Padding(
-                          padding: EdgeInsets.symmetric(vertical: 4.h),
-                          child: Text(
-                            'Error: $alertsError',
-                            style: TextStyle(
-                                color: AppTheme.lightTheme.colorScheme.error),
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
-                      )
-                    else if (farmingAlerts.isEmpty)
-                      // Empty state for alerts
-                      Container(
-                        padding: EdgeInsets.all(6.w),
-                        decoration: BoxDecoration(
-                          color: AppTheme.lightTheme.colorScheme.surface,
-                          borderRadius: BorderRadius.circular(12.0),
-                          border: Border.all(
-                            color: AppTheme.lightTheme.dividerColor,
-                            width: 1.0,
-                          ),
-                        ),
-                        child: Column(
-                          children: [
-                            CustomIconWidget(
-                              iconName: 'notifications',
-                              color: AppTheme.lightTheme.colorScheme.primary,
-                              size: 48,
-                            ),
-                            SizedBox(height: 2.h),
-                            Text(
-                              'No New Alerts',
-                              style: AppTheme.lightTheme.textTheme.titleMedium
-                                  ?.copyWith(
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            SizedBox(height: 1.h),
-                            Text(
-                              'All clear! Check back later for important farming updates and reminders.',
-                              textAlign: TextAlign.center,
-                              style: GoogleFonts.poppins(
-                                textStyle:
-                                    AppTheme.lightTheme.textTheme.bodyMedium,
-                              ).copyWith(
-                                color: AppTheme
-                                    .lightTheme.colorScheme.onSurfaceVariant,
-                              ),
-                            )
-                          ],
-                        ),
-                      )
-                    else
-                      // Alerts List (take up to 3 for main dashboard, with view all option)
-                      ...farmingAlerts.take(3).map((alert) => Padding(
-                            padding: EdgeInsets.only(bottom: 2.h),
-                            child: FarmingAlertCardWidget(
-                              alert: alert,
-                              onLongPress: () => _onAlertLongPress(
-                                  context, alert), // Pass context
-                            ),
-                          )),
-
-                    SizedBox(height: 1.h), // Bottom padding for FAB
+                    // ✅ NEW: Farming Tips Section (instead of alerts)
+                    _buildFarmingTipsSection(context),
+                    SizedBox(height: 4.h),
                   ]),
                 ),
               ),
@@ -411,6 +222,197 @@ class DashboardHome extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+
+  // ✅ NEW: Quick Stats Card
+  Widget _buildQuickStatsCard(BuildContext context) {
+    return Consumer<DetectionHistoryProvider>(
+      builder: (context, historyProvider, child) {
+        final totalScans = historyProvider.detectionHistory.length;
+        final healthyCount = historyProvider.detectionHistory
+            .where((d) => d.status.toLowerCase().contains('healthy'))
+            .length;
+        final diseaseCount = totalScans - healthyCount;
+
+        return Container(
+          padding: EdgeInsets.all(4.w),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                AppTheme.lightTheme.colorScheme.primary,
+                AppTheme.lightTheme.colorScheme.primary.withOpacity(0.8),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: AppTheme.lightTheme.colorScheme.primary.withOpacity(0.3),
+                blurRadius: 8,
+                offset: Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: _buildStatItem(
+                  'Total Scans',
+                  totalScans.toString(),
+                  Icons.camera_alt,
+                  Colors.white,
+                ),
+              ),
+              Container(
+                width: 1,
+                height: 40,
+                color: Colors.white.withOpacity(0.3),
+              ),
+              Expanded(
+                child: _buildStatItem(
+                  'Healthy',
+                  healthyCount.toString(),
+                  Icons.check_circle,
+                  Colors.white,
+                ),
+              ),
+              Container(
+                width: 1,
+                height: 40,
+                color: Colors.white.withOpacity(0.3),
+              ),
+              Expanded(
+                child: _buildStatItem(
+                  'Issues Found',
+                  diseaseCount.toString(),
+                  Icons.warning,
+                  Colors.white,
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildStatItem(
+      String label, String value, IconData icon, Color color) {
+    return Column(
+      children: [
+        Icon(icon, color: color, size: 24),
+        SizedBox(height: 1.h),
+        Text(
+          value,
+          style: GoogleFonts.poppins(
+            fontSize: 20.sp,
+            fontWeight: FontWeight.bold,
+            color: color,
+          ),
+        ),
+        Text(
+          label,
+          style: GoogleFonts.poppins(
+            fontSize: 10.sp,
+            color: color.withOpacity(0.9),
+          ),
+          textAlign: TextAlign.center,
+        ),
+      ],
+    );
+  }
+
+  // ✅ NEW: Farming Tips Section (replaces alerts)
+  Widget _buildFarmingTipsSection(BuildContext context) {
+    final tips = [
+      {
+        'title': 'Morning Inspections',
+        'description':
+            'Check your crops early morning for best disease detection',
+        'icon': Icons.wb_sunny,
+        'color': Colors.orange,
+      },
+      {
+        'title': 'Photo Quality',
+        'description': 'Take clear, well-lit photos focusing on leaf details',
+        'icon': Icons.photo_camera,
+        'color': Colors.blue,
+      },
+      {
+        'title': 'Regular Monitoring',
+        'description': 'Scan your crops weekly for early problem detection',
+        'icon': Icons.schedule,
+        'color': Colors.green,
+      },
+    ];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Farming Tips',
+          style: GoogleFonts.poppins(
+            textStyle: AppTheme.lightTheme.textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+        SizedBox(height: 2.h),
+        ...tips.map((tip) => Container(
+              margin: EdgeInsets.only(bottom: 2.h),
+              padding: EdgeInsets.all(4.w),
+              decoration: BoxDecoration(
+                color: AppTheme.lightTheme.colorScheme.surface,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: AppTheme.lightTheme.dividerColor,
+                  width: 1,
+                ),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: EdgeInsets.all(2.w),
+                    decoration: BoxDecoration(
+                      color: (tip['color'] as Color).withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Icon(
+                      tip['icon'] as IconData,
+                      color: tip['color'] as Color,
+                      size: 24,
+                    ),
+                  ),
+                  SizedBox(width: 4.w),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          tip['title'] as String,
+                          style: AppTheme.lightTheme.textTheme.titleSmall
+                              ?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        SizedBox(height: 0.5.h),
+                        Text(
+                          tip['description'] as String,
+                          style:
+                              AppTheme.lightTheme.textTheme.bodySmall?.copyWith(
+                            color: AppTheme
+                                .lightTheme.colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            )),
+      ],
     );
   }
 }

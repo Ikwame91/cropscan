@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:cropscan_pro/presentation/dashboard_home/dashboard_home.dart';
 import 'package:cropscan_pro/presentation/crop_scanner_camera/crop_scanner_camera.dart';
 import 'package:cropscan_pro/presentation/cropcare_dashboard/cropcare.dart';
-import 'package:cropscan_pro/presentation/alert_screen/cropscreen.dart';
+import 'package:cropscan_pro/presentation/cropscreen/cropscreen.dart';
 import 'package:cropscan_pro/presentation/user_profile_settings/user_profile_settings.dart';
 import 'package:provider/provider.dart';
 

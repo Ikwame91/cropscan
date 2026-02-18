@@ -439,43 +439,49 @@ class _UserProfileSettingsState extends State<UserProfileSettings> {
       DetectionHistoryProvider historyProvider) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: Text("Reset All Data"),
         content: Text(
             "This will delete your profile, settings, and all scan history. Are you sure?"),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(dialogContext),
             child: Text("Cancel"),
           ),
           ElevatedButton(
             onPressed: () async {
-              final navigator = Navigator.of(context);
-              final scaffoldMessenger = ScaffoldMessenger.of(context);
+              // Store context references before closing dialog
+              final parentContext = context;
+              final scaffoldMessenger = ScaffoldMessenger.of(parentContext);
 
-              navigator.pop();
+              // Close confirmation dialog first
+              Navigator.pop(dialogContext);
+
+              // Show loading dialog
+              if (!mounted) return;
+
+              showDialog(
+                context: parentContext,
+                barrierDismissible: false,
+                builder: (loadingContext) => AlertDialog(
+                  content: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      CircularProgressIndicator(),
+                      SizedBox(width: 4.w),
+                      Text("Resetting data..."),
+                    ],
+                  ),
+                ),
+              );
 
               try {
-                showDialog(
-                  context: context,
-                  barrierDismissible: false,
-                  builder: (context) => AlertDialog(
-                    content: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        CircularProgressIndicator(),
-                        SizedBox(width: 4.w),
-                        Text("Resetting data..."),
-                      ],
-                    ),
-                  ),
-                );
-
                 await userProvider.clearAllData();
                 await historyProvider.clearAllHistory();
 
+                // Close loading dialog and show success
                 if (mounted) {
-                  Navigator.of(context).pop();
+                  Navigator.of(parentContext).pop();
                   scaffoldMessenger.showSnackBar(
                     SnackBar(
                       content: Text("All data has been reset!"),
@@ -484,8 +490,9 @@ class _UserProfileSettingsState extends State<UserProfileSettings> {
                   );
                 }
               } catch (e) {
+                // Close loading dialog and show error
                 if (mounted) {
-                  Navigator.of(context).pop();
+                  Navigator.of(parentContext).pop();
                   scaffoldMessenger.showSnackBar(
                     SnackBar(
                       content: Text("Error resetting data: $e"),

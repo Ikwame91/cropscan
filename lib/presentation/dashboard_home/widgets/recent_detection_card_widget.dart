@@ -18,155 +18,177 @@ class RecentDetectionCardWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 45.w,
-        decoration: BoxDecoration(
-          color: AppTheme.lightTheme.colorScheme.surface,
-          borderRadius: BorderRadius.circular(12.0),
-          boxShadow: [
-            BoxShadow(
-              color: AppTheme.lightTheme.colorScheme.shadow,
-              blurRadius: 4.0,
-              offset: Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Crop image
-            ClipRRect(
-              borderRadius: BorderRadius.vertical(top: Radius.circular(12.0)),
-              child: SizedBox(
-                width: double.infinity,
-                height: 10.h,
-                child: ClipRRect(
-                  borderRadius:
-                      const BorderRadius.vertical(top: Radius.circular(15)),
-                  child: _buildImage(),
+    return SizedBox(
+      width: 75.w,
+      child: Card(
+        elevation: AppTheme.lightTheme.cardTheme.elevation,
+        shape: AppTheme.lightTheme.cardTheme.shape,
+        color: AppTheme.lightTheme.cardTheme.color,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(12),
+          child: Padding(
+            padding: EdgeInsets.all(3.w),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: SizedBox(
+                    height: 12.h,
+                    width: double.infinity,
+                    child: _buildImage(),
+                  ),
                 ),
-              ),
-            ),
+                SizedBox(height: 1.5.h),
 
-            // Content
-            Expanded(
-              child: Padding(
-                padding: EdgeInsets.all(7.w),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // Crop name and confidence
-                    Text(
-                      detection.cropName,
-                      style:
-                          AppTheme.lightTheme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                Flexible(
+                  child: Text(
+                    detection.cropName,
+                    style: AppTheme.lightTheme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14.sp,
                     ),
-                    SizedBox(height: 1.h),
-
-                    // Confidence score
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        // Confidence
-                        Container(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 2.w,
-                            vertical: 0.5.h,
-                          ),
-                          decoration: BoxDecoration(
-                            color: _getConfidenceColor().withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Text(
-                            '${(detection.confidence * 100).toStringAsFixed(0)}%',
-                            style: AppTheme.lightTheme.textTheme.labelSmall
-                                ?.copyWith(
-                              color: _getConfidenceColor(),
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-
-                        // Status Indicator
-                        Container(
-                          width: 8,
-                          height: 8,
-                          decoration: BoxDecoration(
-                            color: _getStatusColor(),
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 1.3.h),
-
-                    // Status
-                    Container(
-                      padding: EdgeInsets.symmetric(
-                          horizontal: 2.w, vertical: 0.5.h),
-                      decoration: BoxDecoration(
-                        color: _getStatusColor().withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(8.0),
-                      ),
-                      child: Text(
-                        detection.status,
-                        style:
-                            AppTheme.lightTheme.textTheme.bodySmall?.copyWith(
-                          color: _getStatusColor(),
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: 1.3.h),
-
-                    // Time ago
-                    Text(
-                      _formatTimestamp(detection.detectedAt),
-                      style: AppTheme.lightTheme.textTheme.bodySmall?.copyWith(
-                          color:
-                              AppTheme.lightTheme.colorScheme.onSurfaceVariant,
-                          fontSize: 9.sp),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
-              ),
+                SizedBox(height: 0.8.h),
+
+                // Flexible(
+                //   child: Row(
+                //     children: [
+                //       Flexible(
+                //         child: Container(
+                //           padding: EdgeInsets.symmetric(
+                //               horizontal: 2.w,
+                //               vertical: 0.4.h),
+                //           decoration: BoxDecoration(
+                //             color: _getStatusColor().withValues(alpha: 0.1),
+                //             borderRadius: BorderRadius.circular(12),
+                //             border: Border.all(
+                //               color: _getStatusColor(),
+                //               width: 1,
+                //             ),
+                //           ),
+                //           child: Row(
+                //             mainAxisSize: MainAxisSize.min,
+                //             children: [
+                //               Icon(
+                //                 _getStatusIcon(),
+                //                 color: _getStatusColor(),
+                //                 size: 10,
+                //               ),
+                //               SizedBox(width: 1.w),
+                //               Flexible(
+                //                 child: Text(
+                //                   '${(detection.confidence * 100).toStringAsFixed(1)}%',
+                //                   style: AppTheme
+                //                       .lightTheme.textTheme.labelSmall
+                //                       ?.copyWith(
+                //                     color: _getStatusColor(),
+                //                     fontWeight: FontWeight.w600,
+                //                     fontSize: 10.sp,
+                //                   ),
+                //                   overflow: TextOverflow.ellipsis,
+                //                 ),
+                //               ),
+                //             ],
+                //           ),
+                //         ),
+                //       ),
+                //     ],
+                //   ),
+                // ),
+                // SizedBox(height: 0.8.h),
+
+                Flexible(
+                  child: Text(
+                    detection.status,
+                    style: AppTheme.lightTheme.textTheme.bodySmall?.copyWith(
+                      color: _getStatusColor(),
+                      fontWeight: FontWeight.w500,
+                      fontSize: 11.sp,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                SizedBox(height: 0.8.h),
+
+                Flexible(
+                  child: Text(
+                    _formatTimestamp(),
+                    style: AppTheme.lightTheme.textTheme.bodySmall?.copyWith(
+                      color: AppTheme.lightTheme.colorScheme.onSurfaceVariant,
+                      fontSize: 10.sp,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
   }
 
-  Color _getConfidenceColor() {
-    if (detection.confidence >= 0.8) return Colors.green;
-    if (detection.confidence >= 0.6) return Colors.orange;
-    return Colors.red;
-  }
-
   Color _getStatusColor() {
-    if (detection.status.toLowerCase().contains('healthy')) {
-      return Colors.green;
-    } else if (detection.status.toLowerCase().contains('disease')) {
+    final statusLower = detection.status.toLowerCase();
+
+    if (statusLower.contains('disease') ||
+        statusLower.contains('virus') ||
+        statusLower.contains('blight') ||
+        statusLower.contains('spot') ||
+        statusLower.contains('rust') ||
+        statusLower.contains('deficiency')) {
       return Colors.red;
-    } else if (detection.status.toLowerCase().contains('pest')) {
+    } else if (statusLower.contains('pest') || statusLower.contains('insect')) {
       return Colors.orange;
+    } else if (statusLower.contains('healthy')) {
+      return AppTheme.getSuccessColor(true);
     }
-    return Colors.grey;
+
+    if (detection.confidence >= 0.8) {
+      return AppTheme.getSuccessColor(true);
+    } else if (detection.confidence >= 0.6) {
+      return AppTheme.getWarningColor(true);
+    } else {
+      return AppTheme.lightTheme.colorScheme.error;
+    }
   }
 
-  String _formatTimestamp(DateTime timestamp) {
+  // IconData _getStatusIcon() {
+  //   final statusLower = detection.status.toLowerCase();
+
+  //   if (statusLower.contains('disease') ||
+  //       statusLower.contains('virus') ||
+  //       statusLower.contains('blight') ||
+  //       statusLower.contains('spot') ||
+  //       statusLower.contains('rust')) {
+  //     return Icons.coronavirus;
+  //   } else if (statusLower.contains('pest') || statusLower.contains('insect')) {
+  //     return Icons.bug_report;
+  //   } else if (statusLower.contains('healthy')) {
+  //     return Icons.check_circle;
+  //   } else if (statusLower.contains('deficiency')) {
+  //     return Icons.warning;
+  //   }
+
+  //   if (detection.confidence >= 0.8) {
+  //     return Icons.check_circle;
+  //   } else if (detection.confidence >= 0.6) {
+  //     return Icons.warning;
+  //   } else {
+  //     return Icons.error;
+  //   }
+  // }
+
+  String _formatTimestamp() {
     final now = DateTime.now();
-    final difference = now.difference(timestamp);
+    final difference = now.difference(detection.detectedAt);
 
     if (difference.inDays > 0) {
       return '${difference.inDays}d ago';
@@ -189,7 +211,6 @@ class RecentDetectionCardWidget extends StatelessWidget {
 
   Widget _buildImageWidget() {
     try {
-      // Check if the image file exists
       final imageFile = File(detection.imageUrl);
 
       if (imageFile.existsSync()) {
@@ -220,17 +241,23 @@ class RecentDetectionCardWidget extends StatelessWidget {
       color: AppTheme.lightTheme.colorScheme.surfaceVariant,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
         children: [
           CustomIconWidget(
             iconName: 'image',
             color: AppTheme.lightTheme.colorScheme.onSurfaceVariant,
-            size: 32,
+            size: 24,
           ),
-          SizedBox(height: 1.h),
-          Text(
-            'Image unavailable',
-            style: AppTheme.lightTheme.textTheme.bodySmall?.copyWith(
-              color: AppTheme.lightTheme.colorScheme.onSurfaceVariant,
+          SizedBox(height: 0.5.h),
+          Flexible(
+            child: Text(
+              'Image unavailable',
+              style: AppTheme.lightTheme.textTheme.bodySmall?.copyWith(
+                color: AppTheme.lightTheme.colorScheme.onSurfaceVariant,
+                fontSize: 9.sp,
+              ),
+              textAlign: TextAlign.center,
+              overflow: TextOverflow.ellipsis,
             ),
           ),
         ],

@@ -1,6 +1,6 @@
 import 'package:cropscan_pro/models/crop_detection_args.dart';
 import 'package:cropscan_pro/models/crop_info.dart';
-import 'package:cropscan_pro/presentation/alert_screen/widgets/crop_card.dart';
+import 'package:cropscan_pro/presentation/cropscreen/widgets/crop_card.dart';
 import 'package:cropscan_pro/providers/detection_history_provider.dart';
 import 'package:cropscan_pro/models/crop_detection.dart';
 import 'package:flutter/material.dart';
@@ -108,75 +108,6 @@ class _CropScreenState extends State<CropScreen> {
     };
   }
 
-  // Convert CropDetection to format expected by CropCard
-  Map<String, dynamic> _convertToCardFormat(CropDetection detection) {
-    final base = context.read<DetectionHistoryProvider>().toMap(detection);
-    final isHealthy = detection.status.toLowerCase().contains('healthy');
-    return {
-      ...base,
-      'health': (detection.confidence * 100).round(),
-      'harvestInDays': _calculateHarvestDays(detection.cropName, isHealthy),
-      'issues': _getIssueCount(detection.status),
-      'expectedYield': _calculateExpectedYield(detection.cropName, isHealthy),
-      'scannedAgo': _formatTimeAgo(detection.detectedAt),
-    };
-  }
-
-  // Calculate estimated harvest days based on crop type and health
-  int _calculateHarvestDays(String cropName, bool isHealthy) {
-    final detection = context
-        .read<DetectionHistoryProvider>()
-        .getFilteredHistory(cropFilter: cropName)
-        .firstOrNull;
-    final baseDays = detection
-                ?.enhancedCropInfo?.maintenance?.watering?.criticalStages
-                ?.contains('fruiting') ??
-            false
-        ? 70
-        : 90;
-    return isHealthy ? baseDays : baseDays + 15;
-  }
-
-  // Get issue count based on status
-  int _getIssueCount(String status) {
-    final statusLower = status.toLowerCase();
-    if (statusLower.contains('disease')) return 2;
-    if (statusLower.contains('pest')) return 1;
-    if (statusLower.contains('virus')) return 3;
-    return 0;
-  }
-
-  // Calculate expected yield based on crop and health
-  double _calculateExpectedYield(String cropName, bool isHealthy) {
-    final name = cropName.toLowerCase();
-    double baseYield = 2.0;
-
-    if (name.contains('tomato'))
-      baseYield = 30.0;
-    else if (name.contains('pepper'))
-      baseYield = 15.0;
-    else if (name.contains('corn') || name.contains('maize')) baseYield = 5.0;
-
-    // Reduce yield for unhealthy crops
-    return isHealthy ? baseYield : baseYield * 0.7;
-  }
-
-  // Format time ago
-  String _formatTimeAgo(DateTime dateTime) {
-    final now = DateTime.now();
-    final difference = now.difference(dateTime);
-
-    if (difference.inDays > 0) {
-      return '${difference.inDays} day${difference.inDays == 1 ? '' : 's'} ago';
-    } else if (difference.inHours > 0) {
-      return '${difference.inHours} hour${difference.inHours == 1 ? '' : 's'} ago';
-    } else if (difference.inMinutes > 0) {
-      return '${difference.inMinutes} minute${difference.inMinutes == 1 ? '' : 's'} ago';
-    } else {
-      return 'Just now';
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -200,6 +131,37 @@ class _CropScreenState extends State<CropScreen> {
                     Text(
                       'Loading your crops...',
                       style: AppTheme.lightTheme.textTheme.bodyMedium,
+                    ),
+                  ],
+                ),
+              );
+            }
+
+            final detections = historyProvider.detectionHistory;
+
+            if (detections.isEmpty) {
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    CustomIconWidget(
+                      iconName: 'eco',
+                      color: AppTheme.lightTheme.colorScheme.primary,
+                      size: 64,
+                    ),
+                    SizedBox(height: 2.h),
+                    Text(
+                      'No Crops Scanned Yet',
+                      style: AppTheme.lightTheme.textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    SizedBox(height: 1.h),
+                    Text(
+                      'Start scanning your crops to see them here',
+                      style: AppTheme.lightTheme.textTheme.bodyMedium?.copyWith(
+                        color: AppTheme.lightTheme.colorScheme.onSurfaceVariant,
+                      ),
                     ),
                   ],
                 ),
@@ -462,13 +424,13 @@ class _CropScreenState extends State<CropScreen> {
         padding: EdgeInsets.symmetric(horizontal: 4.w),
         itemCount: detections.length,
         itemBuilder: (context, index) {
-          final detection = detections[index];
-          final cropData = _convertToCardFormat(detection);
+          final detection =
+              detections[index]; // ✅ This is already CropDetection
 
           return Padding(
             padding: EdgeInsets.only(bottom: 2.h),
             child: CropCard(
-              crop: cropData,
+              detection: detection, // ✅ FIX: Pass CropDetection directly
               onTap: () => _navigateToDetectionResults(context, detection),
               onAction: () => _showCropActions(context, detection),
             ),

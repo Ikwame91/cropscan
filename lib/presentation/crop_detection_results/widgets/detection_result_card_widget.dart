@@ -10,6 +10,7 @@ class DetectionResultCardWidget extends StatelessWidget {
   final DateTime timestamp;
   final Color? statusColor;
   final String? condition;
+
   const DetectionResultCardWidget({
     super.key,
     required this.cropName,
@@ -20,14 +21,15 @@ class DetectionResultCardWidget extends StatelessWidget {
   });
 
   Color _getConfidenceColor() {
-    // Use provided statusColor if available, otherwise use confidence-based logic
+    // ✅ FIX: Use provided statusColor if available, otherwise use confidence-based logic
     if (statusColor != null) {
       return statusColor!;
     }
 
-    if (confidence >= 80) {
+    // ✅ FIX: Use actual confidence percentage (0-100 scale)
+    if (confidence >= 0.8) {
       return AppTheme.getSuccessColor(true);
-    } else if (confidence >= 60) {
+    } else if (confidence >= 0.6) {
       return AppTheme.getWarningColor(true);
     } else {
       return AppTheme.lightTheme.colorScheme.error;
@@ -35,9 +37,10 @@ class DetectionResultCardWidget extends StatelessWidget {
   }
 
   String _getConfidenceText() {
-    if (confidence >= 80) {
+    // ✅ FIX: Use actual confidence percentage
+    if (confidence >= 0.8) {
       return 'High Confidence';
-    } else if (confidence >= 60) {
+    } else if (confidence >= 0.6) {
       return 'Medium Confidence';
     } else {
       return 'Low Confidence';
@@ -45,7 +48,6 @@ class DetectionResultCardWidget extends StatelessWidget {
   }
 
   String _getConditionText() {
-    // Use provided condition if available, otherwise use confidence-based text
     return condition ?? _getConfidenceText();
   }
 
@@ -110,46 +112,46 @@ class DetectionResultCardWidget extends StatelessWidget {
 
             SizedBox(height: 2.h),
 
-            // Confidence Section
             Row(
               children: [
-                Container(
-                  padding: EdgeInsets.symmetric(horizontal: 3.w, vertical: 1.h),
-                  decoration: BoxDecoration(
-                    color: _getConfidenceColor().withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: _getConfidenceColor(),
-                      width: 1.5,
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      CustomIconWidget(
-                        iconName: confidence >= 80
-                            ? 'check_circle'
-                            : confidence >= 60
-                                ? 'warning'
-                                : 'error',
-                        color: _getConfidenceColor(),
-                        size: 16,
-                      ),
-                      SizedBox(width: 2.w),
-                      Text(
-                        '${confidence.toStringAsFixed(1)}%',
-                        style:
-                            AppTheme.lightTheme.textTheme.labelLarge?.copyWith(
-                          color: _getConfidenceColor(),
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+                // Container(
+                //   padding: EdgeInsets.symmetric(horizontal: 3.w, vertical: 1.h),
+                //   decoration: BoxDecoration(
+                //     color: _getConfidenceColor().withValues(alpha: 0.1),
+                //     borderRadius: BorderRadius.circular(20),
+                //     border: Border.all(
+                //       color: _getConfidenceColor(),
+                //       width: 1.5,
+                //     ),
+                //   ),
+                //   child: Row(
+                //     mainAxisSize: MainAxisSize.min,
+                //     children: [
+                //       CustomIconWidget(
+                //         iconName: confidence >= 0.8
+                //             ? 'check_circle'
+                //             : confidence >= 0.6
+                //                 ? 'warning'
+                //                 : 'error',
+                //         color: _getConfidenceColor(),
+                //         size: 16,
+                //       ),
+                //       SizedBox(width: 2.w),
+                //       Text(
+                //         // ✅ FIX: Display confidence as percentage properly
+                //         '${(confidence * 100).toStringAsFixed(1)}%',
+                //         style:
+                //             AppTheme.lightTheme.textTheme.labelLarge?.copyWith(
+                //           color: _getConfidenceColor(),
+                //           fontWeight: FontWeight.w600,
+                //         ),
+                //       ),
+                //     ],
+                //   ),
+                // ),
                 SizedBox(width: 3.w),
                 Text(
-                  _getConditionText(), //
+                  _getConditionText(),
                   style: AppTheme.lightTheme.textTheme.bodyMedium?.copyWith(
                     color: _getConfidenceColor(),
                     fontWeight: FontWeight.w500,
@@ -178,39 +180,42 @@ class DetectionResultCardWidget extends StatelessWidget {
               ],
             ),
 
-            // if (confidence < 60) ...[
-            //   SizedBox(height: 2.h),
-            //   Container(
-            //     padding: EdgeInsets.all(3.w),
-            //     decoration: BoxDecoration(
-            //       color: AppTheme.getWarningColor(true).withValues(alpha: 0.1),
-            //       borderRadius: BorderRadius.circular(8),
-            //       border: Border.all(
-            //         color:go
-            //             AppTheme.getWarningColor(true).withValues(alpha: 0.3),
-            //       ),
-            //     ),
-            //     child: Row(
-            //       children: [
-            //         CustomIconWidget(
-            //           iconName: 'info',
-            //           color: AppTheme.getWarningColor(true),
-            //           size: 20,
-            //         ),
-            //         SizedBox(width: 3.w),
-            //         Expanded(
-            //           child: Text(
-            //             'Low confidence detection. Consider retaking the photo for better results.',
-            //             style:
-            //                 AppTheme.lightTheme.textTheme.bodySmall?.copyWith(
-            //               color: AppTheme.getWarningColor(true),
-            //             ),
-            //           ),
-            //         ),
-            //       ],
-            //     ),
-            //   ),
-            // ],
+            // ✅ FIX: Show warning for low confidence
+            if (confidence < 0.7) ...[
+              SizedBox(height: 2.h),
+              Container(
+                padding: EdgeInsets.all(3.w),
+                decoration: BoxDecoration(
+                  color: AppTheme.getWarningColor(true).withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color:
+                        AppTheme.getWarningColor(true).withValues(alpha: 0.3),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    CustomIconWidget(
+                      iconName: 'info',
+                      color: AppTheme.getWarningColor(true),
+                      size: 20,
+                    ),
+                    SizedBox(width: 3.w),
+                    Expanded(
+                      child: Text(
+                        confidence < 0.5
+                            ? 'Very low confidence. Consider retaking with better lighting.'
+                            : 'Moderate confidence. For best results, ensure good lighting and focus.',
+                        style:
+                            AppTheme.lightTheme.textTheme.bodySmall?.copyWith(
+                          color: AppTheme.getWarningColor(true),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ],
         ),
       ),

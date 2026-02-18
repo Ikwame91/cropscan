@@ -156,21 +156,51 @@ class EnhancedCropInfoService {
       return null;
     }
 
-    final cropData = _cropDatabase!['crop_diseases'][rawLabel];
+    // ✅ ENHANCED KEY MATCHING
+    var cropData = _cropDatabase!['crop_diseases'][rawLabel];
+
     if (cropData == null) {
-      print('⚠️ Warning: No data found for label: $rawLabel');
-      // Print available keys for debugging
+      // Try case variations
+      final keys = _cropDatabase!['crop_diseases'].keys;
+
+      // Try exact case-insensitive match
+      final exactMatch = keys.firstWhere(
+        (key) => key.toLowerCase() == rawLabel.toLowerCase(),
+        orElse: () => '',
+      );
+
+      if (exactMatch.isNotEmpty) {
+        cropData = _cropDatabase!['crop_diseases'][exactMatch];
+        if (kDebugMode) {
+          print('✅ Found match with case variation: $exactMatch');
+        }
+      } else {
+        // Try partial matching
+        final partialMatch = keys.firstWhere(
+          (key) =>
+              key.toLowerCase().contains(rawLabel.toLowerCase()) ||
+              rawLabel.toLowerCase().contains(key.toLowerCase()),
+          orElse: () => '',
+        );
+
+        if (partialMatch.isNotEmpty) {
+          cropData = _cropDatabase!['crop_diseases'][partialMatch];
+          print('✅ Found partial match: $partialMatch');
+        }
+      }
+    }
+
+    if (cropData == null) {
+      print('❌ No data found for label: $rawLabel');
       print(
-          'Available crops: ${_cropDatabase!['crop_diseases'].keys.take(5).join(', ')}...');
+          'Available keys: ${_cropDatabase!['crop_diseases'].keys.take(5).join(', ')}...');
       return null;
     }
 
     try {
       return EnhancedCropInfo.fromJson(cropData);
     } catch (e) {
-      if (kDebugMode) {
-        print('❌ Error parsing crop data for $rawLabel: $e');
-      }
+      print('❌ Error parsing enhanced crop info for $rawLabel: $e');
       return null;
     }
   }
