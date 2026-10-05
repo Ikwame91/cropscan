@@ -53,7 +53,7 @@ class SettingsItemWidget extends StatelessWidget {
                   icon,
                   size: 20,
                   color: isDestructive
-                      ? Colors.red
+                      ? AppTheme.lightTheme.colorScheme.error
                       : (iconColor ?? AppTheme.lightTheme.colorScheme.primary),
                 ),
               ),
@@ -70,7 +70,7 @@ class SettingsItemWidget extends StatelessWidget {
                       style: AppTheme.lightTheme.textTheme.bodyLarge?.copyWith(
                         fontWeight: FontWeight.w500,
                         color: isDestructive
-                            ? Colors.red
+                            ? AppTheme.errorInk()
                             : AppTheme.lightTheme.colorScheme.onSurface,
                       ),
                     ),

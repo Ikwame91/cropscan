@@ -525,7 +525,7 @@ class CropScannerCameraState extends State<CropScannerCamera>
       HapticFeedback.selectionClick();
     } on CameraException catch (e) {
       debugPrint("Error setting focus/exposure point: $e");
-      _showSnackBar("Failed to set focus.", backgroundColor: Colors.red);
+      _showSnackBar("Failed to set focus.", backgroundColor: AppTheme.lightTheme.colorScheme.error);
     }
   }
 
@@ -601,12 +601,12 @@ class CropScannerCameraState extends State<CropScannerCamera>
               Container(
                 padding: EdgeInsets.all(2.w),
                 decoration: BoxDecoration(
-                  color: Colors.orange.withOpacity(0.1),
+                  color: AppTheme.getWarningColor(true).withOpacity(0.1),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
                   Icons.search_off,
-                  color: Colors.orange,
+                  color: AppTheme.getWarningColor(true),
                   size: 24,
                 ),
               ),
@@ -735,7 +735,7 @@ class CropScannerCameraState extends State<CropScannerCamera>
                   "📋 Supported Crops",
                   "Corn/Maize, Tomato, Bell Pepper",
                   Icons.eco,
-                  Colors.green,
+                  AppTheme.getSuccessColor(true),
                 ),
                 SizedBox(height: 2.h),
                 _buildGuidanceCard(
@@ -749,7 +749,7 @@ class CropScannerCameraState extends State<CropScannerCamera>
                   "⚡ Quick Tips",
                   "• Natural lighting works best\n• Avoid shadows\n• Clean the camera lens\n• Try different angles",
                   Icons.tips_and_updates,
-                  Colors.orange,
+                  AppTheme.getWarningColor(true),
                 ),
               ],
             ),
@@ -1275,7 +1275,7 @@ class CropScannerCameraState extends State<CropScannerCamera>
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Icon(Icons.error_outline, color: Colors.red, size: 64),
+        Icon(Icons.error_outline, color: AppTheme.lightTheme.colorScheme.error, size: 64),
         SizedBox(height: 2.h),
         Text(
           'Model loading error',

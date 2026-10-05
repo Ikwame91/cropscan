@@ -212,13 +212,13 @@ class PersonalizedTipsWidget extends StatelessWidget {
     Color color;
     switch (severity.toLowerCase()) {
       case 'high':
-        color = Colors.red;
+        color = AppTheme.lightTheme.colorScheme.error;
         break;
       case 'medium':
-        color = Colors.orange;
+        color = AppTheme.getWarningColor(true);
         break;
       case 'low':
-        color = Colors.green;
+        color = AppTheme.getSuccessColor(true);
         break;
       default:
         color = Colors.grey;
@@ -282,9 +282,9 @@ class PersonalizedTipsWidget extends StatelessWidget {
   Color _getCategoryColor(String category) {
     switch (category.toLowerCase()) {
       case 'disease':
-        return Colors.red;
+        return AppTheme.lightTheme.colorScheme.error;
       case 'prevention':
-        return Colors.green;
+        return AppTheme.getSuccessColor(true);
       case 'care':
         return Colors.blue;
       default:

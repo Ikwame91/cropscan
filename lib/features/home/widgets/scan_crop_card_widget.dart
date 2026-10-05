@@ -60,7 +60,7 @@ class ScanCropCardWidget extends StatelessWidget {
 
             // Title and description
             Text('Scan Your Crop',
-                style: GoogleFonts.poppins(
+                style: GoogleFonts.roboto(
                   textStyle: AppTheme.lightTheme.textTheme.titleLarge?.copyWith(
                     color: AppTheme.lightTheme.colorScheme.onSecondary,
                     fontWeight: FontWeight.bold,
@@ -70,7 +70,7 @@ class ScanCropCardWidget extends StatelessWidget {
             Text(
               'Use AI-powered detection to identify crops, diseases, and get farming insights',
               textAlign: TextAlign.center,
-              style: GoogleFonts.poppins(
+              style: GoogleFonts.roboto(
                 textStyle: AppTheme.lightTheme.textTheme.bodyMedium,
               ).copyWith(
                 color: AppTheme.lightTheme.colorScheme.onSecondary

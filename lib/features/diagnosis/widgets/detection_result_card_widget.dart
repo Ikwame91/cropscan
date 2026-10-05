@@ -102,7 +102,7 @@ class DetectionResultCardWidget extends StatelessWidget {
             // Crop Name
             Text(
               cropName,
-              style: GoogleFonts.poppins(
+              style: GoogleFonts.roboto(
                 fontSize: 24.sp,
                 fontWeight: FontWeight.w700,
                 color: AppTheme.lightTheme.colorScheme.onSurface,

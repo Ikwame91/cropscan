@@ -205,7 +205,7 @@ class _DetectionHistoryState extends State<DetectionHistory>
       title: _isSelectionMode
           ? Text(
               '${_selectedItems.length} selected',
-              style: GoogleFonts.poppins(
+              style: GoogleFonts.roboto(
                 textStyle: AppTheme.lightTheme.textTheme.titleLarge?.copyWith(
                   color: Colors.white,
                   fontWeight: FontWeight.w600,
@@ -270,7 +270,7 @@ class _DetectionHistoryState extends State<DetectionHistory>
                 value: 'clear_all',
                 child: _buildMenuItem(
                     'clear_all', 'Clear All', Icons.delete_sweep,
-                    color: Colors.red),
+                    color: AppTheme.lightTheme.colorScheme.error),
               ),
             ],
           ),
@@ -281,7 +281,7 @@ class _DetectionHistoryState extends State<DetectionHistory>
             icon: Container(
               padding: EdgeInsets.all(2.w),
               decoration: BoxDecoration(
-                color: Colors.red.withOpacity(0.2),
+                color: AppTheme.lightTheme.colorScheme.error.withOpacity(0.2),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Icon(Icons.delete, color: Colors.white, size: 20),
@@ -315,7 +315,7 @@ class _DetectionHistoryState extends State<DetectionHistory>
         title: !_isSelectionMode
             ? Text(
                 'Detection History',
-                style: GoogleFonts.playfairDisplay(
+                style: GoogleFonts.roboto(
                   fontSize: 16.sp,
                   textStyle: AppTheme.lightTheme.textTheme.titleLarge?.copyWith(
                     color: AppTheme.lightTheme.colorScheme.onPrimary,
@@ -377,7 +377,7 @@ class _DetectionHistoryState extends State<DetectionHistory>
               onChanged: (value) => setState(() => _searchQuery = value),
               decoration: InputDecoration(
                 hintText: 'Search crops, locations, or conditions...',
-                hintStyle: GoogleFonts.poppins(
+                hintStyle: GoogleFonts.roboto(
                   color: AppTheme.lightTheme.colorScheme.onSurfaceVariant,
                 ),
                 prefixIcon: Padding(
@@ -436,7 +436,7 @@ class _DetectionHistoryState extends State<DetectionHistory>
             SizedBox(height: 2.h),
             Text(
               'Loading your crop history...',
-              style: GoogleFonts.poppins(
+              style: GoogleFonts.roboto(
                 textStyle: AppTheme.lightTheme.textTheme.bodyLarge?.copyWith(
                   color: AppTheme.lightTheme.colorScheme.onSurfaceVariant,
                 ),
@@ -472,7 +472,7 @@ class _DetectionHistoryState extends State<DetectionHistory>
               SizedBox(height: 3.h),
               Text(
                 isCompletelyEmpty ? 'No Scans Yet' : 'No Results Found',
-                style: GoogleFonts.poppins(
+                style: GoogleFonts.roboto(
                   textStyle:
                       AppTheme.lightTheme.textTheme.headlineSmall?.copyWith(
                     fontWeight: FontWeight.bold,
@@ -488,7 +488,7 @@ class _DetectionHistoryState extends State<DetectionHistory>
                     ? 'Start scanning crops to build your\ndetection history and track progress'
                     : 'Try adjusting your search terms\nor filter options',
                 textAlign: TextAlign.center,
-                style: GoogleFonts.poppins(
+                style: GoogleFonts.roboto(
                   textStyle: AppTheme.lightTheme.textTheme.bodyLarge?.copyWith(
                     color: AppTheme.lightTheme.colorScheme.onSurfaceVariant,
                     height: 1.5,
@@ -508,7 +508,7 @@ class _DetectionHistoryState extends State<DetectionHistory>
                   ),
                   label: Text(
                     'Start Scanning',
-                    style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+                    style: GoogleFonts.roboto(fontWeight: FontWeight.w600),
                   ),
                   style: ElevatedButton.styleFrom(
                     padding:
@@ -670,11 +670,11 @@ class _DetectionHistoryState extends State<DetectionHistory>
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text('${_selectedItems.length} items deleted'),
-                  backgroundColor: Colors.green,
+                  backgroundColor: AppTheme.getSuccessColor(true),
                 ),
               );
             },
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            style: ElevatedButton.styleFrom(backgroundColor: AppTheme.lightTheme.colorScheme.error),
             child: Text('Delete', style: TextStyle(color: Colors.white)),
           ),
         ],
@@ -723,11 +723,11 @@ class _DetectionHistoryState extends State<DetectionHistory>
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text('All detection history cleared'),
-                  backgroundColor: Colors.orange,
+                  backgroundColor: AppTheme.getWarningColor(true),
                 ),
               );
             },
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            style: ElevatedButton.styleFrom(backgroundColor: AppTheme.lightTheme.colorScheme.error),
             child: Text('Clear All', style: TextStyle(color: Colors.white)),
           ),
         ],
