@@ -101,7 +101,9 @@ class FollowUpProvider extends ChangeNotifier {
   }
 
   /// Closes open "rescan" tasks for the same crop when it's scanned again.
+  /// An uncertain scan can't confirm recovery, so it closes nothing.
   Future<void> recordRescan(CropDetection detection) async {
+    if (detection.isUncertain) return;
     var changed = false;
     for (var i = 0; i < _tasks.length; i++) {
       final t = _tasks[i];
