@@ -1,4 +1,6 @@
+import 'package:cropscan_pro/app/navigation_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:sizer/sizer.dart';
 
 import 'package:cropscan_pro/core/app_export.dart';
@@ -65,7 +67,7 @@ class _ActionButtonsWidgetState extends State<ActionButtonsWidget> {
               size: 24,
             ),
             label: Text(
-              'Scan Another Crop',
+              'Scan another crop',
               style: AppTheme.lightTheme.textTheme.labelLarge?.copyWith(
                 color: AppTheme.lightTheme.colorScheme.onPrimary,
                 fontWeight: FontWeight.w600,
@@ -89,7 +91,7 @@ class _ActionButtonsWidgetState extends State<ActionButtonsWidget> {
             // View History Button
             TextButton.icon(
               onPressed: () =>
-                  Navigator.pushNamed(context, '/detection-history'),
+                  Navigator.pushNamed(context, AppRoutes.detectionHistory),
               icon: CustomIconWidget(
                 iconName: 'history',
                 color: AppTheme.lightTheme.colorScheme.onSurfaceVariant,
@@ -106,29 +108,11 @@ class _ActionButtonsWidgetState extends State<ActionButtonsWidget> {
               ),
             ),
 
-            // Weather Dashboard Button
-            TextButton.icon(
-              onPressed: () =>
-                  Navigator.pushNamed(context, '/weather-dashboard'),
-              icon: CustomIconWidget(
-                iconName: 'wb_sunny',
-                color: AppTheme.lightTheme.colorScheme.onSurfaceVariant,
-                size: 18,
-              ),
-              label: Text(
-                'Weather',
-                style: AppTheme.lightTheme.textTheme.labelMedium?.copyWith(
-                  color: AppTheme.lightTheme.colorScheme.onSurfaceVariant,
-                ),
-              ),
-              style: TextButton.styleFrom(
-                padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 1.h),
-              ),
-            ),
-
             // Dashboard Button
             TextButton.icon(
-              onPressed: () => Navigator.pushNamed(context, '/dashboard-home'),
+              onPressed: () => context
+                  .read<NavigationProvider>()
+                  .returnToTab(context, AppTab.home),
               icon: CustomIconWidget(
                 iconName: 'dashboard',
                 color: AppTheme.lightTheme.colorScheme.onSurfaceVariant,

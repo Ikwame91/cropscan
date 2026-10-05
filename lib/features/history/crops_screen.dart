@@ -1,8 +1,8 @@
 import 'package:cropscan_pro/features/diagnosis/diagnosis_args.dart';
-import 'package:cropscan_pro/data/models/crop_info.dart';
 import 'package:cropscan_pro/features/history/widgets/crop_card.dart';
 import 'package:cropscan_pro/features/history/detection_history_provider.dart';
 import 'package:cropscan_pro/data/models/crop_detection.dart';
+import 'package:cropscan_pro/app/navigation_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
@@ -495,19 +495,10 @@ class _CropScreenState extends State<CropScreen> {
 
   void _navigateToDetectionResults(
       BuildContext context, CropDetection detection) {
-    final args = CropDetectionResultsArgs(
-      imagePath: detection.imageUrl,
-      detectedCrop: detection.rawDetectedCrop ?? detection.cropName,
-      confidence: detection.confidence,
-      cropInfo: CropInfoMapper.getCropInfo(detection.cropName),
-      enhancedCropInfo: detection.enhancedCropInfo,
-      isFromHistory: true,
-    );
-
     Navigator.pushNamed(
       context,
-      '/crop-detection-results',
-      arguments: args,
+      AppRoutes.cropDetectionResults,
+      arguments: DiagnosisArgs(detectionId: detection.id),
     );
   }
 
@@ -532,7 +523,7 @@ class _CropScreenState extends State<CropScreen> {
               title: Text('Re-scan Crop'),
               onTap: () {
                 Navigator.pop(context);
-                Navigator.pushNamed(context, '/crop-scanner-camera');
+                context.read<NavigationProvider>().navigateToCamera();
               },
             ),
             ListTile(
