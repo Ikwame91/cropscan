@@ -8,6 +8,8 @@ import 'package:cropscan_pro/features/diagnosis/widgets/action_buttons_widget.da
 import 'package:cropscan_pro/features/diagnosis/widgets/crop_image_widget.dart';
 import 'package:cropscan_pro/features/diagnosis/widgets/detection_result_card_widget.dart';
 import 'package:cropscan_pro/features/diagnosis/widgets/disease_details_view.dart';
+import 'package:cropscan_pro/features/follow_ups/follow_up_provider.dart';
+import 'package:cropscan_pro/features/follow_ups/widgets/follow_up_tile.dart';
 import 'package:cropscan_pro/features/history/detection_history_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -15,8 +17,8 @@ import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:sizer/sizer.dart';
 
-/// Shows a saved scan: the diagnosis, alternatives, what to do now and the
-/// full database entry.
+/// Shows a saved scan: the diagnosis, alternatives, what to do now, the
+/// care plan, and the full database entry.
 class CropDetectionResults extends StatelessWidget {
   final String detectionId;
   final bool justScanned;
@@ -81,6 +83,8 @@ class CropDetectionResults extends StatelessWidget {
                   ],
                   SizedBox(height: 2.h),
                   _NextStepCard(info: info, detection: detection),
+                  SizedBox(height: 2.h),
+                  _CarePlanCard(detection: detection, info: info),
                   SizedBox(height: 3.h),
                   if (info != null) ...[
                     Text('Full guide',
@@ -260,6 +264,76 @@ class _NextStepCard extends StatelessWidget {
           SizedBox(height: 0.8.h),
           Text(action.replaceFirst(RegExp(r'^step\s*\d+\s*[:.)-]\s*', caseSensitive: false), ''),
               style: theme.textTheme.bodyMedium),
+        ],
+      ),
+    );
+  }
+}
+
+class _CarePlanCard extends StatelessWidget {
+  final CropDetection detection;
+  final DiseaseInfo? info;
+  const _CarePlanCard({required this.detection, required this.info});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = AppTheme.lightTheme;
+    final followUps = context.watch<FollowUpProvider>();
+    final tasks = followUps.forDetection(detection.id);
+
+    return Container(
+      padding: EdgeInsets.all(4.w),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: theme.dividerColor),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.event_note, color: theme.colorScheme.primary),
+              SizedBox(width: 2.w),
+              Text('Care plan',
+                  style: theme.textTheme.titleMedium
+                      ?.copyWith(fontWeight: FontWeight.bold)),
+            ],
+          ),
+          SizedBox(height: 1.h),
+          if (tasks.isEmpty) ...[
+            Text(
+              detection.isHealthy
+                  ? 'Get a reminder to check this crop again next week.'
+                  : 'Turn the treatment advice into dated reminders: treat '
+                      'now, re-apply on schedule, and rescan to confirm '
+                      'recovery.',
+              style: theme.textTheme.bodySmall,
+            ),
+            SizedBox(height: 1.5.h),
+            ElevatedButton.icon(
+              icon: const Icon(Icons.add_task),
+              label: Text(detection.isHealthy
+                  ? 'Remind me to check again'
+                  : 'Start care plan'),
+              onPressed: () async {
+                final created = await followUps.createPlan(detection, info);
+                if (!context.mounted || created.isEmpty) return;
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                  content: Text('Added ${created.length} '
+                      'reminder${created.length == 1 ? '' : 's'} to your care plan'),
+                ));
+              },
+            ),
+          ] else ...[
+            for (final task in tasks) FollowUpTile(task: task, compact: true),
+            TextButton(
+              onPressed: () => context
+                  .read<NavigationProvider>()
+                  .returnToTab(context, AppTab.carePlan),
+              child: const Text('Open care plan'),
+            ),
+          ],
         ],
       ),
     );

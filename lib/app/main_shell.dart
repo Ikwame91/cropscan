@@ -1,7 +1,8 @@
 import 'package:cropscan_pro/app/navigation_provider.dart';
 import 'package:cropscan_pro/core/ml/crop_classifier.dart';
+import 'package:cropscan_pro/features/follow_ups/care_plan_screen.dart';
+import 'package:cropscan_pro/features/follow_ups/follow_up_provider.dart';
 import 'package:cropscan_pro/features/guide/crop_guide_screen.dart';
-import 'package:cropscan_pro/features/history/crops_screen.dart';
 import 'package:cropscan_pro/features/home/dashboard_home.dart';
 import 'package:cropscan_pro/features/profile/user_profile_settings.dart';
 import 'package:cropscan_pro/features/scan/crop_scanner_camera.dart';
@@ -23,7 +24,7 @@ class _MainScreenState extends State<MainScreen> {
     const DashboardHome(),
     CropScannerCamera(key: _cameraScreenKey),
     const CropCareDashboard(),
-    const CropScreen(),
+    const CarePlanScreen(),
     const UserProfileSettings(),
   ];
 
@@ -64,22 +65,38 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     final currentIndex = context.watch<NavigationProvider>().currentIndex;
+    final dueCount =
+        context.select<FollowUpProvider, int>((p) => p.dueNow.length);
     return Scaffold(
       body: IndexedStack(index: currentIndex, children: _screens),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: currentIndex,
         onTap: _onTabTapped,
         type: BottomNavigationBarType.fixed,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.camera_alt), label: 'Scan'),
-          BottomNavigationBarItem(
+        items: [
+          const BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+          const BottomNavigationBarItem(
+              icon: Icon(Icons.camera_alt), label: 'Scan'),
+          const BottomNavigationBarItem(
             icon: Icon(Icons.eco_outlined),
             activeIcon: Icon(Icons.eco),
             label: 'Crop Guide',
           ),
-          BottomNavigationBarItem(icon: Icon(Icons.grass), label: 'Crops'),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
+          BottomNavigationBarItem(
+            icon: Badge(
+              isLabelVisible: dueCount > 0,
+              label: Text('$dueCount'),
+              child: const Icon(Icons.event_note_outlined),
+            ),
+            activeIcon: Badge(
+              isLabelVisible: dueCount > 0,
+              label: Text('$dueCount'),
+              child: const Icon(Icons.event_note),
+            ),
+            label: 'Care plan',
+          ),
+          const BottomNavigationBarItem(
+              icon: Icon(Icons.person), label: 'Profile'),
         ],
       ),
     );

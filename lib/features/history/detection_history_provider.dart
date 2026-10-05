@@ -14,6 +14,8 @@ class DetectionHistoryProvider extends ChangeNotifier {
   final Future<Directory> Function() _imagesRoot;
 
   List<CropDetection> _detectionHistory = [];
+  final List<void Function(CropDetection)> _addedListeners = [];
+  final List<void Function(Set<String>)> _removedListeners = [];
   bool _isLoading = false;
   bool _hasLoaded = false;
   String? _errorMessage;
@@ -33,6 +35,14 @@ class DetectionHistoryProvider extends ChangeNotifier {
   bool get isLoading => _isLoading;
   bool get hasLoaded => _hasLoaded;
   String? get errorMessage => _errorMessage;
+
+  /// Called after a new scan is saved.
+  void addDetectionAddedListener(void Function(CropDetection) listener) =>
+      _addedListeners.add(listener);
+
+  /// Called with the ids of scans that were deleted.
+  void addDetectionsRemovedListener(void Function(Set<String>) listener) =>
+      _removedListeners.add(listener);
 
   int get totalScans => _detectionHistory.length;
   int get healthyCount => _detectionHistory.where((d) => d.isHealthy).length;
@@ -103,6 +113,9 @@ class DetectionHistoryProvider extends ChangeNotifier {
       _detectionHistory.insert(0, detection);
       notifyListeners();
       await _persist();
+      for (final listener in _addedListeners) {
+        listener(detection);
+      }
       return detection;
     } catch (e) {
       debugPrint('DetectionHistoryProvider: failed to add detection: $e');
@@ -190,8 +203,15 @@ class DetectionHistoryProvider extends ChangeNotifier {
     _detectionHistory.removeWhere((d) => ids.contains(d.id));
     notifyListeners();
     await _persist();
+    _notifyRemoved(ids);
     for (final d in removed) {
       await _deleteImage(d);
+    }
+  }
+
+  void _notifyRemoved(Set<String> ids) {
+    for (final listener in _removedListeners) {
+      listener(ids);
     }
   }
 
@@ -200,6 +220,7 @@ class DetectionHistoryProvider extends ChangeNotifier {
     _detectionHistory.clear();
     notifyListeners();
     await _persist();
+    _notifyRemoved(removed.map((d) => d.id).toSet());
     for (final d in removed) {
       await _deleteImage(d);
     }

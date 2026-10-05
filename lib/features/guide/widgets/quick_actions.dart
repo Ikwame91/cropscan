@@ -241,8 +241,8 @@ class QuickActionsWidget extends StatelessWidget {
         ),
         QuickAction(
           id: 'alerts',
-          title: 'Crop Alerts',
-          subtitle: 'Check farming notifications',
+          title: 'Care plan',
+          subtitle: 'Treatment reminders from your scans',
           icon: Icons.notifications,
           color: Colors.orange,
           navigationIndex: 3,
