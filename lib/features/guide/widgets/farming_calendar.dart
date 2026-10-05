@@ -28,6 +28,7 @@ class FarmingCalendarWidget extends StatelessWidget {
 
   Widget _buildSectionHeader(BuildContext context) {
     final currentMonth = DateTime.now().month;
+    final shownMonth = events.isEmpty ? currentMonth : events.first.month;
     final monthNames = [
       '',
       'January',
@@ -71,7 +72,10 @@ class FarmingCalendarWidget extends StatelessWidget {
               ),
               SizedBox(height: 0.5.h),
               Text(
-                "Activities for ${monthNames[currentMonth]}",
+                shownMonth == currentMonth
+                    ? "Activities for ${monthNames[currentMonth]}"
+                    : "Nothing listed for ${monthNames[currentMonth]}. "
+                        "Coming up in ${monthNames[shownMonth]}:",
                 style: AppTheme.lightTheme.textTheme.bodyMedium?.copyWith(
                   color: AppTheme.lightTheme.colorScheme.onSurface
                       .withOpacity(0.7),
@@ -266,14 +270,14 @@ class FarmingCalendarWidget extends StatelessWidget {
           ),
           SizedBox(height: 2.h),
           Text(
-            "No activities this month",
+            "No calendar entries for your crops",
             style: AppTheme.lightTheme.textTheme.titleMedium?.copyWith(
               color: AppTheme.lightTheme.colorScheme.onSurface.withOpacity(0.6),
             ),
           ),
           SizedBox(height: 1.h),
           Text(
-            "Check back next month for seasonal farming activities!",
+            "Scan a crop to see the seasonal guidance that applies to it.",
             style: AppTheme.lightTheme.textTheme.bodySmall?.copyWith(
               color: AppTheme.lightTheme.colorScheme.onSurface.withOpacity(0.5),
             ),

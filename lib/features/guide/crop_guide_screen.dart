@@ -303,14 +303,9 @@ class _CropCareDashboardState extends State<CropCareDashboard> {
   }
 
   List<String> _getUserCrops(DetectionHistoryProvider historyProvider) {
-    if (historyProvider.detectionHistory.isEmpty) {
-      return ['tomato', 'maize', 'pepper']; // Default supported crops
-    }
-
-    return historyProvider.detectionHistory
-        .map((detection) => detection.cropName.toLowerCase())
-        .toSet()
-        .toList();
+    final crops = historyProvider.scannedCrops;
+    if (crops.isEmpty) return ['tomato', 'maize', 'bell pepper'];
+    return crops.map((c) => c.toLowerCase()).toList();
   }
 
   String _calculateRecentTrend(DetectionHistoryProvider historyProvider) {
