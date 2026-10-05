@@ -1,16 +1,15 @@
-import 'package:cropscan_pro/core/services/tf_lite_model_services.dart';
-import 'package:cropscan_pro/providers/crop_care_provider.dart';
-import 'package:cropscan_pro/providers/detection_history_provider.dart';
-import 'package:cropscan_pro/providers/farming_alerts_provider.dart';
-import 'package:cropscan_pro/providers/naviagtion_provider.dart';
-import 'package:cropscan_pro/providers/userprofile.dart';
+import 'package:cropscan_pro/core/ml/crop_classifier.dart';
+import 'package:cropscan_pro/features/guide/crop_care_provider.dart';
+import 'package:cropscan_pro/features/history/detection_history_provider.dart';
+import 'package:cropscan_pro/app/navigation_provider.dart';
+import 'package:cropscan_pro/features/profile/user_profile_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:sizer/sizer.dart';
 
-import '../widgets/custom_error_widget.dart';
-import 'core/app_export.dart';
+import 'package:cropscan_pro/core/widgets/custom_error_widget.dart';
+import 'package:cropscan_pro/core/app_export.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -33,10 +32,6 @@ void main() async {
           create: (_) => DetectionHistoryProvider(), lazy: true),
       ChangeNotifierProvider(
         create: (_) => NavigationProvider(),
-        lazy: true,
-      ),
-      ChangeNotifierProvider(
-        create: (_) => FarmingAlertsProvider(),
         lazy: true,
       ),
       ChangeNotifierProvider(

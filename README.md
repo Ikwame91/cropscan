@@ -59,84 +59,35 @@ This final year project addresses the critical challenge of crop disease identif
 
 ### **Project Architecture**
 
+Code is organised by feature. Shared, UI-free building blocks live in `core/`
+and `data/`; each screen and its widgets/state live together under `features/`.
+
 ```
-cropscan_pro/
-├── lib/
-│   ├── core/
-│   │   ├── app_export.dart              # Global utilities and exports
-│   │   └── services/
-│   │       └── tf_lite_model_services.dart  # AI model management
-│   ├── models/
-│   │   ├── crop_detection.dart          # Detection data structures
-│   │   ├── crop_info.dart               # Crop information models
-│   │   ├── enhanced_crop_info.dart      # Extended crop data
-│   │   ├── crop_care_tip.dart           # Farming guidance models
-│   │   ├── farming_alert.dart           # Alert system models
-│   │   └── farming_calendar_event.dart  # Calendar event models
-│   ├── presentation/
-│   │   ├── mainscreen.dart              # Main navigation hub
-│   │   ├── dashboard_home/              # Primary dashboard interface
-│   │   │   ├── dashboard_home.dart
-│   │   │   └── widgets/
-│   │   │       ├── farming_alert_card_widget.dart
-│   │   │       ├── recent_detection_card_widget.dart
-│   │   │       └── scan_crop_card_widget.dart
-│   │   ├── crop_scanner_camera/         # AI-powered camera system
-│   │   │   ├── crop_scanner_camera.dart
-│   │   │   ├── camera_service/
-│   │   │   └── widgets/
-│   │   │       ├── camera_overlay_widget.dart
-│   │   │       ├── camera_preview_widget.dart
-│   │   │       └── detection_feedback_widget.dart
-│   │   ├── crop_detection_results/      # Results and recommendations
-│   │   │   ├── crop_detection_results.dart
-│   │   │   └── widgets/
-│   │   │       ├── detection_result_card_widget.dart
-│   │   │       ├── crop_info_section_widget.dart
-│   │   │       └── action_buttons_widget.dart
-│   │   ├── cropcare_dashboard/          # Farming intelligence center
-│   │   │   ├── cropcare.dart
-│   │   │   └── widgets/
-│   │   │       ├── disease_library.dart
-│   │   │       ├── farming_calendar.dart
-│   │   │       ├── personalizedTips.dart
-│   │   │       └── quick_actions.dart
-│   │   ├── detection_history/           # Scan timeline and analytics
-│   │   │   ├── detection_history.dart
-│   │   │   └── widgets/
-│   │   │       ├── enhanced_detection.dart
-│   │   │       ├── statistics_summary_widget.dart
-│   │   │       └── filter_options_widget.dart
-│   │   ├── alert_screen/                # Crop management interface
-│   │   │   ├── cropscreen.dart
-│   │   │   └── widgets/
-│   │   │       └── crop_card.dart
-│   │   └── user_profile_settings/       # User preferences and app settings
-│   │       ├── user_profile_settings.dart
-│   │       └── widgets/
-│   │           ├── profile_header_widget.dart
-│   │           ├── settings_item_widget.dart
-│   │           └── app_info_widget.dart
-│   ├── providers/                       # State management
-│   │   ├── detection_history_provider.dart    # Scan history management
-│   │   ├── crop_care_provider.dart           # Farming tips and calendar
-│   │   ├── farming_alerts_provider.dart      # Alert system management
-│   │   ├── navigation_provider.dart          # App navigation state
-│   │   └── userprofile.dart                  # User data management
-│   ├── theme/
-│   │   └── app_theme.dart               # Agricultural-themed UI design
-│   ├── routes/
-│   │   └── app_routes.dart              # Navigation routing
-│   └── utils/
-│       └── global_keys.dart             # Application utilities
-├── assets/
-│   ├── ml_models/
-│   │   ├── converted_model.tflite       # TensorFlow Lite AI model
-│   │   └── labels.txt                   # Crop classification labels
-│   ├── images/                          # App illustrations and icons
-│   └── data/
-│       └── crop_database.json           # Local crop information database
-└── pubspec.yaml                         # Dependencies and configuration
+lib/
+├── main.dart                      # Bootstraps providers and runs the app
+├── app/
+│   ├── app_routes.dart            # Named routes
+│   ├── main_shell.dart            # Bottom-navigation shell (IndexedStack of tabs)
+│   └── navigation_provider.dart   # Current tab + camera hand-off
+├── core/
+│   ├── app_export.dart            # Common exports (theme, routes, widgets)
+│   ├── ml/crop_classifier.dart    # TFLite model loading and inference
+│   ├── theme/app_theme.dart
+│   └── widgets/                   # Generic widgets (icons, images, error screen)
+├── data/
+│   └── models/                    # Detection, disease info, tips, calendar, profile
+└── features/
+    ├── home/                      # Dashboard
+    ├── scan/                      # Camera + gallery capture
+    ├── diagnosis/                 # Results for one scan
+    ├── history/                   # Scan history + per-crop view
+    ├── guide/                     # Crop guide: tips, calendar, disease library
+    └── profile/                   # User profile and settings
+
+assets/
+├── ml_models/                     # converted_model.tflite + labels.txt
+├── data/crop_database.json        # Offline disease & treatment database
+└── images/
 ```
 
 ## 🚀 Core Functionality Breakdown
