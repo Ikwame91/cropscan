@@ -35,7 +35,8 @@ extension DiseaseInfoX on DiseaseInfo {
       return 'No disease detected. Keep up regular care and scouting.';
     }
     final first = symptoms?.earlyStage.firstOrNull;
-    return first ?? '${basicInfo.diseaseType} disease of ${basicInfo.cropType}'.trim();
+    return first ??
+        '${basicInfo.diseaseType} disease of ${basicInfo.cropType}'.trim();
   }
 
   /// The single most important next step for the farmer.
@@ -74,7 +75,16 @@ class DiseaseKnowledgeRepository {
         );
         repo._byLabel[key] = entry;
         repo._byNormalizedLabel[CropLabel.normalize(key)] = entry;
-        repo._byDisplayName[entry.displayName.toLowerCase()] = entry;
+        final name = entry.displayName.toLowerCase();
+        repo._byDisplayName[name] = entry;
+        // Earlier app versions dropped a repeated crop word:
+        // "Tomato - Tomato Mosaic Virus" was saved as "Tomato - Mosaic Virus".
+        final repeated = RegExp(r'^(.+?) - \1 ').firstMatch(name);
+        if (repeated != null) {
+          final legacy =
+              '${repeated.group(1)} - ${name.substring(repeated.end)}';
+          repo._byDisplayName.putIfAbsent(legacy, () => entry);
+        }
       } catch (e) {
         debugPrint('DiseaseKnowledgeRepository: skipping "$key": $e');
       }
