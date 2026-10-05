@@ -2,7 +2,7 @@ import 'package:cropscan_pro/features/scan/crop_scanner_camera.dart';
 import 'package:flutter/widgets.dart';
 
 /// Bottom-navigation tabs, in display order.
-enum AppTab { home, scan, guide, crops, profile }
+enum AppTab { home, scan, guide, carePlan, profile }
 
 class NavigationProvider extends ChangeNotifier {
   AppTab _currentTab = AppTab.home;
