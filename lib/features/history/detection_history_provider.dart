@@ -1,23 +1,43 @@
-import 'package:cropscan_pro/data/models/disease_info.dart';
-import 'package:flutter/material.dart';
 import 'dart:io';
-import 'package:path_provider/path_provider.dart';
-import 'dart:convert';
-import 'package:cropscan_pro/data/models/crop_detection.dart';
 
+import 'package:cropscan_pro/core/ml/classification_result.dart';
+import 'package:cropscan_pro/core/storage/json_file_store.dart';
+import 'package:cropscan_pro/data/knowledge/disease_knowledge_repository.dart';
+import 'package:cropscan_pro/data/models/crop_detection.dart';
+import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
+
+/// Saved scans, newest first, persisted to `detection_history.json`.
 class DetectionHistoryProvider extends ChangeNotifier {
+  final DiseaseKnowledgeRepository _knowledge;
+  final JsonFileStore _store;
+  final Future<Directory> Function() _imagesRoot;
+
   List<CropDetection> _detectionHistory = [];
   bool _isLoading = false;
+  bool _hasLoaded = false;
   String? _errorMessage;
 
-  // Getters
+  DetectionHistoryProvider(
+    this._knowledge, {
+    JsonFileStore? store,
+    Future<Directory> Function()? imagesRoot,
+    bool autoLoad = true,
+  })  : _store = store ?? JsonFileStore('detection_history.json'),
+        _imagesRoot = imagesRoot ?? getApplicationDocumentsDirectory {
+    if (autoLoad) loadDetectionHistory();
+  }
+
   List<CropDetection> get detectionHistory =>
       List.unmodifiable(_detectionHistory);
   bool get isLoading => _isLoading;
+  bool get hasLoaded => _hasLoaded;
   String? get errorMessage => _errorMessage;
 
-  // Statistics
   int get totalScans => _detectionHistory.length;
+  int get healthyCount => _detectionHistory.where((d) => d.isHealthy).length;
+  int get issueCount => totalScans - healthyCount;
+
   double get averageConfidence {
     if (_detectionHistory.isEmpty) return 0.0;
     return _detectionHistory.map((d) => d.confidence).reduce((a, b) => a + b) /
@@ -26,315 +46,193 @@ class DetectionHistoryProvider extends ChangeNotifier {
 
   String get mostIdentifiedCrop {
     if (_detectionHistory.isEmpty) return 'None';
-
-    Map<String, int> cropCounts = {};
-    for (var detection in _detectionHistory) {
-      cropCounts[detection.cropName] =
-          (cropCounts[detection.cropName] ?? 0) + 1;
+    final counts = <String, int>{};
+    for (final d in _detectionHistory) {
+      counts[d.crop] = (counts[d.crop] ?? 0) + 1;
     }
-
-    return cropCounts.entries.reduce((a, b) => a.value > b.value ? a : b).key;
+    return counts.entries.reduce((a, b) => a.value >= b.value ? a : b).key;
   }
 
-  // Initialize and load saved history
-  DetectionHistoryProvider() {
-    loadDetectionHistory();
+  /// Crops the user has actually scanned, e.g. {"Tomato", "Maize"}.
+  Set<String> get scannedCrops => _detectionHistory.map((d) => d.crop).toSet();
+
+  /// Disease labels found in the user's recent scans, most recent first.
+  List<String> recentDiseaseLabels({int scans = 20}) => _detectionHistory
+      .take(scans)
+      .where((d) => d.isDiseaseDetected)
+      .map((d) => d.rawLabel)
+      .toSet()
+      .toList();
+
+  CropDetection? byId(String id) {
+    for (final d in _detectionHistory) {
+      if (d.id == id) return d;
+    }
+    return null;
   }
 
-  // Add new detection to history
-  Future<void> addDetection({
-    required String cropName,
+  /// Saves a new scan (copying the photo into app storage) and returns it.
+  Future<CropDetection?> addDetection({
+    required String rawLabel,
     required double confidence,
     required String imagePath,
-    required String status,
-    required EnhancedCropInfo enhancedCropInfo,
-    String? rawDetectedCrop,
+    List<LabelScore> alternatives = const [],
+    bool isUncertain = false,
     String? location,
     String? notes,
   }) async {
     try {
-      // Save image to permanent storage
-      final savedImagePath = await _saveImagePermanently(imagePath);
-
+      final info = _knowledge.lookup(rawLabel);
       final detection = CropDetection(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
-        cropName: cropName,
+        id: DateTime.now().microsecondsSinceEpoch.toString(),
+        rawLabel: rawLabel,
+        cropName: _knowledge.displayNameFor(rawLabel),
         confidence: confidence,
-        imageUrl: savedImagePath,
+        imageUrl: await _saveImagePermanently(imagePath),
         detectedAt: DateTime.now(),
-        status: status,
-        enhancedCropInfo: enhancedCropInfo,
-        rawDetectedCrop: rawDetectedCrop,
-        location: location ?? "Uknown Location",
+        status: info?.basicInfo.condition ??
+            (rawLabel.toLowerCase().contains('healthy')
+                ? 'Healthy'
+                : 'Disease Detected'),
+        alternatives: alternatives,
+        isUncertain: isUncertain,
+        location: location,
         notes: notes,
       );
 
-      _detectionHistory.insert(0, detection); // Add to beginning
-      await _saveDetectionHistory();
-
-      debugPrint("✅ Detection added to history: $cropName");
+      _detectionHistory.insert(0, detection);
       notifyListeners();
+      await _persist();
+      return detection;
     } catch (e) {
-      debugPrint("❌ Error adding detection to history: $e");
+      debugPrint('DetectionHistoryProvider: failed to add detection: $e');
       _errorMessage = 'Failed to save detection: $e';
       notifyListeners();
+      return null;
     }
   }
 
-  Future<void> updateDetection(CropDetection updatedDetection) async {
-    try {
-      final index =
-          _detectionHistory.indexWhere((d) => d.id == updatedDetection.id);
-      if (index != -1) {
-        _detectionHistory[index] = updatedDetection;
-        await _saveDetectionHistory();
-        debugPrint("✅ Detection updated: ${updatedDetection.cropName}");
-        notifyListeners();
-      } else {
-        debugPrint(
-            "⚠️ Warning: Could not find detection to update with id: ${updatedDetection.id}");
-      }
-    } catch (e) {
-      debugPrint("❌ Error updating detection in history: $e");
-      _errorMessage = 'Failed to update detection: $e';
-      notifyListeners();
-    }
+  Future<void> updateDetection(CropDetection updated) async {
+    final index = _detectionHistory.indexWhere((d) => d.id == updated.id);
+    if (index == -1) return;
+    _detectionHistory[index] = updated;
+    notifyListeners();
+    await _persist();
   }
 
-  // Load detection history from storage
   Future<void> loadDetectionHistory() async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
 
     try {
-      final directory = await getApplicationDocumentsDirectory();
-      final file = File('${directory.path}/detection_history.json');
-
-      if (await file.exists()) {
-        final jsonString = await file.readAsString();
-        final List<dynamic> jsonList = json.decode(jsonString);
-
-        _detectionHistory = jsonList
-            .map((json) => CropDetection.fromMap(json as Map<String, dynamic>))
-            .toList();
-
-        // Sort by date (newest first)
-        _detectionHistory.sort((a, b) => b.detectedAt.compareTo(a.detectedAt));
-
-        debugPrint("✅ Loaded ${_detectionHistory.length} detection records");
-      } else {
-        debugPrint("📝 No existing detection history found");
-        _detectionHistory = [];
-      }
+      final data = await _store.read();
+      _detectionHistory = [
+        for (final item in (data as List? ?? const []))
+          CropDetection.fromMap(
+            Map<String, dynamic>.from(item as Map),
+            recoverRawLabel: _knowledge.rawLabelForDisplayName,
+          ),
+      ]..sort((a, b) => b.detectedAt.compareTo(a.detectedAt));
     } catch (e) {
-      debugPrint("❌ Error loading detection history: $e");
+      debugPrint('DetectionHistoryProvider: failed to load history: $e');
       _errorMessage = 'Failed to load detection history: $e';
       _detectionHistory = [];
     } finally {
       _isLoading = false;
+      _hasLoaded = true;
       notifyListeners();
     }
   }
 
-  // Save detection history to storage
-  Future<void> _saveDetectionHistory() async {
+  Future<void> _persist() async {
     try {
-      final directory = await getApplicationDocumentsDirectory();
-      final file = File('${directory.path}/detection_history.json');
-      final jsonList =
-          _detectionHistory.map((detection) => detection.toMap()).toList();
-      final jsonString = json.encode(jsonList);
-      debugPrint("Saving JSON: $jsonString"); // Debug content
-      await file.writeAsString(jsonString);
-      debugPrint("✅ Detection history saved successfully");
+      await _store.write(_detectionHistory.map((d) => d.toMap()).toList());
     } catch (e) {
-      debugPrint("❌ Error saving detection history: $e");
+      debugPrint('DetectionHistoryProvider: failed to save history: $e');
       _errorMessage = 'Failed to save detection history: $e';
       notifyListeners();
     }
   }
 
-  // Save image to permanent app storage
   Future<String> _saveImagePermanently(String tempImagePath) async {
+    final source = File(tempImagePath);
+    if (!await source.exists()) return tempImagePath;
+
     try {
-      final directory = await getApplicationDocumentsDirectory();
-      final imagesDir = Directory('${directory.path}/detection_images');
-
-      if (!await imagesDir.exists()) {
-        await imagesDir.create(recursive: true);
-      }
-
-      final originalFile = File(tempImagePath);
-
-      // Check if the original file exists
-      if (!await originalFile.exists()) {
-        throw Exception('Source image file does not exist: $tempImagePath');
-      }
-
-      final fileName = '${DateTime.now().millisecondsSinceEpoch}.jpg';
-      final newPath = '${imagesDir.path}/$fileName';
-
-      await originalFile.copy(newPath);
-
-      final copiedFile = File(newPath);
-      if (!await copiedFile.exists()) {
-        throw Exception('Failed to copy image to permanent location');
-      }
-
-      debugPrint("✅ Image saved permanently: $newPath");
-      debugPrint("✅ Image file size: ${await copiedFile.length()} bytes");
-
-      debugPrint("✅ Image saved permanently: $newPath");
-
-      return newPath;
+      final dir = Directory('${(await _imagesRoot()).path}/detection_images');
+      await dir.create(recursive: true);
+      final saved = await source.copy(
+        '${dir.path}/${DateTime.now().microsecondsSinceEpoch}.jpg',
+      );
+      return saved.path;
     } catch (e) {
-      debugPrint("❌ Error saving image permanently: $e");
-      debugPrint("❌ Source path: $tempImagePath");
-
+      debugPrint('DetectionHistoryProvider: could not copy image: $e');
       return tempImagePath;
     }
   }
 
-  // Delete detection from history
-  Future<void> deleteDetection(String detectionId) async {
+  Future<void> _deleteImage(CropDetection detection) async {
     try {
-      final detectionToDelete =
-          _detectionHistory.firstWhere((d) => d.id == detectionId);
-
-      // Delete image file
-      final imageFile = File(detectionToDelete.imageUrl);
-      if (await imageFile.exists()) {
-        await imageFile.delete();
-      }
-
-      _detectionHistory.removeWhere((d) => d.id == detectionId);
-      await _saveDetectionHistory();
-
-      debugPrint("✅ Detection deleted: $detectionId");
-      notifyListeners();
+      final file = File(detection.imageUrl);
+      if (await file.exists()) await file.delete();
     } catch (e) {
-      debugPrint("❌ Error deleting detection: $e");
-      _errorMessage = 'Failed to delete detection: $e';
-      notifyListeners();
+      debugPrint('DetectionHistoryProvider: could not delete image: $e');
     }
   }
 
-  // Delete multiple detections
+  Future<void> deleteDetection(String detectionId) =>
+      deleteMultipleDetections([detectionId]);
+
   Future<void> deleteMultipleDetections(List<String> detectionIds) async {
-    try {
-      for (String id in detectionIds) {
-        final detection = _detectionHistory.firstWhere((d) => d.id == id);
-
-        // Delete image file
-        final imageFile = File(detection.imageUrl);
-        if (await imageFile.exists()) {
-          await imageFile.delete();
-        }
-      }
-
-      _detectionHistory.removeWhere((d) => detectionIds.contains(d.id));
-      await _saveDetectionHistory();
-
-      debugPrint("✅ ${detectionIds.length} detections deleted");
-      notifyListeners();
-    } catch (e) {
-      debugPrint("❌ Error deleting multiple detections: $e");
-      _errorMessage = 'Failed to delete detections: $e';
-      notifyListeners();
+    final ids = detectionIds.toSet();
+    final removed = _detectionHistory.where((d) => ids.contains(d.id)).toList();
+    _detectionHistory.removeWhere((d) => ids.contains(d.id));
+    notifyListeners();
+    await _persist();
+    for (final d in removed) {
+      await _deleteImage(d);
     }
   }
 
-  // Clear all history
   Future<void> clearAllHistory() async {
-    try {
-      // Delete all image files
-      for (var detection in _detectionHistory) {
-        final imageFile = File(detection.imageUrl);
-        if (await imageFile.exists()) {
-          await imageFile.delete();
-        }
-      }
-
-      _detectionHistory.clear();
-      await _saveDetectionHistory();
-
-      debugPrint("✅ All detection history cleared");
-      notifyListeners();
-    } catch (e) {
-      debugPrint("❌ Error clearing history: $e");
-      _errorMessage = 'Failed to clear history: $e';
-      notifyListeners();
+    final removed = List.of(_detectionHistory);
+    _detectionHistory.clear();
+    notifyListeners();
+    await _persist();
+    for (final d in removed) {
+      await _deleteImage(d);
     }
   }
 
-  // Filter methods
   List<CropDetection> getFilteredHistory({
     String? searchQuery,
     String? cropFilter,
     double? confidenceThreshold,
     DateTimeRange? dateRange,
   }) {
-    List<CropDetection> filtered = List.from(_detectionHistory);
-
-    if (searchQuery != null && searchQuery.isNotEmpty) {
-      filtered = filtered.where((detection) {
-        return detection.cropName
-            .toLowerCase()
-            .contains(searchQuery.toLowerCase());
-      }).toList();
-    }
-
-    if (cropFilter != null && cropFilter.isNotEmpty) {
-      filtered = filtered.where((detection) {
-        return detection.cropName
-            .toLowerCase()
-            .contains(cropFilter.toLowerCase());
-      }).toList();
-    }
-
-    if (confidenceThreshold != null) {
-      filtered = filtered.where((detection) {
-        return detection.confidence >= confidenceThreshold;
-      }).toList();
-    }
-
-    if (dateRange != null) {
-      filtered = filtered.where((detection) {
-        return detection.detectedAt.isAfter(dateRange.start) &&
-            detection.detectedAt.isBefore(dateRange.end.add(Duration(days: 1)));
-      }).toList();
-    }
-
-    return filtered;
+    final query = searchQuery?.toLowerCase() ?? '';
+    final crop = cropFilter?.toLowerCase() ?? '';
+    return _detectionHistory.where((d) {
+      if (query.isNotEmpty && !d.cropName.toLowerCase().contains(query)) {
+        return false;
+      }
+      if (crop.isNotEmpty && !d.cropName.toLowerCase().contains(crop)) {
+        return false;
+      }
+      if (confidenceThreshold != null && d.confidence < confidenceThreshold) {
+        return false;
+      }
+      if (dateRange != null &&
+          (d.detectedAt.isBefore(dateRange.start) ||
+              !d.detectedAt
+                  .isBefore(dateRange.end.add(const Duration(days: 1))))) {
+        return false;
+      }
+      return true;
+    }).toList();
   }
 
-  // Get recent detections for dashboard
-  List<CropDetection> getRecentDetections({int limit = 5}) {
-    return _detectionHistory.take(limit).toList();
-  }
-
-  // Convert CropDetection to Map for widget compatibility
-  Map<String, dynamic> toMap(CropDetection detection) {
-    return {
-      'id': detection.id,
-      'cropName': detection.cropName,
-      'cropType': _getCropType(detection.cropName),
-      'imageUrl': detection.imageUrl,
-      'confidence': detection.confidence,
-      'timestamp': detection.detectedAt,
-      'status': detection.status,
-      'location':
-          detection.location ?? 'Unknown Location', // Handle null location
-      'diseaseDetected': detection.status.toLowerCase().contains('disease'),
-      'pestDetected': detection.status.toLowerCase().contains('pest'),
-      'imageExists': File(detection.imageUrl).existsSync(),
-    };
-  }
-
-  // Dummy implementation for crop type
-  String _getCropType(String cropName) {
-    // TODO: Replace with real crop type mapping
-    return 'Type of $cropName';
-  }
+  List<CropDetection> getRecentDetections({int limit = 5}) =>
+      _detectionHistory.take(limit).toList();
 }

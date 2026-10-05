@@ -595,21 +595,21 @@ class EconomicImpact {
   final String? treatmentCost;
   final String? criticalPeriod;
 
+  /// Healthy-crop entries describe potential yield and upkeep cost instead.
+  final String? yieldPotential;
+  final String? maintenanceCost;
+
   EconomicImpact({
     this.yieldLoss,
     this.qualityImpact,
     this.treatmentCost,
     this.criticalPeriod,
+    this.yieldPotential,
+    this.maintenanceCost,
   });
 
-  factory EconomicImpact.fromJson(Map<String, dynamic> json) {
-    return EconomicImpact(
-      yieldLoss: json['yield_loss'],
-      qualityImpact: json['quality_impact'],
-      treatmentCost: json['treatment_cost'],
-      criticalPeriod: json['critical_period'],
-    );
-  }
+  factory EconomicImpact.fromJson(Map<String, dynamic> json) =>
+      EconomicImpact.fromMap(json);
 
   EconomicImpact copyWith({
     ValueGetter<String?>? yieldLoss,
@@ -634,6 +634,8 @@ class EconomicImpact {
       'quality_impact': qualityImpact,
       'treatment_cost': treatmentCost,
       'critical_period': criticalPeriod,
+      'yield_potential': yieldPotential,
+      'maintenance_cost': maintenanceCost,
     };
   }
 
@@ -643,6 +645,8 @@ class EconomicImpact {
       qualityImpact: map['quality_impact'],
       treatmentCost: map['treatment_cost'],
       criticalPeriod: map['critical_period'],
+      yieldPotential: map['yield_potential'],
+      maintenanceCost: map['maintenance_cost'],
     );
   }
   String toJson() => json.encode(toMap());
@@ -917,36 +921,29 @@ class MonitoringInfo {
   final List<String>? growthStages;
   final List<String>? keyMetrics;
 
+  /// How often to scout for a disease, e.g. "Weekly after rain".
+  final String? inspectionFrequency;
+  final List<String> keyIndicators;
+  final String? actionThreshold;
+
   MonitoringInfo({
     this.growthStages,
     this.keyMetrics,
+    this.inspectionFrequency,
+    this.keyIndicators = const [],
+    this.actionThreshold,
   });
 
-  factory MonitoringInfo.fromJson(Map<String, dynamic> json) {
-    return MonitoringInfo(
-      growthStages: json['growth_stages'] != null
-          ? List<String>.from(json['growth_stages'])
-          : null,
-      keyMetrics: json['key_metrics'] != null
-          ? List<String>.from(json['key_metrics'])
-          : null,
-    );
-  }
-
-  MonitoringInfo copyWith({
-    ValueGetter<List<String>?>? growthStages,
-    ValueGetter<List<String>?>? keyMetrics,
-  }) {
-    return MonitoringInfo(
-      growthStages: growthStages != null ? growthStages() : this.growthStages,
-      keyMetrics: keyMetrics != null ? keyMetrics() : this.keyMetrics,
-    );
-  }
+  factory MonitoringInfo.fromJson(Map<String, dynamic> json) =>
+      MonitoringInfo.fromMap(json);
 
   Map<String, dynamic> toMap() {
     return {
       'growth_stages': growthStages,
       'key_metrics': keyMetrics,
+      'inspection_frequency': inspectionFrequency,
+      'key_indicators': keyIndicators,
+      'action_threshold': actionThreshold,
     };
   }
 
@@ -958,6 +955,9 @@ class MonitoringInfo {
       keyMetrics: map['key_metrics'] != null
           ? List<String>.from(map['key_metrics'])
           : null,
+      inspectionFrequency: map['inspection_frequency'] as String?,
+      keyIndicators: List<String>.from(map['key_indicators'] ?? const []),
+      actionThreshold: map['action_threshold'] as String?,
     );
   }
 }

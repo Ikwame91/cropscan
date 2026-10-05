@@ -1,972 +1,284 @@
-import 'dart:io';
-
-import 'package:cropscan_pro/data/models/crop_info.dart';
-import 'package:cropscan_pro/data/models/disease_sections.dart';
-import 'package:cropscan_pro/data/models/disease_info.dart';
-import 'package:cropscan_pro/features/history/detection_history_provider.dart';
-import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:sizer/sizer.dart';
-
+import 'package:cropscan_pro/app/navigation_provider.dart';
 import 'package:cropscan_pro/core/app_export.dart';
+import 'package:cropscan_pro/core/ml/classification_result.dart';
+import 'package:cropscan_pro/data/knowledge/disease_knowledge_repository.dart';
+import 'package:cropscan_pro/data/models/crop_detection.dart';
+import 'package:cropscan_pro/data/models/disease_info.dart';
 import 'package:cropscan_pro/features/diagnosis/widgets/action_buttons_widget.dart';
 import 'package:cropscan_pro/features/diagnosis/widgets/crop_image_widget.dart';
-
 import 'package:cropscan_pro/features/diagnosis/widgets/detection_result_card_widget.dart';
+import 'package:cropscan_pro/features/diagnosis/widgets/disease_details_view.dart';
+import 'package:cropscan_pro/features/history/detection_history_provider.dart';
+import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:sizer/sizer.dart';
 
-class CropDetectionResults extends StatefulWidget {
-  final String imagePath;
-  final String detectedCrop;
-  final double confidence;
-  final CropInfo cropInfo;
-  final bool isFromHistory;
-  final EnhancedCropInfo? enhancedCropInfo;
+/// Shows a saved scan: the diagnosis, alternatives, what to do now and the
+/// full database entry.
+class CropDetectionResults extends StatelessWidget {
+  final String detectionId;
+  final bool justScanned;
 
-  const CropDetectionResults(
-      {super.key,
-      required this.imagePath,
-      required this.detectedCrop,
-      required this.cropInfo,
-      this.enhancedCropInfo,
-      this.isFromHistory = false,
-      required this.confidence});
-
-  @override
-  State<CropDetectionResults> createState() => _CropDetectionResultsState();
-}
-
-class _CropDetectionResultsState extends State<CropDetectionResults> {
-  bool _isImageZoomed = false;
-  EnhancedCropInfo? _enhancedCropInfo;
-  bool _isLoadingEnhancedInfo = true;
-  @override
-  void initState() {
-    super.initState();
-
-    if (widget.isFromHistory) {
-      debugPrint("📖 Viewing historical detection - checking enhanced info");
-
-      if (widget.enhancedCropInfo != null) {
-        _enhancedCropInfo = widget.enhancedCropInfo;
-        _isLoadingEnhancedInfo = false;
-        debugPrint("✅ Using enhanced info from history");
-      } else {
-        debugPrint("⚠️ Enhanced info missing from history, loading...");
-        _loadEnhancedInfoOnly();
-      }
-    } else {
-      debugPrint("📸 New scan detected - loading and saving to history");
-      _loadAndSaveDetection();
-    }
-  }
-
-  Future<void> _loadEnhancedInfoOnly() async {
-    setState(() {
-      _isLoadingEnhancedInfo = true;
-    });
-
-    try {
-      await EnhancedCropInfoService.loadDatabase();
-
-      String searchKey = widget.detectedCrop;
-      debugPrint("🔍 Searching for enhanced info with key: '$searchKey'");
-
-      _enhancedCropInfo = EnhancedCropInfoService.getCropInfo(searchKey);
-
-      if (_enhancedCropInfo == null && widget.detectedCrop.contains('_')) {
-        String altKey = widget.detectedCrop.replaceAll('_', ' ');
-        debugPrint("🔍 Trying alternative key: '$altKey'");
-        _enhancedCropInfo = EnhancedCropInfoService.getCropInfo(altKey);
-      }
-
-      if (_enhancedCropInfo == null) {
-        String fallbackKey = widget.cropInfo.displayName.toLowerCase();
-        debugPrint("🔍 Trying fallback key: '$fallbackKey'");
-        _enhancedCropInfo = EnhancedCropInfoService.getCropInfo(fallbackKey);
-      }
-
-      if (_enhancedCropInfo != null) {
-        debugPrint("✅ Enhanced info loaded successfully");
-      } else {
-        debugPrint("❌ No enhanced info found for any key variation");
-      }
-    } catch (e) {
-      debugPrint("❌ Error loading enhanced info: $e");
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoadingEnhancedInfo = false;
-        });
-      }
-    }
-  }
-
-  Future<void> _loadAndSaveDetection() async {
-    try {
-      await _loadEnhancedCropInfo();
-
-      if (_enhancedCropInfo != null && !widget.isFromHistory) {
-        await _saveToHistory();
-        debugPrint("✅ New detection saved to history");
-      } else if (widget.isFromHistory) {
-        debugPrint("📖 Skipped saving - this is a history item");
-      } else {
-        debugPrint(
-            "⚠️ Warning: Enhanced crop info could not be loaded, not saving to history.");
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Failed to load crop details, history not updated.'),
-            backgroundColor: Colors.red,
-            duration: Duration(seconds: 2),
-          ),
-        );
-      }
-    } catch (e) {
-      debugPrint("❌ An error occurred during loading or saving: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('An unexpected error occurred.'),
-          backgroundColor: Colors.red,
-          duration: Duration(seconds: 2),
-        ),
-      );
-    } finally {
-      setState(() {
-        _isLoadingEnhancedInfo = false;
-      });
-    }
-  }
-
-  Future<void> _saveToHistory() async {
-    try {
-      final historyProvider = context.read<DetectionHistoryProvider>();
-
-      final imageFile = File(widget.imagePath);
-      if (!await imageFile.exists()) {
-        debugPrint(
-            "⚠️ Warning: Image file does not exist when saving to history: ${widget.imagePath}");
-      }
-
-      await historyProvider.addDetection(
-        enhancedCropInfo: _enhancedCropInfo!,
-        rawDetectedCrop: widget.detectedCrop,
-        cropName: widget.cropInfo.displayName,
-        confidence: widget.confidence,
-        imagePath: widget.imagePath,
-        status: widget.cropInfo.condition,
-        location: 'Farm Location',
-        notes: 'Detected via camera scan',
-      );
-
-      debugPrint("✅ Detection saved to history");
-    } catch (e) {
-      debugPrint("❌ Failed to save detection to history: $e");
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-              'Detection saved, but image may not be available in history'),
-          backgroundColor: Colors.orange,
-          duration: Duration(seconds: 2),
-        ),
-      );
-    }
-  }
-
-  Future<void> _loadEnhancedCropInfo() async {
-    try {
-      await EnhancedCropInfoService.loadDatabase();
-      debugPrint("Looking for enhanced info with key: ${widget.detectedCrop}");
-      _enhancedCropInfo =
-          EnhancedCropInfoService.getCropInfo(widget.detectedCrop);
-
-      debugPrint("Enhanced info loaded: ${_enhancedCropInfo != null}");
-    } catch (e) {
-      debugPrint("Error loading enhanced crop info: $e");
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoadingEnhancedInfo = false;
-        });
-      }
-    }
-  }
+  const CropDetectionResults({
+    super.key,
+    required this.detectionId,
+    this.justScanned = false,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final detection = context.select<DetectionHistoryProvider, CropDetection?>(
+      (p) => p.byId(detectionId),
+    );
+    if (detection == null) {
+      return Scaffold(
+        appBar: AppBar(),
+        body: const Center(child: Text('This scan is no longer in history.')),
+      );
+    }
+
+    final knowledge = context.read<DiseaseKnowledgeRepository>();
+    final info = knowledge.lookup(detection.rawLabel);
+    final theme = AppTheme.lightTheme;
+
     return Scaffold(
-      backgroundColor: AppTheme.lightTheme.scaffoldBackgroundColor,
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: AppTheme.lightTheme.appBarTheme.backgroundColor,
-        elevation: AppTheme.lightTheme.appBarTheme.elevation,
-        leading: IconButton(
-          onPressed: () => Navigator.pop(context),
-          icon: CustomIconWidget(
-            iconName: 'arrow_back',
-            color: AppTheme.lightTheme.appBarTheme.foregroundColor!,
-            size: 24,
-          ),
-        ),
-        title: Text(
-          widget.cropInfo.displayName,
-          style: AppTheme.lightTheme.appBarTheme.titleTextStyle,
-        ),
+        title: Text(detection.cropName,
+            style: theme.appBarTheme.titleTextStyle,
+            overflow: TextOverflow.ellipsis),
         actions: [
           IconButton(
-            onPressed: () => _showImageOptions(context),
-            icon: CustomIconWidget(
-              iconName: 'more_vert',
-              color: AppTheme.lightTheme.appBarTheme.foregroundColor!,
-              size: 24,
-            ),
+            tooltip: 'Share',
+            onPressed: () => _share(context, detection, info),
+            icon: const Icon(Icons.share),
           ),
         ],
       ),
       body: SafeArea(
-        child: SingleChildScrollView(
-          physics: const BouncingScrollPhysics(),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              CropImageWidget(
-                imageUrl: widget.imagePath,
-                isFromFile: true,
-                onImageTap: () => _toggleImageZoom(),
-                onLongPress: () => _showImageContextMenu(context),
-              ),
-              SizedBox(height: 2.h),
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 4.w),
-                child: DetectionResultCardWidget(
-                  cropName: widget.cropInfo.displayName,
-                  confidence: widget.confidence,
-                  timestamp: DateTime.now(),
-                  statusColor: widget.cropInfo.statusColor,
-                  condition: widget.cropInfo.condition,
-                ),
-              ),
-              SizedBox(height: 3.h),
-              SizedBox(height: 3.h),
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 4.w),
-                child: _buildEnhancedCropInfoSection(),
-              ),
-              SizedBox(height: 3.h),
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 4.w),
-                child: ActionButtonsWidget(
-                  onShareResults: () => _shareResults(context),
-                  onScanAnother: () => _scanAnother(context),
-                ),
-              ),
-              SizedBox(height: 4.h),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildEnhancedCropInfoSection() {
-    if (_isLoadingEnhancedInfo) {
-      return Center(
-        child: Padding(
-          padding: EdgeInsets.symmetric(vertical: 4.h),
-          child: CircularProgressIndicator(
-            color: AppTheme.lightTheme.colorScheme.primary,
-          ),
-        ),
-      );
-    }
-
-    if (_enhancedCropInfo != null) {
-      return _buildDetailedCropInfo(_enhancedCropInfo!);
-    }
-
-    return _buildCropInfoSection();
-  }
-
-  Widget _buildDetailedCropInfo(EnhancedCropInfo enhancedInfo) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Detailed Crop Analysis',
-          style: AppTheme.lightTheme.textTheme.titleLarge?.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        SizedBox(height: 2.h),
-        _buildExpandableInfoCard(
-          title: 'Basic Information',
-          icon: 'info',
-          color: AppTheme.lightTheme.colorScheme.primary,
+        child: ListView(
+          padding: EdgeInsets.only(bottom: 4.h),
           children: [
-            _buildInfoRow('Crop Type', enhancedInfo.basicInfo.cropType),
-            _buildInfoRow('Condition', enhancedInfo.basicInfo.condition),
-            if (enhancedInfo.basicInfo.diseaseType.isNotEmpty)
-              _buildInfoRow('Disease Type', enhancedInfo.basicInfo.diseaseType),
-            if (enhancedInfo.basicInfo.pathogen.isNotEmpty)
-              _buildInfoRow('Pathogen', enhancedInfo.basicInfo.pathogen),
-            if (enhancedInfo.basicInfo.severity.isNotEmpty)
-              _buildInfoRow('Severity', enhancedInfo.basicInfo.severity),
+            CropImageWidget(imagePath: detection.imageUrl),
+            Padding(
+              padding: EdgeInsets.all(4.w),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  DetectionResultCardWidget(
+                    cropName: detection.cropName,
+                    confidence: detection.confidence,
+                    timestamp: detection.detectedAt,
+                    statusColor: info?.statusColor,
+                    condition: detection.status,
+                  ),
+                  if (detection.isUncertain ||
+                      detection.alternatives.isNotEmpty) ...[
+                    SizedBox(height: 2.h),
+                    _AlternativesCard(detection: detection),
+                  ],
+                  SizedBox(height: 2.h),
+                  _NextStepCard(info: info, detection: detection),
+                  SizedBox(height: 3.h),
+                  if (info != null) ...[
+                    Text('Full guide',
+                        style: theme.textTheme.titleLarge
+                            ?.copyWith(fontWeight: FontWeight.bold)),
+                    SizedBox(height: 1.5.h),
+                    DiseaseDetailsView(info: info),
+                  ] else
+                    const _MissingInfoCard(),
+                  SizedBox(height: 2.h),
+                  ActionButtonsWidget(
+                    onShareResults: () => _share(context, detection, info),
+                    onScanAnother: () => context
+                        .read<NavigationProvider>()
+                        .returnToTab(context, AppTab.scan),
+                  ),
+                ],
+              ),
+            ),
           ],
         ),
-        SizedBox(height: 1.5.h),
-        if (enhancedInfo.symptoms != null)
-          _buildExpandableInfoCard(
-            title: 'Symptoms',
-            icon: 'medical_services',
-            color: Colors.orange,
-            children: [
-              _buildListInfoRow(
-                  'Early Stage', enhancedInfo.symptoms!.earlyStage),
-              _buildListInfoRow(
-                  'Advanced Stage', enhancedInfo.symptoms!.advancedStage),
-              _buildListInfoRow(
-                  'Affected Parts', enhancedInfo.symptoms!.affectedParts),
-              _buildInfoRow('Weather Conditions',
-                  enhancedInfo.symptoms!.weatherConditions),
-            ],
-          ),
-        if (enhancedInfo.treatment != null)
-          _buildExpandableInfoCard(
-            title: 'Treatment Options',
-            icon: 'healing',
-            color: Colors.green,
-            children: [
-              _buildListInfoRow(
-                  'Immediate Actions', enhancedInfo.treatment!.immediateAction),
-              if (enhancedInfo.treatment!.organicSolutions.isNotEmpty)
-                _buildOrganicSolutionsRow(
-                    enhancedInfo.treatment!.organicSolutions),
-              if (enhancedInfo.treatment!.chemicalSolutions.isNotEmpty)
-                _buildChemicalSolutionsRow(
-                    enhancedInfo.treatment!.chemicalSolutions),
-            ],
-          ),
-        SizedBox(height: 1.5.h),
-        if (enhancedInfo.treatment != null)
-          _buildExpandableInfoCard(
-            title: 'Treatment Options',
-            icon: 'healing',
-            color: Colors.green,
-            children: [
-              _buildInfoRow(
-                  'Chemical Treatment', enhancedInfo.treatment!.chemical),
-              _buildInfoRow(
-                  'Organic Treatment', enhancedInfo.treatment!.organic),
-            ],
-          ),
-        SizedBox(height: 1.5.h),
-        if (enhancedInfo.prevention != null)
-          _buildExpandableInfoCard(
-            title: 'Prevention Methods',
-            icon: 'shield',
-            color: Colors.blue,
-            children: [
-              _buildInfoRow('Cultural Practices',
-                  enhancedInfo.prevention!.culturalPractices),
-              _buildInfoRow(
-                  'Chemical Control', enhancedInfo.prevention!.chemicalControl),
-            ],
-          ),
-        SizedBox(height: 1.5.h),
-        if (enhancedInfo.maintenance != null)
-          _buildExpandableInfoCard(
-            title: 'Crop Maintenance',
-            icon: 'agriculture',
-            color: Colors.teal,
-            children: [
-              _buildInfoRow('Irrigation', enhancedInfo.maintenance!.irrigation),
-              if (enhancedInfo.maintenance!.fertilization != null)
-                _buildInfoRow(
-                    'Fertilization',
-                    'N: ${enhancedInfo.maintenance!.fertilization!.nitrogen}, '
-                        'P: ${enhancedInfo.maintenance!.fertilization!.phosphorus}, '
-                        'K: ${enhancedInfo.maintenance!.fertilization!.potassium}'),
-              if (enhancedInfo.maintenance!.monitoring != null)
-                _buildListInfoRow('Key Metrics',
-                    enhancedInfo.maintenance!.monitoring!.keyMetrics ?? []),
-            ],
-          ),
-        SizedBox(height: 1.5.h),
-        if (enhancedInfo.economicImpact != null)
-          _buildExpandableInfoCard(
-            title: 'Economic Impact',
-            icon: 'attach_money',
-            color: Colors.green,
-            children: [
-              if (enhancedInfo.economicImpact!.yieldLoss != null)
-                _buildInfoRow(
-                    'Yield Loss', enhancedInfo.economicImpact!.yieldLoss!),
-              if (enhancedInfo.economicImpact!.qualityImpact != null)
-                _buildInfoRow('Quality Impact',
-                    enhancedInfo.economicImpact!.qualityImpact!),
-              if (enhancedInfo.economicImpact!.treatmentCost != null)
-                _buildInfoRow('Treatment Cost',
-                    enhancedInfo.economicImpact!.treatmentCost!),
-              if (enhancedInfo.economicImpact!.criticalPeriod != null)
-                _buildInfoRow('Critical Period',
-                    enhancedInfo.economicImpact!.criticalPeriod!),
-            ],
-          ),
-        SizedBox(height: 1.5.h),
-        if (enhancedInfo.laborImpact != null)
-          _buildExpandableInfoCard(
-            title: 'Labor Requirements',
-            icon: 'people',
-            color: Colors.purple,
-            children: [
-              if (enhancedInfo.laborImpact!.hoursRequired != null)
-                _buildInfoRow(
-                    'Hours Required', enhancedInfo.laborImpact!.hoursRequired!),
-              if (enhancedInfo.laborImpact!.skillLevel != null)
-                _buildInfoRow(
-                    'Skill Level', enhancedInfo.laborImpact!.skillLevel!),
-              if (enhancedInfo.laborImpact!.timingConstraints != null)
-                _buildInfoRow('Timing Constraints',
-                    enhancedInfo.laborImpact!.timingConstraints!),
-            ],
-          ),
-        SizedBox(height: 1.5.h),
-        if (enhancedInfo.communityImpact != null)
-          _buildExpandableInfoCard(
-            title: 'Community Considerations',
-            icon: 'group',
-            color: Colors.indigo,
-            children: [
-              if (enhancedInfo.communityImpact!.spreadRisk != null)
-                _buildInfoRow(
-                    'Spread Risk', enhancedInfo.communityImpact!.spreadRisk!),
-              if (enhancedInfo.communityImpact!.collectiveAction != null)
-                _buildInfoRow('Collective Action',
-                    enhancedInfo.communityImpact!.collectiveAction!),
-            ],
-          ),
-        SizedBox(height: 1.5.h),
-        if (enhancedInfo.localTipsGhana != null &&
-            enhancedInfo.localTipsGhana!.isNotEmpty)
-          _buildExpandableInfoCard(
-            title: 'Local Tips for Ghana',
-            icon: 'lightbulb',
-            color: Colors.amber,
-            children: [
-              Padding(
-                padding: EdgeInsets.all(2.w),
-                child: Container(
-                  padding: EdgeInsets.all(3.w),
-                  decoration: BoxDecoration(
-                    color: Colors.amber.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.amber.withOpacity(0.3)),
-                  ),
-                  child: Text(
-                    enhancedInfo.localTipsGhana!,
-                    style: AppTheme.lightTheme.textTheme.bodyMedium?.copyWith(
-                      fontStyle: FontStyle.italic,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        SizedBox(height: 1.5.h),
-      ],
-    );
-  }
-
-  Widget _buildOrganicSolutionsRow(List<OrganicSolution> solutions) {
-    return Padding(
-      padding: EdgeInsets.only(bottom: 1.h),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Organic Solutions:',
-            style: AppTheme.lightTheme.textTheme.bodyMedium?.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          SizedBox(height: 0.5.h),
-          ...solutions
-              .map((solution) => Padding(
-                    padding: EdgeInsets.only(left: 2.w, bottom: 0.5.h),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          '• ${solution.method}',
-                          style: AppTheme.lightTheme.textTheme.bodyMedium
-                              ?.copyWith(
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        if (solution.application != null)
-                          Text(
-                            '  Application: ${solution.application}',
-                            style: AppTheme.lightTheme.textTheme.bodySmall,
-                          ),
-                      ],
-                    ),
-                  ))
-              .toList(),
-        ],
       ),
     );
   }
 
-  Widget _buildChemicalSolutionsRow(List<ChemicalSolution> solutions) {
-    return Padding(
-      padding: EdgeInsets.only(bottom: 1.h),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Chemical Solutions:',
-            style: AppTheme.lightTheme.textTheme.bodyMedium?.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          SizedBox(height: 0.5.h),
-          ...solutions.map((solution) => Padding(
-                padding: EdgeInsets.only(left: 2.w, bottom: 0.5.h),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '• ${solution.activeIngredient}',
-                      style: AppTheme.lightTheme.textTheme.bodyMedium?.copyWith(
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    if (solution.tradeNames != null &&
-                        solution.tradeNames!.isNotEmpty)
-                      Text(
-                        '  Trade names: ${solution.tradeNames!.join(', ')}',
-                        style: AppTheme.lightTheme.textTheme.bodySmall,
-                      ),
-                  ],
-                ),
-              )),
-        ],
-      ),
-    );
+  static String shareText(CropDetection detection, DiseaseInfo? info) {
+    final buffer = StringBuffer()
+      ..writeln('CropScan diagnosis: ${detection.cropName}')
+      ..writeln(
+          'Confidence: ${(detection.confidence * 100).toStringAsFixed(0)}%'
+          '${detection.isUncertain ? ' (uncertain)' : ''}')
+      ..writeln(
+          'Scanned: ${DateFormat('d MMM yyyy, HH:mm').format(detection.detectedAt)}');
+    final steps = info?.treatment?.immediateAction ?? const <String>[];
+    if (steps.isNotEmpty) {
+      buffer
+        ..writeln()
+        ..writeln('Recommended now:');
+      for (final step in steps) {
+        buffer.writeln('- $step');
+      }
+    }
+    return buffer.toString().trim();
   }
 
-  Widget _buildListInfoRow(String label, List<String> values) {
-    if (values.isEmpty) return const SizedBox.shrink();
-
-    return Padding(
-      padding: EdgeInsets.only(bottom: 1.h),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            '$label:',
-            style: AppTheme.lightTheme.textTheme.bodyMedium?.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          SizedBox(height: 0.5.h),
-          ...values.map((value) => Padding(
-                padding: EdgeInsets.only(left: 2.w, bottom: 0.5.h),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('• ', style: AppTheme.lightTheme.textTheme.bodyMedium),
-                    Expanded(
-                      child: Text(
-                        value,
-                        style: AppTheme.lightTheme.textTheme.bodyMedium,
-                      ),
-                    ),
-                  ],
-                ),
-              )),
-        ],
-      ),
-    );
+  Future<void> _share(
+    BuildContext context,
+    CropDetection detection,
+    DiseaseInfo? info,
+  ) async {
+    final text = shareText(detection, info);
+    try {
+      await Share.shareXFiles([XFile(detection.imageUrl)], text: text);
+    } catch (_) {
+      // The photo may be missing (e.g. deleted); share the text alone.
+      await Share.share(text);
+    }
   }
+}
 
-  Widget _buildExpandableInfoCard({
-    required String title,
-    required String icon,
-    required Color color,
-    required List<Widget> children,
-  }) {
+class _AlternativesCard extends StatelessWidget {
+  final CropDetection detection;
+  const _AlternativesCard({required this.detection});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = AppTheme.lightTheme;
+    final knowledge = context.read<DiseaseKnowledgeRepository>();
+    final warning = AppTheme.getWarningColor(true);
+
     return Container(
-      width: double.infinity,
-      margin: EdgeInsets.only(bottom: 1.h),
-      decoration: BoxDecoration(
-        color: AppTheme.lightTheme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: AppTheme.lightTheme.dividerColor,
-          width: 1,
-        ),
-      ),
-      child: ExpansionTile(
-        leading: Container(
-          padding: EdgeInsets.all(1.5.w),
-          decoration: BoxDecoration(
-            color: color.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: CustomIconWidget(
-            iconName: icon,
-            color: color,
-            size: 20,
-          ),
-        ),
-        title: Text(
-          title,
-          style: AppTheme.lightTheme.textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        children: [
-          Padding(
-            padding: EdgeInsets.all(4.w),
-            child: Column(
-              children: children,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildInfoRow(String label, String value) {
-    return Padding(
-      padding: EdgeInsets.only(bottom: 1.h),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            flex: 2,
-            child: Text(
-              '$label:',
-              style: AppTheme.lightTheme.textTheme.bodyMedium?.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-          Expanded(
-            flex: 3,
-            child: Text(
-              value,
-              style: AppTheme.lightTheme.textTheme.bodyMedium,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCropInfoSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Crop Analysis',
-          style: AppTheme.lightTheme.textTheme.titleLarge?.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        SizedBox(height: 2.h),
-        _buildInfoCard(
-          title: 'Crop Type',
-          content: widget.cropInfo.cropType,
-          icon: 'eco',
-          color: AppTheme.lightTheme.colorScheme.primary,
-        ),
-        SizedBox(height: 1.5.h),
-        _buildInfoCard(
-          title: 'Health Status',
-          content: widget.cropInfo.condition,
-          icon: _getConditionIcon(widget.cropInfo.condition),
-          color: widget.cropInfo.statusColor,
-        ),
-        SizedBox(height: 1.5.h),
-        _buildInfoCard(
-          title: 'Detection Confidence',
-          content: '${(widget.confidence * 100).toStringAsFixed(1)}%',
-          icon: 'analytics',
-          color: _getConfidenceColor(widget.confidence),
-        ),
-        SizedBox(height: 2.h),
-        Container(
-          width: double.infinity,
-          padding: EdgeInsets.all(4.w),
-          decoration: BoxDecoration(
-            color: AppTheme.lightTheme.colorScheme.surface,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: AppTheme.lightTheme.dividerColor,
-              width: 1,
-            ),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  CustomIconWidget(
-                    iconName: 'info',
-                    color: AppTheme.lightTheme.colorScheme.primary,
-                    size: 20,
-                  ),
-                  SizedBox(width: 2.w),
-                  Text(
-                    'Description',
-                    style: AppTheme.lightTheme.textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-              SizedBox(height: 1.h),
-              Text(
-                widget.cropInfo.description,
-                style: AppTheme.lightTheme.textTheme.bodyMedium,
-              ),
-            ],
-          ),
-        ),
-        SizedBox(height: 2.h),
-        Container(
-          width: double.infinity,
-          padding: EdgeInsets.all(4.w),
-          decoration: BoxDecoration(
-            color: widget.cropInfo.statusColor.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: widget.cropInfo.statusColor.withOpacity(0.3),
-              width: 1,
-            ),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  CustomIconWidget(
-                    iconName: 'lightbulb',
-                    color: widget.cropInfo.statusColor,
-                    size: 20,
-                  ),
-                  SizedBox(width: 2.w),
-                  Text(
-                    'Recommended Action',
-                    style: AppTheme.lightTheme.textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: widget.cropInfo.statusColor,
-                    ),
-                  ),
-                ],
-              ),
-              SizedBox(height: 1.h),
-              Text(
-                widget.cropInfo.recommendedAction,
-                style: AppTheme.lightTheme.textTheme.bodyMedium?.copyWith(
-                  color: AppTheme.lightTheme.colorScheme.onSurface,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildInfoCard({
-    required String title,
-    required String content,
-    required String icon,
-    required Color color,
-  }) {
-    return Container(
-      width: double.infinity,
       padding: EdgeInsets.all(4.w),
       decoration: BoxDecoration(
-        color: AppTheme.lightTheme.colorScheme.surface,
+        color: detection.isUncertain
+            ? warning.withValues(alpha: 0.08)
+            : theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: AppTheme.lightTheme.dividerColor,
-          width: 1,
+          color: detection.isUncertain
+              ? warning.withValues(alpha: 0.5)
+              : theme.dividerColor,
         ),
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            padding: EdgeInsets.all(2.w),
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: CustomIconWidget(
-              iconName: icon,
-              color: color,
-              size: 24,
-            ),
-          ),
-          SizedBox(width: 4.w),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+          if (detection.isUncertain) ...[
+            Row(
               children: [
-                Text(
-                  title,
-                  style: AppTheme.lightTheme.textTheme.bodySmall?.copyWith(
-                    color: AppTheme.lightTheme.colorScheme.onSurfaceVariant,
-                  ),
-                ),
-                SizedBox(height: 0.5.h),
-                Text(
-                  content,
-                  style: AppTheme.lightTheme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: color,
-                  ),
+                Icon(Icons.help_outline, color: warning),
+                SizedBox(width: 2.w),
+                Expanded(
+                  child: Text('The model is not sure about this one',
+                      style: theme.textTheme.titleSmall
+                          ?.copyWith(fontWeight: FontWeight.bold)),
                 ),
               ],
             ),
-          ),
+            SizedBox(height: 1.h),
+            Text(
+              'Compare the symptoms below with your plant, or rescan a single '
+              'leaf in good light.',
+              style: theme.textTheme.bodySmall,
+            ),
+            SizedBox(height: 1.h),
+          ],
+          if (detection.alternatives.isNotEmpty) ...[
+            Text('Could also be',
+                style: theme.textTheme.titleSmall
+                    ?.copyWith(fontWeight: FontWeight.w600)),
+            for (final LabelScore alt in detection.alternatives)
+              ListTile(
+                dense: true,
+                contentPadding: EdgeInsets.zero,
+                title: Text(knowledge.displayNameFor(alt.label)),
+                subtitle: LinearProgressIndicator(
+                  value: alt.confidence,
+                  minHeight: 4,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+                trailing: Text('${(alt.confidence * 100).toStringAsFixed(0)}%'),
+                onTap: knowledge.lookup(alt.label) == null
+                    ? null
+                    : () => Navigator.pushNamed(
+                          context,
+                          AppRoutes.diseaseDetail,
+                          arguments: alt.label,
+                        ),
+              ),
+          ],
         ],
       ),
     );
   }
+}
 
-  String _getConditionIcon(String condition) {
-    switch (condition.toLowerCase()) {
-      case 'healthy':
-        return 'check_circle';
-      case 'disease detected':
-        return 'warning';
-      case 'pest detected':
-        return 'bug_report';
-      case 'virus detected':
-        return 'coronavirus';
-      default:
-        return 'help';
-    }
-  }
+class _NextStepCard extends StatelessWidget {
+  final DiseaseInfo? info;
+  final CropDetection detection;
+  const _NextStepCard({required this.info, required this.detection});
 
-  Color _getConfidenceColor(double confidence) {
-    if (confidence >= 0.8) return Colors.green;
-    if (confidence >= 0.6) return Colors.orange;
-    return Colors.red;
-  }
+  @override
+  Widget build(BuildContext context) {
+    final theme = AppTheme.lightTheme;
+    final color = info?.statusColor ?? theme.colorScheme.primary;
+    final summary = info?.summary;
+    final action = info?.firstAction ??
+        'Remove affected leaves and consult your local extension officer.';
 
-  void _toggleImageZoom() {
-    setState(() {
-      _isImageZoomed = !_isImageZoomed;
-    });
-  }
-
-  void _showImageOptions(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: AppTheme.lightTheme.bottomSheetTheme.backgroundColor,
-      shape: AppTheme.lightTheme.bottomSheetTheme.shape,
-      builder: (context) => Container(
-        padding: EdgeInsets.all(4.w),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 12.w,
-              height: 0.5.h,
-              decoration: BoxDecoration(
-                color: AppTheme.lightTheme.dividerColor,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            SizedBox(height: 3.h),
-            ListTile(
-              leading: CustomIconWidget(
-                iconName: 'save_alt',
-                color: AppTheme.lightTheme.colorScheme.primary,
-                size: 24,
-              ),
-              title: Text(
-                'Save to Gallery',
-                style: AppTheme.lightTheme.textTheme.bodyLarge,
-              ),
-              onTap: () {
-                Navigator.pop(context);
-                _saveToGallery();
-              },
-            ),
-            ListTile(
-              leading: CustomIconWidget(
-                iconName: 'copy',
-                color: AppTheme.lightTheme.colorScheme.primary,
-                size: 24,
-              ),
-              title: Text(
-                'Copy Image',
-                style: AppTheme.lightTheme.textTheme.bodyLarge,
-              ),
-              onTap: () {
-                Navigator.pop(context);
-                _copyImage();
-              },
-            ),
-            SizedBox(height: 2.h),
+    return Container(
+      padding: EdgeInsets.all(4.w),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withValues(alpha: 0.35)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (summary != null) ...[
+            Text(summary, style: theme.textTheme.bodyMedium),
+            SizedBox(height: 1.5.h),
           ],
-        ),
+          Row(
+            children: [
+              Icon(
+                detection.isHealthy ? Icons.check_circle : Icons.priority_high,
+                color: color,
+                size: 20,
+              ),
+              SizedBox(width: 2.w),
+              Text(detection.isHealthy ? 'Keep it healthy' : 'Do this first',
+                  style: theme.textTheme.titleSmall
+                      ?.copyWith(fontWeight: FontWeight.bold, color: color)),
+            ],
+          ),
+          SizedBox(height: 0.8.h),
+          Text(action.replaceFirst(RegExp(r'^step\s*\d+\s*[:.)-]\s*', caseSensitive: false), ''),
+              style: theme.textTheme.bodyMedium),
+        ],
       ),
     );
   }
+}
 
-  void _showImageContextMenu(BuildContext context) {
-    _showImageOptions(context);
-  }
+class _MissingInfoCard extends StatelessWidget {
+  const _MissingInfoCard();
 
-  void _shareResults(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          'Sharing detection results...',
-          style: AppTheme.lightTheme.snackBarTheme.contentTextStyle,
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: EdgeInsets.all(4.w),
+        child: Text(
+          'Detailed guidance for this result is not in the offline database '
+          'yet. Please consult your local agricultural extension officer.',
+          style: AppTheme.lightTheme.textTheme.bodyMedium,
         ),
-        backgroundColor: AppTheme.lightTheme.colorScheme.primary,
-        behavior: AppTheme.lightTheme.snackBarTheme.behavior,
-        shape: AppTheme.lightTheme.snackBarTheme.shape,
-      ),
-    );
-  }
-
-  void _scanAnother(BuildContext context) {
-    Navigator.pop(context);
-  }
-
-  void _saveToGallery() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          'Image saved to gallery',
-          style: AppTheme.lightTheme.snackBarTheme.contentTextStyle,
-        ),
-        backgroundColor: AppTheme.getSuccessColor(true),
-        behavior: AppTheme.lightTheme.snackBarTheme.behavior,
-        shape: AppTheme.lightTheme.snackBarTheme.shape,
-      ),
-    );
-  }
-
-  void _copyImage() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          'Image copied to clipboard',
-          style: AppTheme.lightTheme.snackBarTheme.contentTextStyle,
-        ),
-        backgroundColor: AppTheme.getSuccessColor(true),
-        behavior: AppTheme.lightTheme.snackBarTheme.behavior,
-        shape: AppTheme.lightTheme.snackBarTheme.shape,
       ),
     );
   }

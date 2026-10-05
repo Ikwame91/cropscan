@@ -2,13 +2,14 @@
 
 import 'package:cropscan_pro/data/models/crop_detection.dart';
 import 'package:cropscan_pro/features/diagnosis/diagnosis_args.dart';
-import 'package:cropscan_pro/data/models/crop_info.dart';
 import 'package:cropscan_pro/features/history/widgets/enhanced_detection.dart';
 import 'package:cropscan_pro/features/history/widgets/filter_options_widget.dart';
 import 'package:cropscan_pro/features/history/widgets/statistics_summary_widget.dart';
 import 'package:cropscan_pro/features/history/detection_history_provider.dart';
 import 'package:cropscan_pro/core/theme/app_theme.dart';
 import 'package:cropscan_pro/core/widgets/custom_icon_widget.dart';
+import 'package:cropscan_pro/core/app_export.dart';
+import 'package:cropscan_pro/app/navigation_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:sizer/sizer.dart';
@@ -497,8 +498,9 @@ class _DetectionHistoryState extends State<DetectionHistory>
               if (isCompletelyEmpty) ...[
                 SizedBox(height: 4.h),
                 ElevatedButton.icon(
-                  onPressed: () =>
-                      Navigator.pushNamed(context, '/crop-scanner-camera'),
+                  onPressed: () => context
+                      .read<NavigationProvider>()
+                      .returnToTab(context, AppTab.scan),
                   icon: CustomIconWidget(
                     iconName: 'camera_alt',
                     color: AppTheme.lightTheme.colorScheme.onPrimary,
@@ -616,19 +618,10 @@ class _DetectionHistoryState extends State<DetectionHistory>
   }
 
   void _navigateToDetectionResults(CropDetection detection) {
-    final args = CropDetectionResultsArgs(
-      imagePath: detection.imageUrl,
-      detectedCrop: detection.rawDetectedCrop ?? detection.cropName,
-      confidence: detection.confidence,
-      cropInfo: CropInfoMapper.getCropInfo(detection.cropName),
-      enhancedCropInfo: detection.enhancedCropInfo,
-      isFromHistory: true,
-    );
-
     Navigator.pushNamed(
       context,
-      '/crop-detection-results',
-      arguments: args,
+      AppRoutes.cropDetectionResults,
+      arguments: DiagnosisArgs(detectionId: detection.id),
     );
   }
 

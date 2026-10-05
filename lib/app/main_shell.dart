@@ -1,15 +1,15 @@
-// main_screen.dart
-
-import 'package:cropscan_pro/core/ml/crop_classifier.dart';
 import 'package:cropscan_pro/app/navigation_provider.dart';
-import 'package:flutter/material.dart';
-import 'package:cropscan_pro/features/home/dashboard_home.dart';
-import 'package:cropscan_pro/features/scan/crop_scanner_camera.dart';
+import 'package:cropscan_pro/core/ml/crop_classifier.dart';
 import 'package:cropscan_pro/features/guide/crop_guide_screen.dart';
 import 'package:cropscan_pro/features/history/crops_screen.dart';
+import 'package:cropscan_pro/features/home/dashboard_home.dart';
 import 'package:cropscan_pro/features/profile/user_profile_settings.dart';
+import 'package:cropscan_pro/features/scan/crop_scanner_camera.dart';
+import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+/// Bottom-navigation shell. Tabs live in an [IndexedStack] so they keep
+/// their state (and the camera stays warm) when switching.
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
 
@@ -17,145 +17,71 @@ class MainScreen extends StatefulWidget {
   State<MainScreen> createState() => _MainScreenState();
 }
 
-class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
-  static const Duration _snackBarDuration = Duration(seconds: 2);
-  static const Duration _errorSnackBarDuration = Duration(seconds: 4);
-  static const int _scanTabIndex = 1;
-
+class _MainScreenState extends State<MainScreen> {
   final GlobalKey<CropScannerCameraState> _cameraScreenKey = GlobalKey();
-  late final List<Widget> _screens;
+  late final List<Widget> _screens = [
+    const DashboardHome(),
+    CropScannerCamera(key: _cameraScreenKey),
+    const CropCareDashboard(),
+    const CropScreen(),
+    const UserProfileSettings(),
+  ];
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addObserver(this);
-    _initializeScreens();
-
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<NavigationProvider>().setCameraKey(_cameraScreenKey);
     });
   }
 
-  @override
-  void dispose() {
-    // FIXED: Remove explicit camera disposal - CropScannerCamera handles its own lifecycle
-    WidgetsBinding.instance.removeObserver(this);
-    super.dispose();
-  }
-
-  void _initializeScreens() {
-    _screens = [
-      const DashboardHome(),
-      CropScannerCamera(key: _cameraScreenKey),
-      const CropCareDashboard(),
-      const CropScreen(),
-      const UserProfileSettings(),
-    ];
-  }
-
-  void _onTabTapped(int index) async {
-    final navigationProvider = context.read<NavigationProvider>();
-
-    // FIXED: Simple navigation without camera conflicts
-    if (index == _scanTabIndex) {
-      await _handleScanTabTap(navigationProvider);
-    } else {
-      navigationProvider.navigateToTab(index); // No camera interference
+  Future<void> _onTabTapped(int index) async {
+    final navigation = context.read<NavigationProvider>();
+    final tab = AppTab.values[index];
+    if (tab != AppTab.scan) {
+      navigation.navigateToTab(tab);
+      return;
     }
-  }
 
-  Future<void> _handleScanTabTap(NavigationProvider navigationProvider) async {
-    final tfliteService = context.read<TfLiteModelServices>();
-
-    switch (tfliteService.status) {
-      case ModelPredictionStatus.initial:
-      case ModelPredictionStatus.error:
-        // Navigate to camera tab and let it handle model loading
-        navigationProvider.navigateToTab(_scanTabIndex);
-
-        // FIXED: Let camera handle its own initialization
-        WidgetsBinding.instance.addPostFrameCallback((_) async {
-          try {
-            await _cameraScreenKey.currentState?.initializeCameraOnDemand();
-          } catch (e) {
-            _showErrorSnackBar("Failed to initialize camera: $e");
-          }
-        });
-        break;
-
-      case ModelPredictionStatus.loading:
-        // Model is loading, just navigate and show loading state
-        navigationProvider.navigateToTab(_scanTabIndex);
-        _showInfoSnackBar("Loading crop detection model...");
-        break;
-
-      case ModelPredictionStatus.ready:
-      case ModelPredictionStatus.predicting:
-        // Everything ready, navigate normally
-        navigationProvider.navigateToTab(_scanTabIndex);
-        break;
+    final status = context.read<CropClassifier>().status;
+    if (status == ModelPredictionStatus.loading) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('Loading crop detection model...'),
+        duration: Duration(seconds: 2),
+      ));
     }
-  }
-
-  void _showInfoSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        duration: _snackBarDuration,
-        backgroundColor: Theme.of(context).colorScheme.primary,
-      ),
-    );
-  }
-
-  void _showErrorSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        duration: _errorSnackBarDuration,
+    try {
+      await navigation.navigateToCamera();
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('Failed to initialize camera: $e'),
         backgroundColor: Theme.of(context).colorScheme.error,
-      ),
-    );
+      ));
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<NavigationProvider>(
-      builder: (context, navigationProvider, child) {
-        return Scaffold(
-          body: IndexedStack(
-            index: navigationProvider.currentIndex,
-            children: _screens,
+    final currentIndex = context.watch<NavigationProvider>().currentIndex;
+    return Scaffold(
+      body: IndexedStack(index: currentIndex, children: _screens),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: currentIndex,
+        onTap: _onTabTapped,
+        type: BottomNavigationBarType.fixed,
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+          BottomNavigationBarItem(icon: Icon(Icons.camera_alt), label: 'Scan'),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.eco_outlined),
+            activeIcon: Icon(Icons.eco),
+            label: 'Crop Guide',
           ),
-          bottomNavigationBar: BottomNavigationBar(
-            currentIndex: navigationProvider.currentIndex,
-            onTap: _onTabTapped,
-            type: BottomNavigationBarType.fixed,
-            items: const [
-              BottomNavigationBarItem(
-                icon: Icon(Icons.home),
-                label: 'Home',
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.camera_alt),
-                label: 'Scan',
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.eco_outlined),
-                activeIcon: Icon(Icons.eco),
-                label: 'Crop Guide',
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.grass),
-                label: 'Crops',
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.person),
-                label: 'Profile',
-              ),
-            ],
-          ),
-        );
-      },
+          BottomNavigationBarItem(icon: Icon(Icons.grass), label: 'Crops'),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
+        ],
+      ),
     );
   }
 }

@@ -1,10 +1,7 @@
 import 'package:cropscan_pro/data/models/disease_sections.dart';
-import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart' show rootBundle;
-import 'dart:convert';
 
-// Main crop information model
-class EnhancedCropInfo {
+/// Everything `crop_database.json` knows about one model label.
+class DiseaseInfo {
   final BasicInfo basicInfo;
   final Symptoms? symptoms;
   final Causes? causes;
@@ -18,7 +15,7 @@ class EnhancedCropInfo {
   final MonitoringInfo? monitoring;
   final String? localTipsGhana;
 
-  EnhancedCropInfo({
+  DiseaseInfo({
     required this.basicInfo,
     this.symptoms,
     this.causes,
@@ -33,8 +30,8 @@ class EnhancedCropInfo {
     this.localTipsGhana,
   });
 
-  factory EnhancedCropInfo.fromJson(Map<String, dynamic> json) {
-    return EnhancedCropInfo(
+  factory DiseaseInfo.fromJson(Map<String, dynamic> json) {
+    return DiseaseInfo(
       basicInfo: BasicInfo.fromJson(json['basic_info']),
       symptoms:
           json['symptoms'] != null ? Symptoms.fromJson(json['symptoms']) : null,
@@ -84,8 +81,8 @@ class EnhancedCropInfo {
     };
   }
 
-  factory EnhancedCropInfo.fromMap(Map<String, dynamic> json) {
-    return EnhancedCropInfo(
+  factory DiseaseInfo.fromMap(Map<String, dynamic> json) {
+    return DiseaseInfo(
       basicInfo: BasicInfo.fromMap(json['basic_info']),
       symptoms:
           json['symptoms'] != null ? Symptoms.fromMap(json['symptoms']) : null,
@@ -116,92 +113,5 @@ class EnhancedCropInfo {
           : null,
       localTipsGhana: json['local_tips_ghana'],
     );
-  }
-}
-
-class EnhancedCropInfoService {
-  static Map<String, dynamic>? _cropDatabase;
-  static bool _isInitialized = false;
-
-  static Future<void> loadDatabase() async {
-    if (_isInitialized) {
-      return;
-    }
-    try {
-      final jsonString =
-          await rootBundle.loadString('assets/data/crop_database.json');
-      _cropDatabase = json.decode(jsonString);
-      _isInitialized = true;
-      if (kDebugMode) {
-        print('✅ Crop database loaded successfully!');
-      }
-      if (kDebugMode) {
-        print(
-            '📊 Loaded ${_cropDatabase!['crop_diseases'].length} crop entries');
-      }
-    } catch (e) {
-      if (kDebugMode) {
-        print('❌ Error loading crop database: $e');
-      }
-      _cropDatabase = null;
-    }
-  }
-
-  static EnhancedCropInfo? getCropInfo(String rawLabel) {
-    if (_cropDatabase == null || !_isInitialized) {
-      if (kDebugMode) {
-        print(
-            '⚠️ Warning: Crop database is not initialized or failed to load.');
-      }
-      return null;
-    }
-
-    // ✅ ENHANCED KEY MATCHING
-    var cropData = _cropDatabase!['crop_diseases'][rawLabel];
-
-    if (cropData == null) {
-      // Try case variations
-      final keys = _cropDatabase!['crop_diseases'].keys;
-
-      // Try exact case-insensitive match
-      final exactMatch = keys.firstWhere(
-        (key) => key.toLowerCase() == rawLabel.toLowerCase(),
-        orElse: () => '',
-      );
-
-      if (exactMatch.isNotEmpty) {
-        cropData = _cropDatabase!['crop_diseases'][exactMatch];
-        if (kDebugMode) {
-          print('✅ Found match with case variation: $exactMatch');
-        }
-      } else {
-        // Try partial matching
-        final partialMatch = keys.firstWhere(
-          (key) =>
-              key.toLowerCase().contains(rawLabel.toLowerCase()) ||
-              rawLabel.toLowerCase().contains(key.toLowerCase()),
-          orElse: () => '',
-        );
-
-        if (partialMatch.isNotEmpty) {
-          cropData = _cropDatabase!['crop_diseases'][partialMatch];
-          print('✅ Found partial match: $partialMatch');
-        }
-      }
-    }
-
-    if (cropData == null) {
-      print('❌ No data found for label: $rawLabel');
-      print(
-          'Available keys: ${_cropDatabase!['crop_diseases'].keys.take(5).join(', ')}...');
-      return null;
-    }
-
-    try {
-      return EnhancedCropInfo.fromJson(cropData);
-    } catch (e) {
-      print('❌ Error parsing enhanced crop info for $rawLabel: $e');
-      return null;
-    }
   }
 }
