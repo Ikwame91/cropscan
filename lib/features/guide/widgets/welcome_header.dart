@@ -84,7 +84,7 @@ class WelcomeHeaderWidget extends StatelessWidget {
     if (isNewUser) {
       icon = Icons.eco;
       label = "New Farmer";
-      backgroundColor = Colors.green.withOpacity(0.3);
+      backgroundColor = AppTheme.getSuccessColor(true).withOpacity(0.3);
     } else if (totalScans < 10) {
       icon = Icons.trending_up;
       label = "Growing";
@@ -92,7 +92,7 @@ class WelcomeHeaderWidget extends StatelessWidget {
     } else {
       icon = Icons.star;
       label = "Expert";
-      backgroundColor = Colors.amber.withOpacity(0.3);
+      backgroundColor = AppTheme.getAccentColor(true).withOpacity(0.3);
     }
 
     return Container(

@@ -35,12 +35,12 @@ class DiseaseLibraryWidget extends StatelessWidget {
         Container(
           padding: EdgeInsets.all(2.w),
           decoration: BoxDecoration(
-            color: Colors.red.withValues(alpha: 0.1),
+            color: AppTheme.lightTheme.colorScheme.error.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Icon(
             Icons.menu_book,
-            color: Colors.red,
+            color: AppTheme.lightTheme.colorScheme.error,
             size: 20,
           ),
         ),
@@ -51,7 +51,7 @@ class DiseaseLibraryWidget extends StatelessWidget {
             children: [
               Text(
                 "Disease Library",
-                style: GoogleFonts.poppins(
+                style: GoogleFonts.roboto(
                   fontSize: 15.sp,
                   fontWeight: FontWeight.bold,
                   color: AppTheme.lightTheme.colorScheme.onSurface,
@@ -60,7 +60,7 @@ class DiseaseLibraryWidget extends StatelessWidget {
               SizedBox(height: 0.5.h),
               Text(
                 "Learn about common crop diseases",
-                style: GoogleFonts.inter(
+                style: GoogleFonts.openSans(
                   fontSize: 11.sp,
                   color: AppTheme.lightTheme.colorScheme.onSurface
                       .withValues(alpha: 0.7),
@@ -74,7 +74,7 @@ class DiseaseLibraryWidget extends StatelessWidget {
           icon: Icon(Icons.library_books, size: 16),
           label: Text(
             "View All",
-            style: GoogleFonts.inter(fontSize: 10.sp),
+            style: GoogleFonts.openSans(fontSize: 10.sp),
           ),
           style: TextButton.styleFrom(
             padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 1.h),
@@ -311,11 +311,11 @@ class DiseaseLibraryWidget extends StatelessWidget {
   Color _getDiseaseColor(String severity) {
     switch (severity.toLowerCase()) {
       case 'high':
-        return Colors.red;
+        return AppTheme.lightTheme.colorScheme.error;
       case 'medium':
-        return Colors.orange;
+        return AppTheme.getWarningColor(true);
       case 'low':
-        return Colors.yellow[700] ?? Colors.yellow;
+        return AppTheme.getAccentColor(true);
       default:
         return Colors.grey;
     }
@@ -444,7 +444,7 @@ class _DiseaseDetailsBottomSheet extends StatelessWidget {
                   if (diseaseTip.symptoms.isNotEmpty) ...[
                     SizedBox(height: 3.h),
                     _buildDetailSection("Symptoms to Look For",
-                        diseaseTip.symptoms, Icons.visibility, Colors.orange),
+                        diseaseTip.symptoms, Icons.visibility, AppTheme.getWarningColor(true)),
                   ],
 
                   if (diseaseTip.treatments.isNotEmpty) ...[
@@ -456,7 +456,7 @@ class _DiseaseDetailsBottomSheet extends StatelessWidget {
                   if (diseaseTip.preventions.isNotEmpty) ...[
                     SizedBox(height: 3.h),
                     _buildDetailSection("Prevention Methods",
-                        diseaseTip.preventions, Icons.shield, Colors.green),
+                        diseaseTip.preventions, Icons.shield, AppTheme.getSuccessColor(true)),
                   ],
 
                   SizedBox(height: 3.h),
@@ -566,11 +566,11 @@ class _DiseaseDetailsBottomSheet extends StatelessWidget {
   Color _getDiseaseColor(String severity) {
     switch (severity.toLowerCase()) {
       case 'high':
-        return Colors.red;
+        return AppTheme.lightTheme.colorScheme.error;
       case 'medium':
-        return Colors.orange;
+        return AppTheme.getWarningColor(true);
       case 'low':
-        return Colors.yellow[700] ?? Colors.yellow;
+        return AppTheme.getAccentColor(true);
       default:
         return Colors.grey;
     }
@@ -617,7 +617,7 @@ class _FullDiseaseLibraryScreenState extends State<_FullDiseaseLibraryScreen> {
       appBar: AppBar(
         title: Text(
           "Disease Library",
-          style: GoogleFonts.poppins(
+          style: GoogleFonts.roboto(
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -649,7 +649,7 @@ class _FullDiseaseLibraryScreenState extends State<_FullDiseaseLibraryScreen> {
               },
               decoration: InputDecoration(
                 hintText: 'Search diseases, symptoms, or crops...',
-                hintStyle: GoogleFonts.inter(
+                hintStyle: GoogleFonts.openSans(
                   fontSize: 12.sp,
                   color: Colors.grey[500],
                 ),
@@ -733,7 +733,7 @@ class _FullDiseaseLibraryScreenState extends State<_FullDiseaseLibraryScreen> {
               _searchQuery.isEmpty
                   ? "No diseases available"
                   : "No results found",
-              style: GoogleFonts.poppins(
+              style: GoogleFonts.roboto(
                 fontSize: 14.sp,
                 fontWeight: FontWeight.w600,
                 color: Colors.grey[600],
@@ -745,7 +745,7 @@ class _FullDiseaseLibraryScreenState extends State<_FullDiseaseLibraryScreen> {
               _searchQuery.isEmpty
                   ? "Disease library is currently being loaded."
                   : "Try searching for different keywords or check your spelling.",
-              style: GoogleFonts.inter(
+              style: GoogleFonts.openSans(
                 fontSize: 11.sp,
                 color: Colors.grey[500],
               ),
@@ -807,7 +807,7 @@ class _FullDiseaseLibraryScreenState extends State<_FullDiseaseLibraryScreen> {
                         children: [
                           Text(
                             disease.title,
-                            style: GoogleFonts.poppins(
+                            style: GoogleFonts.roboto(
                               fontSize: 14.sp,
                               fontWeight: FontWeight.w600,
                               color: AppTheme.lightTheme.colorScheme.onSurface,
@@ -817,7 +817,7 @@ class _FullDiseaseLibraryScreenState extends State<_FullDiseaseLibraryScreen> {
                             SizedBox(height: 0.5.h),
                             Text(
                               "Affects: ${disease.cropTypes.join(', ')}",
-                              style: GoogleFonts.inter(
+                              style: GoogleFonts.openSans(
                                 fontSize: 11.sp,
                                 color: AppTheme.lightTheme.colorScheme.primary,
                                 fontWeight: FontWeight.w500,
@@ -841,7 +841,7 @@ class _FullDiseaseLibraryScreenState extends State<_FullDiseaseLibraryScreen> {
                       ),
                       child: Text(
                         disease.severity.toUpperCase(),
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.openSans(
                           color: _getDiseaseColor(disease.severity),
                           fontSize: 8.sp,
                           fontWeight: FontWeight.bold,
@@ -856,7 +856,7 @@ class _FullDiseaseLibraryScreenState extends State<_FullDiseaseLibraryScreen> {
                 // Description
                 Text(
                   disease.description,
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.openSans(
                     fontSize: 12.sp,
                     color: AppTheme.lightTheme.colorScheme.onSurface
                         .withOpacity(0.8),
@@ -874,15 +874,15 @@ class _FullDiseaseLibraryScreenState extends State<_FullDiseaseLibraryScreen> {
                       Icon(
                         Icons.visibility_outlined,
                         size: 16,
-                        color: Colors.orange,
+                        color: AppTheme.getWarningColor(true),
                       ),
                       SizedBox(width: 2.w),
                       Expanded(
                         child: Text(
                           "Key symptoms: ${disease.symptoms.take(2).join(', ')}${disease.symptoms.length > 2 ? '...' : ''}",
-                          style: GoogleFonts.inter(
+                          style: GoogleFonts.openSans(
                             fontSize: 11.sp,
-                            color: Colors.orange[700],
+                            color: AppTheme.warningInk(),
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -899,7 +899,7 @@ class _FullDiseaseLibraryScreenState extends State<_FullDiseaseLibraryScreen> {
                   children: [
                     Text(
                       "Tap for detailed information",
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.openSans(
                         fontSize: 11.sp,
                         color: AppTheme.lightTheme.colorScheme.primary,
                         fontWeight: FontWeight.w500,
@@ -938,11 +938,11 @@ class _FullDiseaseLibraryScreenState extends State<_FullDiseaseLibraryScreen> {
   Color _getDiseaseColor(String severity) {
     switch (severity.toLowerCase()) {
       case 'high':
-        return Colors.red;
+        return AppTheme.lightTheme.colorScheme.error;
       case 'medium':
-        return Colors.orange;
+        return AppTheme.getWarningColor(true);
       case 'low':
-        return Colors.yellow[700] ?? Colors.yellow;
+        return AppTheme.getAccentColor(true);
       default:
         return Colors.grey;
     }

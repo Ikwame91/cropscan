@@ -44,7 +44,7 @@ class DashboardHome extends StatelessWidget {
                 backgroundColor: AppTheme.lightTheme.colorScheme.primary,
                 title: Text(
                   'CropScan Pro',
-                  style: GoogleFonts.playfairDisplay(
+                  style: GoogleFonts.roboto(
                     textStyle:
                         AppTheme.lightTheme.textTheme.titleLarge?.copyWith(
                       color: AppTheme.lightTheme.colorScheme.onPrimary,
@@ -92,7 +92,7 @@ class DashboardHome extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text('Recent Detections',
-                            style: GoogleFonts.poppins(
+                            style: GoogleFonts.roboto(
                               textStyle: AppTheme
                                   .lightTheme.textTheme.titleLarge
                                   ?.copyWith(
@@ -104,7 +104,7 @@ class DashboardHome extends StatelessWidget {
                               Navigator.pushNamed(context, AppRoutes.detectionHistory),
                           child: Text(
                             'View All',
-                            style: GoogleFonts.poppins(
+                            style: GoogleFonts.roboto(
                               textStyle: AppTheme
                                   .lightTheme.textTheme.bodyMedium
                                   ?.copyWith(
@@ -166,7 +166,7 @@ class DashboardHome extends StatelessWidget {
                                 Text(
                                   'Use AI-powered detection to identify your crops and get instant health analysis',
                                   textAlign: TextAlign.center,
-                                  style: GoogleFonts.poppins(
+                                  style: GoogleFonts.roboto(
                                     textStyle: AppTheme
                                         .lightTheme.textTheme.bodyMedium,
                                   ).copyWith(
@@ -297,7 +297,7 @@ class DashboardHome extends StatelessWidget {
         SizedBox(height: 1.h),
         Text(
           value,
-          style: GoogleFonts.poppins(
+          style: GoogleFonts.roboto(
             fontSize: 20.sp,
             fontWeight: FontWeight.bold,
             color: color,
@@ -305,7 +305,7 @@ class DashboardHome extends StatelessWidget {
         ),
         Text(
           label,
-          style: GoogleFonts.poppins(
+          style: GoogleFonts.roboto(
             fontSize: 10.sp,
             color: color.withOpacity(0.9),
           ),
