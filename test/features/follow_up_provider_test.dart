@@ -26,7 +26,8 @@ void main() {
         autoLoad: false,
       );
 
-  CropDetection scan(String id, String label) => CropDetection(
+  CropDetection scan(String id, String label, {bool uncertain = false}) =>
+      CropDetection(
         id: id,
         rawLabel: label,
         cropName: repo.displayNameFor(label),
@@ -34,6 +35,7 @@ void main() {
         imageUrl: '/x.jpg',
         detectedAt: now,
         status: '',
+        isUncertain: uncertain,
       );
 
   test('creates a plan once per scan and persists it', () async {
@@ -80,6 +82,15 @@ void main() {
             .forDetection('c')
             .firstWhere((t) => t.type == FollowUpType.rescan)
             .isDone,
+        isFalse);
+  });
+
+  test('an uncertain rescan leaves the recovery check open', () async {
+    final p = provider();
+    await p.createPlan(
+        scan('a', 'Tomato_Early_blight'), repo.lookup('Tomato_Early_blight'));
+    await p.recordRescan(scan('b', 'Tomato_healthy', uncertain: true));
+    expect(p.tasks.firstWhere((t) => t.type == FollowUpType.rescan).isDone,
         isFalse);
   });
 
