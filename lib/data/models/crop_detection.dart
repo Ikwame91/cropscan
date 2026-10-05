@@ -63,8 +63,16 @@ class CropDetection {
     String? Function(String displayName)? recoverRawLabel,
   }) {
     final cropName = map['cropName'] as String? ?? '';
+    // Old records embedded the database entry; its name is the most
+    // reliable way back to the label.
+    String? legacyName;
+    final legacyInfo = map['enhancedCropInfo'];
+    if (legacyInfo is Map && legacyInfo['basic_info'] is Map) {
+      legacyName = (legacyInfo['basic_info'] as Map)['display_name'] as String?;
+    }
     final rawLabel = map['rawLabel'] as String? ??
         map['rawDetectedCrop'] as String? ??
+        (legacyName == null ? null : recoverRawLabel?.call(legacyName)) ??
         recoverRawLabel?.call(cropName) ??
         cropName;
 
