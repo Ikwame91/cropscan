@@ -1,4 +1,5 @@
 import 'package:cropscan_pro/features/profile/user_profile_provider.dart';
+import 'package:cropscan_pro/features/weather/ghana_regions.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:sizer/sizer.dart';
@@ -266,25 +267,16 @@ class _UserProfileSettingsState extends State<UserProfileSettings> {
   }
 
   void _handleEditRegion(UserProfileProvider userProvider) {
-    final regions = [
-      "Ashanti Region",
-      "Greater Accra Region",
-      "Western Region",
-      "Central Region",
-      "Volta Region",
-      "Eastern Region",
-      "Northern Region",
-      "Upper East Region",
-      "Upper West Region",
-      "Brong-Ahafo Region"
-    ];
+    final regions = GhanaRegions.all.map((r) => r.name).toList();
 
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: Text("Select Region"),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
+        content: SizedBox(
+          width: double.maxFinite,
+          child: ListView(
+          shrinkWrap: true,
           children: regions
               .map((region) => ListTile(
                     title: Text(region),
@@ -300,6 +292,7 @@ class _UserProfileSettingsState extends State<UserProfileSettings> {
                     ),
                   ))
               .toList(),
+          ),
         ),
       ),
     );

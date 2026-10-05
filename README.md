@@ -84,6 +84,7 @@ lib/
     ├── diagnosis/                 # Results for one scan
     ├── history/                   # Scan history
     ├── follow_ups/                # Care plan: dated treatment reminders
+    ├── weather/                   # Open-Meteo forecast + disease-risk rules
     ├── guide/                     # Crop guide: tips, calendar, disease library
     └── profile/                   # User profile and settings
 
