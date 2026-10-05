@@ -1,0 +1,302 @@
+{
+  "tips": [
+    {
+      "id": "prev_001",
+      "title": "Proper Plant Spacing",
+      "description": "Maintain adequate spacing between plants for good air circulation",
+      "category": "prevention",
+      "cropTypes": [
+        "tomato",
+        "pepper",
+        "maize"
+      ],
+      "severity": "high",
+      "iconName": "grid_view",
+      "symptoms": [
+        "Overcrowded plants",
+        "Poor air circulation"
+      ],
+      "treatments": [
+        "Thin out overcrowded areas",
+        "Transplant excess seedlings"
+      ],
+      "preventions": [
+        "Follow recommended spacing guidelines",
+        "Plan garden layout before planting",
+        "Use string lines for proper alignment"
+      ],
+      "imageAsset": null,
+      "isSeasonal": false,
+      "relevantMonths": []
+    },
+    {
+      "id": "prev_002",
+      "title": "Water Management",
+      "description": "Water at soil level to prevent leaf diseases",
+      "category": "prevention",
+      "cropTypes": [
+        "tomato",
+        "pepper"
+      ],
+      "severity": "high",
+      "iconName": "water_drop",
+      "symptoms": [
+        "Wet leaves",
+        "Fungal growth on foliage"
+      ],
+      "treatments": [
+        "Switch to drip irrigation",
+        "Water early morning"
+      ],
+      "preventions": [
+        "Use drip irrigation or soaker hoses",
+        "Water early morning (6-8 AM)",
+        "Avoid watering leaves directly",
+        "Mulch around plants to retain moisture"
+      ],
+      "imageAsset": null,
+      "isSeasonal": false,
+      "relevantMonths": []
+    },
+    {
+      "id": "care_001",
+      "title": "Soil Health Management",
+      "description": "Maintain healthy soil for disease-resistant crops",
+      "category": "care",
+      "cropTypes": [
+        "tomato",
+        "pepper",
+        "maize"
+      ],
+      "severity": "medium",
+      "iconName": "grass",
+      "symptoms": [
+        "Poor plant growth",
+        "Nutrient deficiencies"
+      ],
+      "treatments": [
+        "Add organic compost",
+        "Test and adjust soil pH",
+        "Apply balanced fertilizer"
+      ],
+      "preventions": [
+        "Regular soil testing",
+        "Annual compost addition",
+        "Cover cropping in off-season",
+        "Avoid soil compaction"
+      ],
+      "imageAsset": null,
+      "isSeasonal": false,
+      "relevantMonths": []
+    },
+    {
+      "id": "care_002",
+      "title": "Pest Management",
+      "description": "Integrated approach to managing crop pests",
+      "category": "care",
+      "cropTypes": [
+        "tomato",
+        "pepper",
+        "maize"
+      ],
+      "severity": "medium",
+      "iconName": "pest_control",
+      "symptoms": [
+        "Visible insects",
+        "Leaf damage",
+        "Reduced yields"
+      ],
+      "treatments": [
+        "Identify pest species correctly",
+        "Use targeted treatments",
+        "Encourage beneficial insects",
+        "Apply organic pesticides when necessary"
+      ],
+      "preventions": [
+        "Regular crop monitoring",
+        "Encourage biodiversity",
+        "Use companion planting",
+        "Maintain healthy soil"
+      ],
+      "imageAsset": null,
+      "isSeasonal": false,
+      "relevantMonths": []
+    }
+  ],
+  "calendar": [
+    {
+      "id": "cal_001",
+      "title": "Land Preparation",
+      "description": "Prepare fields for the upcoming planting season",
+      "cropTypes": [
+        "tomato",
+        "pepper",
+        "maize"
+      ],
+      "month": 1,
+      "category": "preparation",
+      "priority": "high",
+      "actionItems": [
+        "Clear and prepare planting beds",
+        "Test soil pH and nutrients",
+        "Plan crop rotation schedule",
+        "Prepare irrigation systems"
+      ],
+      "region": "all"
+    },
+    {
+      "id": "cal_002",
+      "title": "Dry Season Vegetables",
+      "description": "Plant vegetables that can handle dry conditions",
+      "cropTypes": [
+        "tomato",
+        "pepper"
+      ],
+      "month": 2,
+      "category": "planting",
+      "priority": "medium",
+      "actionItems": [
+        "Start tomato seedlings in nurseries",
+        "Prepare drip irrigation",
+        "Plant near reliable water sources",
+        "Use mulch to conserve moisture"
+      ],
+      "region": "all"
+    },
+    {
+      "id": "cal_003",
+      "title": "Pre-Season Preparation",
+      "description": "Get ready for the main planting season",
+      "cropTypes": [
+        "maize",
+        "tomato",
+        "pepper"
+      ],
+      "month": 3,
+      "category": "preparation",
+      "priority": "high",
+      "actionItems": [
+        "Purchase certified seeds",
+        "Prepare seedbeds",
+        "Check and repair tools",
+        "Plan fertilizer application schedule"
+      ],
+      "region": "all"
+    },
+    {
+      "id": "cal_004",
+      "title": "Early Season Planting",
+      "description": "Begin planting with first rains",
+      "cropTypes": [
+        "maize"
+      ],
+      "month": 4,
+      "category": "planting",
+      "priority": "high",
+      "actionItems": [
+        "Plant early maize varieties",
+        "Ensure proper seed depth",
+        "Apply base fertilizer",
+        "Monitor for pest emergence"
+      ],
+      "region": "all"
+    },
+    {
+      "id": "cal_005",
+      "title": "Transplanting Season",
+      "description": "Transplant seedlings to main fields",
+      "cropTypes": [
+        "tomato",
+        "pepper"
+      ],
+      "month": 5,
+      "category": "planting",
+      "priority": "high",
+      "actionItems": [
+        "Transplant tomato seedlings",
+        "Install support stakes",
+        "Apply starter fertilizer",
+        "Begin regular monitoring"
+      ],
+      "region": "all"
+    },
+    {
+      "id": "cal_006",
+      "title": "Peak Growing Season",
+      "description": "Main crop care and management period",
+      "cropTypes": [
+        "maize",
+        "tomato",
+        "pepper"
+      ],
+      "month": 6,
+      "category": "care",
+      "priority": "high",
+      "actionItems": [
+        "Weekly disease monitoring",
+        "Apply side-dress fertilizer to maize",
+        "Weed control in all crops",
+        "Monitor for fungal diseases"
+      ],
+      "region": "all"
+    },
+    {
+      "id": "cal_007",
+      "title": "Disease Prevention Focus",
+      "description": "Critical period for disease management",
+      "cropTypes": [
+        "tomato",
+        "pepper"
+      ],
+      "month": 7,
+      "category": "prevention",
+      "priority": "high",
+      "actionItems": [
+        "Increase disease monitoring frequency",
+        "Ensure good air circulation",
+        "Apply preventive fungicide treatments",
+        "Remove any infected plant material"
+      ],
+      "region": "all"
+    },
+    {
+      "id": "cal_008",
+      "title": "Harvest Preparation",
+      "description": "Prepare for harvest season",
+      "cropTypes": [
+        "maize",
+        "tomato"
+      ],
+      "month": 9,
+      "category": "harvesting",
+      "priority": "high",
+      "actionItems": [
+        "Monitor crops for harvest readiness",
+        "Prepare storage facilities",
+        "Plan harvest schedule",
+        "Prepare post-harvest handling equipment"
+      ],
+      "region": "all"
+    },
+    {
+      "id": "cal_009",
+      "title": "Post-Harvest Activities",
+      "description": "Complete harvest and prepare for next season",
+      "cropTypes": [
+        "maize",
+        "tomato",
+        "pepper"
+      ],
+      "month": 12,
+      "category": "harvesting",
+      "priority": "medium",
+      "actionItems": [
+        "Complete final harvests",
+        "Clean and store seeds for next season",
+        "Remove crop residues",
+        "Plan next season crop rotation"
+      ],
+      "region": "all"
+    }
+  ]
+}

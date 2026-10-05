@@ -43,7 +43,7 @@ Future<void> main() async {
       ChangeNotifierProvider.value(value: history),
       ChangeNotifierProvider.value(value: followUps),
       ChangeNotifierProvider(create: (_) => NavigationProvider()),
-      ChangeNotifierProvider(create: (_) => CropCareProvider()),
+      ChangeNotifierProvider(create: (_) => CropCareProvider(knowledge)),
       ChangeNotifierProvider(create: (_) => CropClassifier()),
     ],
     child: const MyApp(),
