@@ -59,6 +59,25 @@ void main() {
     expect(p.errorMessage, isNull);
   });
 
+  test('recovers legacy mosaic-virus scans saved under the old name', () async {
+    File('${dir.path}/history.json').writeAsStringSync('''[
+      {"id": "1", "cropName": "Tomato - Mosaic Virus", "confidence": 0.9,
+       "imageUrl": "/a.jpg", "detectedAt": 1700000000000,
+       "status": "Disease Detected"},
+      {"id": "2", "cropName": "Tomato - Mosaic Virus", "confidence": 0.9,
+       "imageUrl": "/b.jpg", "detectedAt": 1700000001000,
+       "status": "Disease Detected",
+       "enhancedCropInfo": {"basic_info":
+         {"display_name": "Tomato - Tomato Mosaic Virus"}}}
+    ]''');
+    final p = provider();
+    await p.loadDetectionHistory();
+    for (final d in p.detectionHistory) {
+      expect(d.rawLabel, 'Tomato__Tomato_mosaic_virus', reason: d.id);
+      expect(repo.lookup(d.rawLabel), isNotNull);
+    }
+  });
+
   test('deletes scans and their photos', () async {
     final photo = File('${dir.path}/photo.jpg')..writeAsBytesSync([1]);
     final p = provider();
