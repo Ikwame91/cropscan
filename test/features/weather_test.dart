@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -181,6 +182,30 @@ void main() {
       await p.setRegion('Ashanti Region');
       await p.setRegion('Ashanti Region');
       expect(calls, 1);
+    });
+
+    test('fetches the new region if it changes mid-request', () async {
+      final firstResponse = Completer<http.Response>();
+      final firstRequested = Completer<void>();
+      final requested = <String>[];
+      final client = MockClient((req) {
+        requested.add(req.url.queryParameters['latitude']!);
+        if (requested.length == 1) firstRequested.complete();
+        return requested.length == 1
+            ? firstResponse.future
+            : Future.value(http.Response(fixture, 200));
+      });
+      final p = provider(client);
+      final first = p.setRegion('Ashanti Region');
+      await firstRequested.future;
+      // The region changes while the first request is still pending.
+      await p.setRegion('Northern Region');
+      firstResponse.complete(http.Response(fixture, 200));
+      await first;
+
+      expect(requested, ['6.6885', '9.4008']);
+      expect(p.forecast!.place, 'Tamale');
+      expect(p.isLoading, isFalse);
     });
 
     test('has no region until the profile sets a real one', () async {

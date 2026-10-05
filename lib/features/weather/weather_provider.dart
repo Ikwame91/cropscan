@@ -93,17 +93,21 @@ class WeatherProvider extends ChangeNotifier {
     notifyListeners();
     try {
       final forecast = await _service.fetch(region, now: _clock());
-      if (region.name != _region?.name) return; // region changed meanwhile
-      _forecast = forecast;
-      _lastRefreshFailed = false;
-      await _cache
-          .write({'region': region.name, 'forecast': forecast.toJson()});
+      if (region.name == _region?.name) {
+        _forecast = forecast;
+        _lastRefreshFailed = false;
+        await _cache
+            .write({'region': region.name, 'forecast': forecast.toJson()});
+      }
     } catch (e) {
       debugPrint('WeatherProvider: refresh failed: $e');
-      _lastRefreshFailed = true;
+      if (region.name == _region?.name) _lastRefreshFailed = true;
     } finally {
       _isLoading = false;
       notifyListeners();
     }
+    // The region changed while this request was running, and the request
+    // for the new region was skipped because one was in flight.
+    if (_region != null && _region!.name != region.name) await refresh();
   }
 }
