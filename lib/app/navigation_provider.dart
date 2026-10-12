@@ -1,46 +1,44 @@
 import 'package:cropscan_pro/features/scan/crop_scanner_camera.dart';
 import 'package:flutter/widgets.dart';
 
+/// Bottom-navigation tabs, in display order.
+enum AppTab { home, scan, guide, crops, profile }
+
 class NavigationProvider extends ChangeNotifier {
-  int _currentIndex = 0;
-  bool _shouldInitializeCamera = false;
+  AppTab _currentTab = AppTab.home;
   GlobalKey<CropScannerCameraState>? _cameraKey;
 
-  int get currentIndex => _currentIndex;
-  bool get shouldInitializeCamera => _shouldInitializeCamera;
+  AppTab get currentTab => _currentTab;
+  int get currentIndex => _currentTab.index;
 
   void setCameraKey(GlobalKey<CropScannerCameraState> key) {
     _cameraKey = key;
   }
 
-  void navigateToTab(int index) {
-    if (_currentIndex != index) {
-      _currentIndex = index;
-      notifyListeners();
-    }
+  void navigateToTab(AppTab tab) {
+    if (_currentTab == tab) return;
+    _currentTab = tab;
+    notifyListeners();
   }
 
+  /// Switches to the Scan tab and starts the camera if needed.
   Future<void> navigateToCamera() async {
-    _currentIndex = 1;
-    notifyListeners();
-
-    if (_cameraKey?.currentState != null) {
-      try {
-        await _cameraKey!.currentState!.initializeCameraOnDemand();
-      } catch (e) {
-        debugPrint("Error initializing camera: $e");
-      }
+    navigateToTab(AppTab.scan);
+    try {
+      await _cameraKey?.currentState?.initializeCameraOnDemand();
+    } catch (e) {
+      debugPrint('NavigationProvider: error initializing camera: $e');
     }
   }
 
-  void resetCameraInitFlag() {
-    _shouldInitializeCamera = false;
-    notifyListeners();
-  }
-
-  void resetNavigation() {
-    _currentIndex = 0;
-    _shouldInitializeCamera = false;
-    notifyListeners();
+  /// Pops any pushed routes, then shows [tab]. Use from screens pushed on
+  /// top of the main shell (results, history, ...).
+  void returnToTab(BuildContext context, AppTab tab) {
+    Navigator.of(context).popUntil((route) => route.isFirst);
+    if (tab == AppTab.scan) {
+      navigateToCamera();
+    } else {
+      navigateToTab(tab);
+    }
   }
 }

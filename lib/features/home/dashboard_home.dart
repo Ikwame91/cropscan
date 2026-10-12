@@ -1,5 +1,4 @@
 import 'package:cropscan_pro/features/diagnosis/diagnosis_args.dart';
-import 'package:cropscan_pro/data/models/crop_info.dart';
 import 'package:cropscan_pro/features/history/detection_history_provider.dart';
 import 'package:cropscan_pro/app/navigation_provider.dart';
 import 'package:flutter/material.dart';
@@ -40,7 +39,7 @@ class DashboardHome extends StatelessWidget {
                 floating: true,
                 backgroundColor: AppTheme.lightTheme.colorScheme.primary,
                 title: Text(
-                  'CropVision',
+                  'CropScan Pro',
                   style: GoogleFonts.playfairDisplay(
                     textStyle:
                         AppTheme.lightTheme.textTheme.titleLarge?.copyWith(
@@ -54,7 +53,7 @@ class DashboardHome extends StatelessWidget {
                 actions: [
                   IconButton(
                     onPressed: () =>
-                        Navigator.pushNamed(context, '/detection-history'),
+                        Navigator.pushNamed(context, AppRoutes.detectionHistory),
                     icon: CustomIconWidget(
                       iconName: 'history',
                       color: AppTheme.lightTheme.colorScheme.onPrimary,
@@ -93,7 +92,7 @@ class DashboardHome extends StatelessWidget {
                             )),
                         TextButton(
                           onPressed: () =>
-                              Navigator.pushNamed(context, '/cropscreen'),
+                              context.read<NavigationProvider>().navigateToTab(AppTab.crops),
                           child: Text(
                             'View All',
                             style: GoogleFonts.poppins(
@@ -182,28 +181,12 @@ class DashboardHome extends StatelessWidget {
                               final detection = recentDetections[index];
                               return RecentDetectionCardWidget(
                                 detection: detection,
-                                onTap: () {
-                                  debugPrint(
-                                      "Dashboard tap: cropName=${detection.cropName}, rawDetectedCrop=${detection.rawDetectedCrop}, hasEnhancedInfo=${detection.enhancedCropInfo != null}");
-                                  final args = CropDetectionResultsArgs(
-                                    imagePath: detection.imageUrl,
-                                    detectedCrop: detection.rawDetectedCrop ??
-                                        CropInfoMapper.getRawLabel(
-                                            detection.cropName),
-                                    confidence: detection
-                                        .confidence, // ✅ Real confidence
-                                    cropInfo: CropInfoMapper.getCropInfo(
-                                        detection.cropName),
-                                    enhancedCropInfo:
-                                        detection.enhancedCropInfo,
-                                    isFromHistory: true,
-                                  );
-                                  Navigator.pushNamed(
-                                    context,
-                                    '/crop-detection-results',
-                                    arguments: args,
-                                  );
-                                },
+                                onTap: () => Navigator.pushNamed(
+                                  context,
+                                  AppRoutes.cropDetectionResults,
+                                  arguments: DiagnosisArgs(
+                                      detectionId: detection.id),
+                                ),
                               );
                             },
                           ),

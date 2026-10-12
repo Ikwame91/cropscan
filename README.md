@@ -71,10 +71,12 @@ lib/
 │   └── navigation_provider.dart   # Current tab + camera hand-off
 ├── core/
 │   ├── app_export.dart            # Common exports (theme, routes, widgets)
-│   ├── ml/crop_classifier.dart    # TFLite model loading and inference
+│   ├── ml/                        # TFLite classifier + typed ClassificationResult
+│   ├── storage/json_file_store.dart  # Atomic JSON persistence
 │   ├── theme/app_theme.dart
 │   └── widgets/                   # Generic widgets (icons, images, error screen)
 ├── data/
+│   ├── knowledge/                 # Disease database repository + model-label parser
 │   └── models/                    # Detection, disease info, tips, calendar, profile
 └── features/
     ├── home/                      # Dashboard

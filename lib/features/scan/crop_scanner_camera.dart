@@ -5,7 +5,9 @@ import 'dart:io';
 import 'package:camera/camera.dart';
 import 'package:cropscan_pro/core/ml/crop_classifier.dart';
 import 'package:cropscan_pro/features/diagnosis/diagnosis_args.dart';
-import 'package:cropscan_pro/data/models/crop_info.dart';
+import 'package:cropscan_pro/core/ml/classification_result.dart';
+import 'package:cropscan_pro/data/knowledge/disease_knowledge_repository.dart';
+import 'package:cropscan_pro/features/history/detection_history_provider.dart';
 import 'package:cropscan_pro/features/scan/widgets/enhancedloadingoverlay.dart';
 import 'package:cropscan_pro/app/navigation_provider.dart';
 import 'package:flutter/foundation.dart';
@@ -194,37 +196,32 @@ class CropScannerCameraState extends State<CropScannerCamera>
     return parts.length > 1 ? parts.last.trim() : errorStr;
   }
 
-  Future<void> _navigateToResults(
-    String detectedCrop,
-    double confidence,
-    String imagePath,
-  ) async {
-    debugPrint("🚀 Navigating to results screen");
-    debugPrint("Raw detection result: $detectedCrop");
-    debugPrint("Confidence: $confidence");
-
-    final CropInfo cropInfo = CropInfoMapper.getCropInfo(detectedCrop);
-
-    debugPrint("Processed crop info: ${cropInfo.displayName}");
-
-    // Type-safe navigation with proper arguments
-    final navigationResult =
-        await Navigator.pushNamed(context, AppRoutes.cropDetectionResults,
-            arguments: CropDetectionResultsArgs(
-                imagePath: imagePath,
-                detectedCrop: detectedCrop, // Keep raw label for reference
-                confidence: confidence,
-                cropInfo: cropInfo,
-                isFromHistory: false));
-
-    debugPrint("✅ Returned from results screen");
-    // Reset detection state after navigation
-    _resetDetectionState();
-
-    // Optional: Handle any return data from results screen
-    if (navigationResult != null) {
-      debugPrint("Results screen returned: $navigationResult");
+  /// Saves the scan to history, then opens its results.
+  Future<void> _saveAndShowResults(
+    ClassificationResult result,
+    String imagePath, {
+    required bool isUncertain,
+  }) async {
+    final history = context.read<DetectionHistoryProvider>();
+    final detection = await history.addDetection(
+      rawLabel: result.top.label,
+      confidence: result.top.confidence,
+      imagePath: imagePath,
+      alternatives: result.alternatives(),
+      isUncertain: isUncertain,
+    );
+    if (!mounted) return;
+    if (detection == null) {
+      _showErrorDialog('Could not save this scan. Please try again.');
+      return;
     }
+
+    await Navigator.pushNamed(
+      context,
+      AppRoutes.cropDetectionResults,
+      arguments: DiagnosisArgs(detectionId: detection.id, justScanned: true),
+    );
+    _resetDetectionState();
   }
 
   void _showSnackBar(String message, {Color? backgroundColor}) {
@@ -286,7 +283,7 @@ class CropScannerCameraState extends State<CropScannerCamera>
       await _checkAndInitializeCamera();
     }
 
-    final tfliteModelServices = context.read<TfLiteModelServices>();
+    final tfliteModelServices = context.read<CropClassifier>();
     if (tfliteModelServices.status == ModelPredictionStatus.initial ||
         tfliteModelServices.status == ModelPredictionStatus.error) {
       try {
@@ -500,7 +497,7 @@ class CropScannerCameraState extends State<CropScannerCamera>
   void _onTapToFocus(Offset position) async {
     if (_cameraController == null ||
         !_cameraController!.value.isInitialized ||
-        context.read<TfLiteModelServices>().status ==
+        context.read<CropClassifier>().status ==
             ModelPredictionStatus.predicting) {
       // Disable focus during prediction
       return;
@@ -550,71 +547,42 @@ class CropScannerCameraState extends State<CropScannerCamera>
   }
 
   Future<void> _performDetection(XFile imageFile) async {
-    final tfliteModelServices = context.read<TfLiteModelServices>();
-
-    if (tfliteModelServices.status != ModelPredictionStatus.ready) {
+    final classifier = context.read<CropClassifier>();
+    if (!classifier.isReady) {
       _showErrorDialog("Model is not ready. Please wait or restart the app");
       _resetDetectionState();
       return;
     }
 
     try {
-      final File image = File(imageFile.path);
+      final result = await classifier.classify(File(imageFile.path));
+      if (!mounted) return;
 
-      if (!await image.exists()) {
-        throw Exception("Image file does not exist");
-      }
-
-      final Map<String, dynamic>? result =
-          await tfliteModelServices.predictImage(image);
-      if (!mounted) {
-        debugPrint(
-            "Widget disposed during prediction, skipping result processing");
-        return;
-      }
-      if (result != null) {
-        final String detectedLabel = result['label'];
-        final double confidence = result['confidence'];
-        final bool isLikelyCrop = result['isLikelyCrop'] ?? false;
-
-        // Handle non-crop detection
-        if (!isLikelyCrop || detectedLabel == "Not a crop") {
+      switch (result.outcome) {
+        case ClassificationOutcome.notACrop:
           _showNonCropDialog();
           _resetDetectionState();
-          return;
-        }
-
-        // Handle low confidence crop detection
-        if (!result['isConfident']) {
-          _showLowConfidenceDialog(detectedLabel, confidence);
+        case ClassificationOutcome.uncertain:
           _resetDetectionState();
-          return;
-        }
-        // Use helper for state updates
-        _setDetectionState(
-          showFeedback: true,
-          detectedCrop: detectedLabel,
-          confidence: confidence,
-        );
-
-        await Future.delayed(_detectionFeedbackDuration);
-        if (mounted) {
-          await _navigateToResults(
-            detectedLabel,
-            confidence,
-            imageFile.path,
+          _showLowConfidenceDialog(result, imageFile.path);
+        case ClassificationOutcome.confident:
+          _setDetectionState(
+            showFeedback: true,
+            detectedCrop: context
+                .read<DiseaseKnowledgeRepository>()
+                .displayNameFor(result.top.label),
+            confidence: result.top.confidence,
           );
-        }
-      } else {
-        if (mounted) {
-          _showErrorDialog("Detection failed. Please try again.");
-        }
+          await Future.delayed(_detectionFeedbackDuration);
+          if (mounted) {
+            await _saveAndShowResults(result, imageFile.path,
+                isUncertain: false);
+          }
       }
     } catch (e) {
       debugPrint("Error during detection: $e");
-      _showErrorDialog("Failed to process image: ${_sanitizeError(e)}");
-    } finally {
       if (mounted) {
+        _showErrorDialog("Failed to process image: ${_sanitizeError(e)}");
         _resetDetectionState();
       }
     }
@@ -834,95 +802,61 @@ class CropScannerCameraState extends State<CropScannerCamera>
     );
   }
 
-  void _showLowConfidenceDialog(String detectedLabel, double confidence) {
+  void _showLowConfidenceDialog(ClassificationResult result, String imagePath) {
+    final knowledge = context.read<DiseaseKnowledgeRepository>();
+    final candidates = [result.top, ...result.alternatives()];
+
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (BuildContext context) {
+      builder: (BuildContext dialogContext) {
         return AlertDialog(
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           title: Row(
             children: [
-              Container(
-                padding: EdgeInsets.all(2.w),
-                decoration: BoxDecoration(
-                  color: Colors.amber.withOpacity(0.1),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  Icons.warning_amber,
-                  color: Colors.amber,
-                  size: 24,
-                ),
-              ),
+              Icon(Icons.help_outline, color: AppTheme.getWarningColor(true)),
               SizedBox(width: 3.w),
-              Expanded(
-                child: Text(
-                  "Uncertain Detection",
-                  style: AppTheme.lightTheme.textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
+              const Expanded(child: Text("Not sure about this one")),
             ],
           ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                padding: EdgeInsets.all(3.w),
-                decoration: BoxDecoration(
-                  color: Colors.grey.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
+              Text("Most likely:",
+                  style: AppTheme.lightTheme.textTheme.bodyMedium),
+              SizedBox(height: 1.h),
+              for (final c in candidates)
+                Padding(
+                  padding: EdgeInsets.only(bottom: 0.5.h),
+                  child: Row(
+                    children: [
+                      Expanded(child: Text(knowledge.displayNameFor(c.label))),
+                      Text('${(c.confidence * 100).toStringAsFixed(0)}%',
+                          style: AppTheme.getDataTextStyle(isLight: true)),
+                    ],
+                  ),
                 ),
-                child: Row(
-                  children: [
-                    Icon(Icons.analytics,
-                        color: Colors.grey.shade600, size: 20),
-                    SizedBox(width: 2.w),
-                    Expanded(
-                      child: Text(
-                        "Detected: $detectedLabel\nConfidence: ${(confidence * 100).toStringAsFixed(1)}%",
-                        style:
-                            AppTheme.lightTheme.textTheme.bodyMedium?.copyWith(
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
               SizedBox(height: 2.h),
               Text(
-                "The detection confidence is lower than usual. For more accurate results:",
-                style: AppTheme.lightTheme.textTheme.bodyLarge,
+                "For a clearer result, fill the frame with a single leaf, "
+                "in daylight, and hold the phone steady.",
+                style: AppTheme.lightTheme.textTheme.bodySmall,
               ),
-              SizedBox(height: 1.5.h),
-              _buildImprovementTip("🔍", "Move closer to the crop leaf"),
-              _buildImprovementTip("💡", "Improve lighting conditions"),
-              _buildImprovementTip("📱", "Keep the camera steady"),
-              _buildImprovementTip("🎯", "Focus on a single, clear leaf"),
             ],
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: Text(
-                "Try Again",
-                style: TextStyle(
-                  color: AppTheme.lightTheme.colorScheme.primary,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: const Text("Try again"),
             ),
             ElevatedButton(
               onPressed: () {
-                Navigator.of(context).pop();
-                // Optionally proceed with the uncertain result
-                _proceedWithUncertainResult(detectedLabel, confidence);
+                Navigator.of(dialogContext).pop();
+                _saveAndShowResults(result, imagePath, isUncertain: true);
               },
-              child: Text("Proceed Anyway"),
+              child: const Text("See results"),
             ),
           ],
         );
@@ -930,45 +864,12 @@ class CropScannerCameraState extends State<CropScannerCamera>
     );
   }
 
-  Widget _buildImprovementTip(String emoji, String text) {
-    return Padding(
-      padding: EdgeInsets.only(bottom: 0.8.h),
-      child: Row(
-        children: [
-          Text(emoji, style: TextStyle(fontSize: 12.sp)),
-          SizedBox(width: 2.w),
-          Expanded(
-            child: Text(
-              text,
-              style: AppTheme.lightTheme.textTheme.bodySmall,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
-  void _proceedWithUncertainResult(String detectedLabel, double confidence) {
-    // Navigate to results even with low confidence, but mark it as uncertain
-    final CropInfo cropInfo = CropInfoMapper.getCropInfo(detectedLabel);
-
-    Navigator.pushNamed(
-      context,
-      AppRoutes.cropDetectionResults,
-      arguments: CropDetectionResultsArgs(
-        imagePath: _cameraController!.value.previewSize?.toString() ?? '',
-        detectedCrop: detectedLabel,
-        confidence: confidence,
-        cropInfo: cropInfo,
-        isFromHistory: false,
-      ),
-    );
-  }
 
   void _captureImage() async {
     if (_cameraController == null ||
         !_cameraController!.value.isInitialized ||
-        context.read<TfLiteModelServices>().status ==
+        context.read<CropClassifier>().status ==
             ModelPredictionStatus.predicting ||
         _isCapturing) {
       debugPrint(
@@ -1019,7 +920,7 @@ class CropScannerCameraState extends State<CropScannerCamera>
 
   void _openGallery() async {
     HapticFeedback.lightImpact();
-    final tfliteService = context.read<TfLiteModelServices>();
+    final tfliteService = context.read<CropClassifier>();
 
     if (tfliteService.status == ModelPredictionStatus.predicting) {
       _showSnackBar("Please wait, detection is in progress.");
@@ -1063,7 +964,7 @@ class CropScannerCameraState extends State<CropScannerCamera>
   void _goBackToHome() {
     debugPrint("🔙 Going back to home screen");
     final navigationProvider = context.read<NavigationProvider>();
-    navigationProvider.navigateToTab(0);
+    navigationProvider.navigateToTab(AppTab.home);
   }
 
   @override
@@ -1183,7 +1084,7 @@ class CropScannerCameraState extends State<CropScannerCamera>
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<TfLiteModelServices>(
+    return Consumer<CropClassifier>(
       builder: (context, tfliteService, child) {
         return _buildCameraInterface(tfliteService);
       },
@@ -1192,7 +1093,7 @@ class CropScannerCameraState extends State<CropScannerCamera>
 
   // NEW HELPER METHODS ADDED BELOW THIS LINE
 
-  Widget _buildCameraInterface(TfLiteModelServices tfliteService) {
+  Widget _buildCameraInterface(CropClassifier tfliteService) {
     final mlStatus = tfliteService.status;
     final isCameraAndModelReady = _hasPermission &&
         _cameraController?.value.isInitialized == true &&
@@ -1261,7 +1162,7 @@ class CropScannerCameraState extends State<CropScannerCamera>
     );
   }
 
-  Widget _buildLoadingInterface(TfLiteModelServices tfliteService) {
+  Widget _buildLoadingInterface(CropClassifier tfliteService) {
     return Scaffold(
       backgroundColor: Colors.black,
       body: SafeArea(
@@ -1292,7 +1193,7 @@ class CropScannerCameraState extends State<CropScannerCamera>
     );
   }
 
-  Widget _buildLoadingContent(TfLiteModelServices tfliteService) {
+  Widget _buildLoadingContent(CropClassifier tfliteService) {
     final mlStatus = tfliteService.status;
 
     if (!_hasPermission) {
@@ -1370,7 +1271,7 @@ class CropScannerCameraState extends State<CropScannerCamera>
     );
   }
 
-  Widget _buildErrorContent(TfLiteModelServices tfliteService) {
+  Widget _buildErrorContent(CropClassifier tfliteService) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [

@@ -258,7 +258,7 @@ class QuickActionsWidget extends StatelessWidget {
       case 'scan_first':
       case 'scan_crop':
         if (action.navigationIndex != null) {
-          navigationProvider.navigateToTab(action.navigationIndex!);
+          navigationProvider.navigateToTab(AppTab.values[action.navigationIndex!]);
         }
         break;
 
@@ -281,7 +281,7 @@ class QuickActionsWidget extends StatelessWidget {
       case 'profile_setup':
       case 'alerts':
         if (action.navigationIndex != null) {
-          navigationProvider.navigateToTab(action.navigationIndex!);
+          navigationProvider.navigateToTab(AppTab.values[action.navigationIndex!]);
         }
         break;
     }
@@ -374,7 +374,7 @@ class QuickActionsWidget extends StatelessWidget {
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
-              context.read<NavigationProvider>().navigateToTab(1);
+              context.read<NavigationProvider>().navigateToCamera();
             },
             child: Text("Start Scanning"),
           ),

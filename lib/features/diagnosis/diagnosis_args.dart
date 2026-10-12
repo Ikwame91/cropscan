@@ -1,20 +1,12 @@
-import 'package:cropscan_pro/data/models/crop_info.dart';
-import 'package:cropscan_pro/data/models/disease_info.dart';
+/// Arguments for the diagnosis results route.
+///
+/// Scans are saved to history *before* the results screen opens, so the
+/// screen only needs the saved record's id.
+class DiagnosisArgs {
+  final String detectionId;
 
-class CropDetectionResultsArgs {
-  final String imagePath;
-  final String detectedCrop;
-  final double confidence;
-  final CropInfo cropInfo;
-  final bool isFromHistory;
-  final EnhancedCropInfo? enhancedCropInfo;
+  /// True when arriving straight from the camera (vs. from history).
+  final bool justScanned;
 
-  CropDetectionResultsArgs({
-    required this.imagePath,
-    required this.detectedCrop,
-    required this.confidence,
-    required this.cropInfo,
-    this.enhancedCropInfo,
-    this.isFromHistory = false,
-  });
+  const DiagnosisArgs({required this.detectionId, this.justScanned = false});
 }
