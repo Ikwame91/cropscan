@@ -9,16 +9,18 @@ import 'package:sizer/sizer.dart';
 import 'package:cropscan_pro/core/app_export.dart';
 import 'package:cropscan_pro/features/follow_ups/widgets/care_plan_preview.dart';
 import 'package:cropscan_pro/features/home/widgets/recent_detection_card_widget.dart';
+import 'package:cropscan_pro/features/weather/weather_provider.dart';
+import 'package:cropscan_pro/features/weather/widgets/weather_card.dart';
 import 'package:cropscan_pro/features/home/widgets/scan_crop_card_widget.dart';
 
 class DashboardHome extends StatelessWidget {
   const DashboardHome({super.key});
 
   Future<void> _handleRefresh(BuildContext context) async {
-    final detectionHistoryProvider =
-        Provider.of<DetectionHistoryProvider>(context, listen: false);
-
-    await detectionHistoryProvider.loadDetectionHistory();
+    await Future.wait([
+      context.read<DetectionHistoryProvider>().loadDetectionHistory(),
+      context.read<WeatherProvider>().refresh(),
+    ]);
   }
 
   void _navigateToCamera(BuildContext context) {
@@ -77,6 +79,9 @@ class DashboardHome extends StatelessWidget {
 
                     // ✅ NEW: Quick Stats Card
                     _buildQuickStatsCard(context),
+                    SizedBox(height: 3.h),
+
+                    const WeatherCard(),
                     SizedBox(height: 3.h),
 
                     const CarePlanPreview(),

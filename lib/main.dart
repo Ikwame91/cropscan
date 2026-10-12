@@ -7,6 +7,7 @@ import 'package:cropscan_pro/features/follow_ups/follow_up_provider.dart';
 import 'package:cropscan_pro/features/guide/crop_care_provider.dart';
 import 'package:cropscan_pro/features/history/detection_history_provider.dart';
 import 'package:cropscan_pro/features/profile/user_profile_provider.dart';
+import 'package:cropscan_pro/features/weather/weather_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -33,6 +34,12 @@ Future<void> main() async {
     providers: [
       Provider.value(value: knowledge),
       ChangeNotifierProvider(create: (_) => UserProfileProvider()),
+      // Weather follows the region chosen in the profile.
+      ChangeNotifierProxyProvider<UserProfileProvider, WeatherProvider>(
+        create: (_) => WeatherProvider(),
+        update: (_, profile, weather) =>
+            weather!..onProfileRegion(profile.userProfile?.region),
+      ),
       ChangeNotifierProvider.value(value: history),
       ChangeNotifierProvider.value(value: followUps),
       ChangeNotifierProvider(create: (_) => NavigationProvider()),
