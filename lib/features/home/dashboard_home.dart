@@ -1,4 +1,5 @@
 import 'package:cropscan_pro/features/diagnosis/diagnosis_args.dart';
+import 'package:cropscan_pro/features/guide/crop_care_provider.dart';
 import 'package:cropscan_pro/features/history/detection_history_provider.dart';
 import 'package:cropscan_pro/app/navigation_provider.dart';
 import 'package:flutter/material.dart';
@@ -203,7 +204,6 @@ class DashboardHome extends StatelessWidget {
                     ),
                     SizedBox(height: 3.h),
 
-                    // ✅ NEW: Farming Tips Section (instead of alerts)
                     _buildFarmingTipsSection(context),
                     SizedBox(height: 4.h),
                   ]),
@@ -316,93 +316,57 @@ class DashboardHome extends StatelessWidget {
   }
 
   // ✅ NEW: Farming Tips Section (replaces alerts)
+  /// Tips picked from the disease database and farming guide for the
+  /// diseases and crops in this farmer's scans.
   Widget _buildFarmingTipsSection(BuildContext context) {
-    final tips = [
-      {
-        'title': 'Morning Inspections',
-        'description':
-            'Check your crops early morning for best disease detection',
-        'icon': Icons.wb_sunny,
-        'color': Colors.orange,
-      },
-      {
-        'title': 'Photo Quality',
-        'description': 'Take clear, well-lit photos focusing on leaf details',
-        'icon': Icons.photo_camera,
-        'color': Colors.blue,
-      },
-      {
-        'title': 'Regular Monitoring',
-        'description': 'Scan your crops weekly for early problem detection',
-        'icon': Icons.schedule,
-        'color': Colors.green,
-      },
-    ];
+    final history = context.watch<DetectionHistoryProvider>();
+    final tips = context
+        .watch<CropCareProvider>()
+        .getPersonalizedTips(history, limit: 3);
+    if (tips.isEmpty) return const SizedBox.shrink();
 
+    final theme = AppTheme.lightTheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Farming Tips',
-          style: GoogleFonts.poppins(
-            textStyle: AppTheme.lightTheme.textTheme.titleLarge?.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
-          ),
+          history.totalScans == 0 ? 'Farming tips' : 'Tips for your crops',
+          style: theme.textTheme.titleLarge
+              ?.copyWith(fontWeight: FontWeight.bold),
         ),
         SizedBox(height: 2.h),
-        ...tips.map((tip) => Container(
-              margin: EdgeInsets.only(bottom: 2.h),
-              padding: EdgeInsets.all(4.w),
-              decoration: BoxDecoration(
-                color: AppTheme.lightTheme.colorScheme.surface,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: AppTheme.lightTheme.dividerColor,
-                  width: 1,
-                ),
+        for (final tip in tips)
+          Card(
+            margin: EdgeInsets.only(bottom: 1.5.h),
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+              side: BorderSide(color: theme.dividerColor),
+            ),
+            child: ListTile(
+              contentPadding:
+                  EdgeInsets.symmetric(horizontal: 4.w, vertical: 0.5.h),
+              leading: CustomIconWidget(
+                iconName: tip.iconName,
+                color: theme.colorScheme.primary,
+                size: 24,
               ),
-              child: Row(
-                children: [
-                  Container(
-                    padding: EdgeInsets.all(2.w),
-                    decoration: BoxDecoration(
-                      color: (tip['color'] as Color).withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Icon(
-                      tip['icon'] as IconData,
-                      color: tip['color'] as Color,
-                      size: 24,
-                    ),
-                  ),
-                  SizedBox(width: 4.w),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          tip['title'] as String,
-                          style: AppTheme.lightTheme.textTheme.titleSmall
-                              ?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        SizedBox(height: 0.5.h),
-                        Text(
-                          tip['description'] as String,
-                          style:
-                              AppTheme.lightTheme.textTheme.bodySmall?.copyWith(
-                            color: AppTheme
-                                .lightTheme.colorScheme.onSurfaceVariant,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            )),
+              title: Text(tip.title,
+                  style: theme.textTheme.titleSmall
+                      ?.copyWith(fontWeight: FontWeight.bold)),
+              subtitle: Text(tip.description,
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.bodySmall),
+              onTap: CropCareProvider.rawLabelOf(tip) == null
+                  ? null
+                  : () => Navigator.pushNamed(
+                        context,
+                        AppRoutes.diseaseDetail,
+                        arguments: CropCareProvider.rawLabelOf(tip),
+                      ),
+            ),
+          ),
       ],
     );
   }

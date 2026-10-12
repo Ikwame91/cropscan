@@ -337,6 +337,12 @@ class DiseaseLibraryWidget extends StatelessWidget {
   }
 
   void _showDiseaseDetails(BuildContext context, CropCareTip diseaseTip) {
+    final rawLabel = CropCareProvider.rawLabelOf(diseaseTip);
+    if (rawLabel != null) {
+      Navigator.pushNamed(context, AppRoutes.diseaseDetail,
+          arguments: rawLabel);
+      return;
+    }
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -915,6 +921,12 @@ class _FullDiseaseLibraryScreenState extends State<_FullDiseaseLibraryScreen> {
   }
 
   void _showDiseaseDetails(BuildContext context, CropCareTip diseaseTip) {
+    final rawLabel = CropCareProvider.rawLabelOf(diseaseTip);
+    if (rawLabel != null) {
+      Navigator.pushNamed(context, AppRoutes.diseaseDetail,
+          arguments: rawLabel);
+      return;
+    }
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,

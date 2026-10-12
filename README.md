@@ -91,6 +91,7 @@ lib/
 assets/
 ├── ml_models/                     # converted_model.tflite + labels.txt
 ├── data/crop_database.json        # Offline disease & treatment database
+├── data/farming_guide.json        # General tips + Ghana seasonal calendar
 └── images/
 ```
 
