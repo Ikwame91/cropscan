@@ -144,9 +144,9 @@ class RecentDetectionCardWidget extends StatelessWidget {
         statusLower.contains('spot') ||
         statusLower.contains('rust') ||
         statusLower.contains('deficiency')) {
-      return Colors.red;
+      return AppTheme.lightTheme.colorScheme.error;
     } else if (statusLower.contains('pest') || statusLower.contains('insect')) {
-      return Colors.orange;
+      return AppTheme.getWarningColor(true);
     } else if (statusLower.contains('healthy')) {
       return AppTheme.getSuccessColor(true);
     }

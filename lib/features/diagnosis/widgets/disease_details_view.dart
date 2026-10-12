@@ -40,7 +40,7 @@ class DiseaseDetailsView extends StatelessWidget {
           _Section(
             title: 'Treatment',
             icon: 'healing',
-            color: Colors.green,
+            color: AppTheme.getSuccessColor(true),
             initiallyExpanded: expandFirstSection,
             children: [
               _StepList('Do this now', treatment.immediateAction),
@@ -98,7 +98,7 @@ class DiseaseDetailsView extends StatelessWidget {
           _Section(
             title: 'Symptoms',
             icon: 'medical_services',
-            color: Colors.orange,
+            color: AppTheme.getWarningColor(true),
             children: [
               _BulletList('Early stage', symptoms.earlyStage),
               _BulletList('Advanced stage', symptoms.advancedStage),
@@ -144,7 +144,7 @@ class DiseaseDetailsView extends StatelessWidget {
           _Section(
             title: 'Costs & effort',
             icon: 'attach_money',
-            color: Colors.green.shade800,
+            color: AppTheme.getSuccessColor(true),
             children: [
               _InfoRow('Yield loss', economic?.yieldLoss),
               _InfoRow('Yield potential', economic?.yieldPotential),
@@ -173,7 +173,7 @@ class DiseaseDetailsView extends StatelessWidget {
           _Section(
             title: 'Local tips for Ghana',
             icon: 'lightbulb',
-            color: Colors.amber.shade800,
+            color: AppTheme.getAccentColor(true),
             children: [
               Text(info.localTipsGhana!,
                   style: AppTheme.lightTheme.textTheme.bodyMedium),
@@ -368,10 +368,10 @@ class _StepList extends StatelessWidget {
               children: [
                 CircleAvatar(
                   radius: 11,
-                  backgroundColor: Colors.green.withValues(alpha: 0.15),
+                  backgroundColor: AppTheme.getSuccessColor(true).withValues(alpha: 0.15),
                   child: Text('${i + 1}',
                       style: AppTheme.lightTheme.textTheme.labelSmall
-                          ?.copyWith(color: Colors.green.shade800)),
+                          ?.copyWith(color: AppTheme.successInk())),
                 ),
                 SizedBox(width: 2.w),
                 Expanded(

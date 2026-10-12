@@ -81,7 +81,7 @@ class EnhancedDetectionCardWidget extends StatelessWidget {
                         padding: EdgeInsets.symmetric(
                             horizontal: 2.w, vertical: 0.5.h),
                         decoration: BoxDecoration(
-                          color: isHealthy ? Colors.green : Colors.red,
+                          color: isHealthy ? AppTheme.getSuccessColor(true) : AppTheme.lightTheme.colorScheme.error,
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Row(
@@ -95,7 +95,7 @@ class EnhancedDetectionCardWidget extends StatelessWidget {
                             SizedBox(width: 1.w),
                             Text(
                               isHealthy ? 'Healthy' : 'Issue',
-                              style: GoogleFonts.poppins(
+                              style: GoogleFonts.roboto(
                                 fontSize: 8.sp,
                                 color: Colors.white,
                                 fontWeight: FontWeight.w600,
@@ -119,7 +119,7 @@ class EnhancedDetectionCardWidget extends StatelessWidget {
                         ),
                         child: Text(
                           '${(detection.confidence * 100).toInt()}%',
-                          style: GoogleFonts.poppins(
+                          style: GoogleFonts.roboto(
                             fontSize: 9.sp,
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
@@ -170,7 +170,7 @@ class EnhancedDetectionCardWidget extends StatelessWidget {
                       // Crop Name
                       Text(
                         detection.cropName,
-                        style: GoogleFonts.poppins(
+                        style: GoogleFonts.roboto(
                           fontSize: 11.sp,
                           fontWeight: FontWeight.bold,
                           color: AppTheme.lightTheme.colorScheme.onSurface,
@@ -195,7 +195,7 @@ class EnhancedDetectionCardWidget extends StatelessWidget {
                             Expanded(
                               child: Text(
                                 detection.location!,
-                                style: GoogleFonts.poppins(
+                                style: GoogleFonts.roboto(
                                   fontSize: 8.sp,
                                   color: AppTheme
                                       .lightTheme.colorScheme.onSurfaceVariant,
@@ -212,7 +212,7 @@ class EnhancedDetectionCardWidget extends StatelessWidget {
                       // Timestamp
                       Text(
                         _formatTimeAgo(detection.detectedAt),
-                        style: GoogleFonts.poppins(
+                        style: GoogleFonts.roboto(
                           fontSize: 8.sp,
                           color:
                               AppTheme.lightTheme.colorScheme.onSurfaceVariant,
@@ -277,7 +277,7 @@ class EnhancedDetectionCardWidget extends StatelessWidget {
                         width: 12,
                         height: 12,
                         decoration: BoxDecoration(
-                          color: isHealthy ? Colors.green : Colors.red,
+                          color: isHealthy ? AppTheme.getSuccessColor(true) : AppTheme.lightTheme.colorScheme.error,
                           shape: BoxShape.circle,
                           border: Border.all(color: Colors.white, width: 2),
                         ),
@@ -333,7 +333,7 @@ class EnhancedDetectionCardWidget extends StatelessWidget {
                               children: [
                                 Text(
                                   detection.cropName,
-                                  style: GoogleFonts.poppins(
+                                  style: GoogleFonts.roboto(
                                     fontSize: 13.sp,
                                     fontWeight: FontWeight.bold,
                                     color: AppTheme
@@ -345,10 +345,10 @@ class EnhancedDetectionCardWidget extends StatelessWidget {
                                 SizedBox(height: 0.5.h),
                                 Text(
                                   detection.status,
-                                  style: GoogleFonts.poppins(
+                                  style: GoogleFonts.roboto(
                                     fontSize: 10.sp,
                                     color:
-                                        isHealthy ? Colors.green : Colors.red,
+                                        isHealthy ? AppTheme.successInk() : AppTheme.errorInk(),
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
@@ -366,7 +366,7 @@ class EnhancedDetectionCardWidget extends StatelessWidget {
                             ),
                             child: Text(
                               '${(detection.confidence * 100).toInt()}%',
-                              style: GoogleFonts.poppins(
+                              style: GoogleFonts.roboto(
                                 fontSize: 10.sp,
                                 color: _getConfidenceColor(),
                                 fontWeight: FontWeight.bold,
@@ -392,7 +392,7 @@ class EnhancedDetectionCardWidget extends StatelessWidget {
                             Expanded(
                               child: Text(
                                 detection.location!,
-                                style: GoogleFonts.poppins(
+                                style: GoogleFonts.roboto(
                                   fontSize: 9.sp,
                                   color: AppTheme
                                       .lightTheme.colorScheme.onSurfaceVariant,
@@ -419,7 +419,7 @@ class EnhancedDetectionCardWidget extends StatelessWidget {
                           SizedBox(width: 1.w),
                           Text(
                             _formatTimeAgo(detection.detectedAt),
-                            style: GoogleFonts.poppins(
+                            style: GoogleFonts.roboto(
                               fontSize: 9.sp,
                               color: AppTheme
                                   .lightTheme.colorScheme.onSurfaceVariant,
@@ -476,7 +476,7 @@ class EnhancedDetectionCardWidget extends StatelessWidget {
             SizedBox(height: 1.h),
             Text(
               'Image unavailable',
-              style: GoogleFonts.poppins(
+              style: GoogleFonts.roboto(
                 fontSize: 8.sp,
                 color: AppTheme.lightTheme.colorScheme.onSurfaceVariant,
               ),
@@ -489,9 +489,9 @@ class EnhancedDetectionCardWidget extends StatelessWidget {
   }
 
   Color _getConfidenceColor() {
-    if (detection.confidence >= 0.8) return Colors.green;
-    if (detection.confidence >= 0.6) return Colors.orange;
-    return Colors.red;
+    if (detection.confidence >= 0.8) return AppTheme.getSuccessColor(true);
+    if (detection.confidence >= 0.6) return AppTheme.getWarningColor(true);
+    return AppTheme.lightTheme.colorScheme.error;
   }
 
   String _formatTimeAgo(DateTime dateTime) {

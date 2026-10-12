@@ -94,7 +94,7 @@ class AnalyticsSummaryWidget extends StatelessWidget {
             title: "Avg Confidence",
             value: "${(averageConfidence * 100).toStringAsFixed(1)}%",
             icon: Icons.thumb_up,
-            color: Colors.green,
+            color: AppTheme.getSuccessColor(true),
             subtitle: "AI accuracy",
           ),
         ),
@@ -289,12 +289,12 @@ class AnalyticsSummaryWidget extends StatelessWidget {
   Color _getTrendColor(String trend) {
     switch (trend.toLowerCase()) {
       case 'improving':
-        return Colors.green;
+        return AppTheme.getSuccessColor(true);
       case 'declining':
-        return Colors.red;
+        return AppTheme.lightTheme.colorScheme.error;
       case 'stable':
       default:
-        return Colors.orange;
+        return AppTheme.getWarningColor(true);
     }
   }
 

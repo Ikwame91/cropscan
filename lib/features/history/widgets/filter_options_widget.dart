@@ -43,7 +43,7 @@ class ModernFilterWidget extends StatelessWidget {
                   currentFilterBy,
                   onFilterChanged,
                   Icons.check_circle,
-                  color: Colors.green,
+                  color: AppTheme.getSuccessColor(true),
                 ),
                 SizedBox(width: 2.w),
                 _buildFilterChip(
@@ -53,7 +53,7 @@ class ModernFilterWidget extends StatelessWidget {
                   currentFilterBy,
                   onFilterChanged,
                   Icons.warning,
-                  color: Colors.red,
+                  color: AppTheme.lightTheme.colorScheme.error,
                 ),
                 SizedBox(width: 2.w),
                 _buildFilterChip(
@@ -103,7 +103,7 @@ class ModernFilterWidget extends StatelessWidget {
                 SizedBox(width: 1.w),
                 Text(
                   _getSortLabel(currentSortBy),
-                  style: GoogleFonts.poppins(
+                  style: GoogleFonts.roboto(
                     fontSize: 9.sp,
                     color: AppTheme.lightTheme.colorScheme.onSurfaceVariant,
                     fontWeight: FontWeight.w500,
@@ -157,7 +157,7 @@ class ModernFilterWidget extends StatelessWidget {
             SizedBox(width: 1.w),
             Text(
               label,
-              style: GoogleFonts.poppins(
+              style: GoogleFonts.roboto(
                 fontSize: 9.sp,
                 color: isSelected
                     ? chipColor
@@ -185,7 +185,7 @@ class ModernFilterWidget extends StatelessWidget {
           children: [
             Text(
               'Sort by',
-              style: GoogleFonts.poppins(
+              style: GoogleFonts.roboto(
                 fontSize: 16.sp,
                 fontWeight: FontWeight.bold,
                 color: AppTheme.lightTheme.colorScheme.onSurface,
@@ -221,7 +221,7 @@ class ModernFilterWidget extends StatelessWidget {
       ),
       title: Text(
         label,
-        style: GoogleFonts.poppins(
+        style: GoogleFonts.roboto(
           color: isSelected
               ? AppTheme.lightTheme.colorScheme.primary
               : AppTheme.lightTheme.colorScheme.onSurface,

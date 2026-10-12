@@ -43,7 +43,7 @@ class StatisticsOverviewWidget extends StatelessWidget {
         children: [
           Text(
             'Overview',
-            style: GoogleFonts.poppins(
+            style: GoogleFonts.roboto(
               fontSize: 14.sp,
               fontWeight: FontWeight.bold,
               color: AppTheme.lightTheme.colorScheme.onSurface,
@@ -69,7 +69,7 @@ class StatisticsOverviewWidget extends StatelessWidget {
                   'Healthy',
                   healthyCount.toString(),
                   Icons.check_circle,
-                  Colors.green,
+                  AppTheme.getSuccessColor(true),
                 ),
               ),
               SizedBox(width: 3.w),
@@ -78,7 +78,7 @@ class StatisticsOverviewWidget extends StatelessWidget {
                   'Issues',
                   diseasedCount.toString(),
                   Icons.warning,
-                  Colors.red,
+                  AppTheme.lightTheme.colorScheme.error,
                 ),
               ),
             ],
@@ -129,7 +129,7 @@ class StatisticsOverviewWidget extends StatelessWidget {
           SizedBox(height: 1.h),
           Text(
             value,
-            style: GoogleFonts.poppins(
+            style: GoogleFonts.roboto(
               fontSize: 16.sp,
               fontWeight: FontWeight.bold,
               color: color,
@@ -137,7 +137,7 @@ class StatisticsOverviewWidget extends StatelessWidget {
           ),
           Text(
             label,
-            style: GoogleFonts.poppins(
+            style: GoogleFonts.roboto(
               fontSize: 8.sp,
               color: AppTheme.lightTheme.colorScheme.onSurfaceVariant,
             ),
@@ -163,14 +163,14 @@ class StatisticsOverviewWidget extends StatelessWidget {
             children: [
               Text(
                 label,
-                style: GoogleFonts.poppins(
+                style: GoogleFonts.roboto(
                   fontSize: 8.sp,
                   color: AppTheme.lightTheme.colorScheme.onSurfaceVariant,
                 ),
               ),
               Text(
                 value,
-                style: GoogleFonts.poppins(
+                style: GoogleFonts.roboto(
                   fontSize: 10.sp,
                   fontWeight: FontWeight.w600,
                   color: AppTheme.lightTheme.colorScheme.onSurface,

@@ -221,13 +221,13 @@ class FarmingCalendarWidget extends StatelessWidget {
     Color color;
     switch (priority.toLowerCase()) {
       case 'high':
-        color = Colors.red;
+        color = AppTheme.lightTheme.colorScheme.error;
         break;
       case 'medium':
-        color = Colors.orange;
+        color = AppTheme.getWarningColor(true);
         break;
       case 'low':
-        color = Colors.green;
+        color = AppTheme.getSuccessColor(true);
         break;
       default:
         color = Colors.grey;
@@ -291,11 +291,11 @@ class FarmingCalendarWidget extends StatelessWidget {
   Color _getCategoryColor(String category) {
     switch (category.toLowerCase()) {
       case 'planting':
-        return Colors.green;
+        return AppTheme.getSuccessColor(true);
       case 'care':
         return Colors.blue;
       case 'prevention':
-        return Colors.orange;
+        return AppTheme.getWarningColor(true);
       case 'harvesting':
         return Colors.purple;
       case 'preparation':

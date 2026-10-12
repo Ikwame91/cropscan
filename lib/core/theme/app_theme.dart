@@ -67,6 +67,40 @@ class AppTheme {
   static const Color textSecondaryDark = Color(0xFFBDBDBD);
   static const Color textDisabledDark = Color(0x61FFFFFF);
 
+  // Design-system additions (CropScan Pro design system). The source
+  // success/warning/accent colours are below 4.5:1 on white, so text in
+  // those meanings uses the *Ink colours, on the *Tint backgrounds.
+  static const Color successInkLight = Color(0xFF2E7D32);
+  static const Color successInkDark = Color(0xFF66BB6A);
+  static const Color warningInkLight = Color(0xFFA85400);
+  static const Color warningInkDark = Color(0xFFFFB74D);
+  static const Color errorInkLight = Color(0xFFC62828);
+  static const Color errorInkDark = Color(0xFFFF7961);
+  static const Color textMutedLight = Color(0xFF6B6B6B);
+  static const Color textMutedDark = Color(0xFFBDBDBD);
+  static const Color successTintLight = Color(0xFFE8F5E9);
+  static const Color successTintDark = Color(0xFF1B2E1C);
+  static const Color warningTintLight = Color(0xFFFFF3E0);
+  static const Color warningTintDark = Color(0xFF33240F);
+  static const Color errorTintLight = Color(0xFFFFEBEE);
+  static const Color errorTintDark = Color(0xFF3A1A1A);
+
+  /// Text-safe colours for a meaning (4.5:1 on background and surface).
+  static Color successInk([bool isLight = true]) =>
+      isLight ? successInkLight : successInkDark;
+  static Color warningInk([bool isLight = true]) =>
+      isLight ? warningInkLight : warningInkDark;
+  static Color errorInk([bool isLight = true]) =>
+      isLight ? errorInkLight : errorInkDark;
+
+  /// Background tints that pair with the ink colours.
+  static Color successTint([bool isLight = true]) =>
+      isLight ? successTintLight : successTintDark;
+  static Color warningTint([bool isLight = true]) =>
+      isLight ? warningTintLight : warningTintDark;
+  static Color errorTint([bool isLight = true]) =>
+      isLight ? errorTintLight : errorTintDark;
+
   /// Light theme - optimized for outdoor agricultural use
   static ThemeData lightTheme = ThemeData(
     brightness: Brightness.light,
@@ -606,7 +640,6 @@ class AppTheme {
     final Color textPrimary = isLight ? textPrimaryLight : textPrimaryDark;
     final Color textSecondary =
         isLight ? textSecondaryLight : textSecondaryDark;
-    final Color textDisabled = isLight ? textDisabledLight : textDisabledDark;
 
     return TextTheme(
       // Display styles - Roboto for headings
@@ -703,7 +736,7 @@ class AppTheme {
       labelSmall: GoogleFonts.roboto(
         fontSize: 11,
         fontWeight: FontWeight.w400,
-        color: textDisabled,
+        color: textSecondary,
         letterSpacing: 0.5,
       ),
     );

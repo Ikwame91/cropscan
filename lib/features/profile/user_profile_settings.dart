@@ -355,7 +355,7 @@ class _UserProfileSettingsState extends State<UserProfileSettings> {
               Navigator.pop(context);
               _showClearHistoryConfirmation(historyProvider);
             },
-            child: Text("Clear History", style: TextStyle(color: Colors.red)),
+            child: Text("Clear History", style: TextStyle(color: AppTheme.errorInk())),
           ),
         ],
       ),
@@ -404,7 +404,7 @@ class _UserProfileSettingsState extends State<UserProfileSettings> {
                   scaffoldMessenger.showSnackBar(
                     SnackBar(
                       content: Text("Scan history cleared!"),
-                      backgroundColor: Colors.green,
+                      backgroundColor: AppTheme.getSuccessColor(true),
                     ),
                   );
                 }
@@ -414,13 +414,13 @@ class _UserProfileSettingsState extends State<UserProfileSettings> {
                   scaffoldMessenger.showSnackBar(
                     SnackBar(
                       content: Text("Error clearing history: $e"),
-                      backgroundColor: Colors.red,
+                      backgroundColor: AppTheme.lightTheme.colorScheme.error,
                     ),
                   );
                 }
               }
             },
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            style: ElevatedButton.styleFrom(backgroundColor: AppTheme.lightTheme.colorScheme.error),
             child: Text("Clear", style: TextStyle(color: Colors.white)),
           ),
         ],
@@ -478,7 +478,7 @@ class _UserProfileSettingsState extends State<UserProfileSettings> {
                   scaffoldMessenger.showSnackBar(
                     SnackBar(
                       content: Text("All data has been reset!"),
-                      backgroundColor: Colors.green,
+                      backgroundColor: AppTheme.getSuccessColor(true),
                     ),
                   );
                 }
@@ -489,13 +489,13 @@ class _UserProfileSettingsState extends State<UserProfileSettings> {
                   scaffoldMessenger.showSnackBar(
                     SnackBar(
                       content: Text("Error resetting data: $e"),
-                      backgroundColor: Colors.red,
+                      backgroundColor: AppTheme.lightTheme.colorScheme.error,
                     ),
                   );
                 }
               }
             },
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            style: ElevatedButton.styleFrom(backgroundColor: AppTheme.lightTheme.colorScheme.error),
             child: Text("Reset All", style: TextStyle(color: Colors.white)),
           ),
         ],
