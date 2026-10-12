@@ -3,6 +3,7 @@ import 'package:cropscan_pro/core/app_export.dart';
 import 'package:cropscan_pro/core/ml/crop_classifier.dart';
 import 'package:cropscan_pro/core/widgets/custom_error_widget.dart';
 import 'package:cropscan_pro/data/knowledge/disease_knowledge_repository.dart';
+import 'package:cropscan_pro/features/follow_ups/follow_up_provider.dart';
 import 'package:cropscan_pro/features/guide/crop_care_provider.dart';
 import 'package:cropscan_pro/features/history/detection_history_provider.dart';
 import 'package:cropscan_pro/features/profile/user_profile_provider.dart';
@@ -20,11 +21,20 @@ Future<void> main() async {
   // Small JSON asset; every screen that shows a diagnosis needs it.
   final knowledge = await DiseaseKnowledgeRepository.load();
 
+  final history = DetectionHistoryProvider(knowledge);
+  final followUps = FollowUpProvider();
+  // A new scan of a crop closes its pending "rescan" reminders, and deleting
+  // a scan removes its care plan.
+  history
+    ..addDetectionAddedListener(followUps.recordRescan)
+    ..addDetectionsRemovedListener(followUps.removeForDetections);
+
   runApp(MultiProvider(
     providers: [
       Provider.value(value: knowledge),
       ChangeNotifierProvider(create: (_) => UserProfileProvider()),
-      ChangeNotifierProvider(create: (_) => DetectionHistoryProvider(knowledge)),
+      ChangeNotifierProvider.value(value: history),
+      ChangeNotifierProvider.value(value: followUps),
       ChangeNotifierProvider(create: (_) => NavigationProvider()),
       ChangeNotifierProvider(create: (_) => CropCareProvider()),
       ChangeNotifierProvider(create: (_) => CropClassifier()),

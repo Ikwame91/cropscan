@@ -82,7 +82,8 @@ lib/
     ├── home/                      # Dashboard
     ├── scan/                      # Camera + gallery capture
     ├── diagnosis/                 # Results for one scan
-    ├── history/                   # Scan history + per-crop view
+    ├── history/                   # Scan history
+    ├── follow_ups/                # Care plan: dated treatment reminders
     ├── guide/                     # Crop guide: tips, calendar, disease library
     └── profile/                   # User profile and settings
 

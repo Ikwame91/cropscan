@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:sizer/sizer.dart';
 
 import 'package:cropscan_pro/core/app_export.dart';
+import 'package:cropscan_pro/features/follow_ups/widgets/care_plan_preview.dart';
 import 'package:cropscan_pro/features/home/widgets/recent_detection_card_widget.dart';
 import 'package:cropscan_pro/features/home/widgets/scan_crop_card_widget.dart';
 
@@ -78,6 +79,8 @@ class DashboardHome extends StatelessWidget {
                     _buildQuickStatsCard(context),
                     SizedBox(height: 3.h),
 
+                    const CarePlanPreview(),
+
                     // Recent Detections Section
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -92,7 +95,7 @@ class DashboardHome extends StatelessWidget {
                             )),
                         TextButton(
                           onPressed: () =>
-                              context.read<NavigationProvider>().navigateToTab(AppTab.crops),
+                              Navigator.pushNamed(context, AppRoutes.detectionHistory),
                           child: Text(
                             'View All',
                             style: GoogleFonts.poppins(
